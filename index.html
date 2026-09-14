@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CuriousLab — small learning games</title>
+<meta name="description" content="Small, self-contained learning games and experiments. Built to run anywhere, with no accounts and no tracking.">
+<meta name="theme-color" content="#f6f3ec">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<div class="wrap">
+	<header class="site-head">
+		<a class="logo" href="./index.html">
+			<span class="mark" aria-hidden="true">✳</span>
+			CuriousLab
+		</a>
+	</header>
+	<p class="tagline">Small learning games and experiments, built to run anywhere.</p>
+
+	<h1>Learning games you can just open and play</h1>
+	<p class="lede">
+		Everything here is a static page: no accounts, no tracking, no server. Progress is
+		saved in your own browser and never leaves the device.
+	</p>
+
+	<h2>Games</h2>
+	<ul class="grid">
+		<li>
+			<a class="card" href="games/counting-pairs/index.html">
+				<div class="card-art" aria-hidden="true">
+					<svg viewBox="0 0 100 100"><use href="#sp-cat"></use></svg>
+					<span class="plus">+</span>
+					<svg viewBox="0 0 100 100"><use href="#sp-fish"></use></svg>
+				</div>
+				<span class="tag">Ages 3–6</span>
+				<h3>Counting Pairs</h3>
+				<p>
+					Counting, addition and subtraction with paired objects. No reading needed:
+					the task is carried by objects, numbers and motion alone.
+				</p>
+			</a>
+		</li>
+		<li>
+			<div class="card">
+				<div class="card-art" aria-hidden="true">
+					<svg viewBox="0 0 100 100"><use href="#sp-lamp"></use></svg>
+					<span class="plus">+</span>
+					<svg viewBox="0 0 100 100"><use href="#sp-star"></use></svg>
+				</div>
+				<span class="tag wip">Planned</span>
+				<h3>More to come</h3>
+				<p>Further experiments will appear here as they become playable.</p>
+			</div>
+		</li>
+	</ul>
+
+	<div class="note">
+		<strong>Counting Pairs, phase one:</strong> six object pairings, three alternating modes,
+		quantities up to 10, adaptive question selection and separate timeout tracking.
+		No voice or sound effects yet.
+	</div>
+
+	<footer>
+		<span>Static site, no analytics.</span>
+		<span><a href="https://github.com/k-l-lambda/curiouslab">Source on GitHub</a></span>
+	</footer>
+</div>
+<script type="module">
+	import {injectSprites} from './assets/js/art.js';
+	injectSprites();
+</script>
+</body>
+</html>
