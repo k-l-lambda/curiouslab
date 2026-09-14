@@ -50,6 +50,48 @@ function objectGroup (spriteId, count, density) {
 	return grid;
 }
 
+/**
+ * The subtraction layout: one column per source object, each with a plate
+ * below it. The first `filled` plates already hold a target object; the rest
+ * are visibly empty, and counting those gaps is the task.
+ *
+ * This keeps the same grammar as the other modes — the source group is always
+ * the actor on the left — and turns "how many more are needed?" into something
+ * the child can see rather than read.
+ */
+function pairGrid (pairing, total, filled, density) {
+	const wrap = document.createElement('div');
+	wrap.className = 'group';
+
+	const label = document.createElement('div');
+	label.className = 'count-label';
+	label.textContent = String(total);
+	wrap.append(label);
+
+	const grid = document.createElement('div');
+	grid.className = `pair-grid ${density}`;
+	grid.style.gridTemplateColumns = `repeat(${columnsFor(total)}, auto)`;
+
+	for (let i = 0; i < total; ++i) {
+		const col = document.createElement('div');
+		col.className = 'pair-col';
+		col.append(sprite(pairing.source, 'obj'));
+
+		const slot = document.createElement('div');
+		const isFilled = i < filled;
+		slot.className = `slot ${isFilled ? 'filled' : 'empty'}`;
+		if (isFilled)
+			slot.append(sprite(pairing.target, 'obj slot-obj'));
+
+		col.append(slot);
+		grid.append(col);
+	}
+
+	wrap.append(grid);
+
+	return wrap;
+}
+
 function labelledGroup (spriteId, count, density, showLabel) {
 	const wrap = document.createElement('div');
 	wrap.className = 'group';
@@ -119,7 +161,6 @@ export function render (board, q, opts = {}) {
 	right.className = 'panel choices-panel';
 
 	let sourceGroups = [];
-	let removedGroup = null;
 
 	if (q.mode === 'count') {
 		// The source stays unlabelled by design: the quantity must be
@@ -138,21 +179,26 @@ export function render (board, q, opts = {}) {
 		sourceGroups = [a, b];
 	}
 	else {
-		// Subtraction: the left panel holds the full target quantity, and the
-		// centre tray holds the actors that take some away.
-		const g = labelledGroup(pairing.target, q.operands[0], q.knobs.density, true);
+		// Subtraction as a missing-addend task: the source group is the actor,
+		// some of its members already have their target object, and the child
+		// supplies the rest.
+		const g = pairGrid(pairing, q.operands[0], q.operands[1], q.knobs.density);
 		left.append(g);
 		sourceGroups = [g];
 	}
 
 	// Centre: the action area.
 	if (q.mode === 'sub') {
-		const tray = document.createElement('div');
-		tray.className = 'tray';
-		tray.append(opSign('−'));
-		removedGroup = labelledGroup(pairing.source, q.operands[1], 'sparse', true);
-		tray.append(removedGroup);
-		action.append(tray);
+		// Only the sign and the numeral: the fish themselves are already on the
+		// plates, so repeating them here would contradict the visible count.
+		const have = document.createElement('div');
+		have.className = 'have';
+		have.append(opSign('−'));
+		const n = document.createElement('div');
+		n.className = 'count-label';
+		n.textContent = String(q.operands[1]);
+		have.append(n);
+		action.append(have);
 	}
 	else {
 		action.append(sprite('ic-arrow', 'arrow'));
@@ -205,10 +251,11 @@ export function render (board, q, opts = {}) {
 		right,
 		buttons,
 		sourceGroups,
-		removedGroup,
 		container: action.querySelector('.container-art'),
 		entranceMs,
-		sourceObjects: () => [...left.querySelectorAll('.obj')],
+		// Only the actors, never the target objects already on the plates.
+		sourceObjects: () => [...left.querySelectorAll('.pair-col > .obj, .objects > .obj')],
+		emptySlots: () => [...left.querySelectorAll('.slot.empty')],
 	};
 }
 
@@ -269,9 +316,13 @@ export async function retry (btn) {
 	btn.classList.remove('wobble');
 }
 
-/** Counting hint: highlight source objects one at a time. */
+/**
+ * Counting hint: highlight the things that actually have to be counted — the
+ * empty plates in subtraction, the source objects otherwise.
+ */
 export async function countingHint (handles) {
-	const objects = handles.sourceObjects();
+	const empty = handles.emptySlots();
+	const objects = empty.length ? empty : handles.sourceObjects();
 	for (const el of objects) {
 		el.classList.add('counting');
 		await wait(REDUCED ? 5 : 260);
@@ -286,7 +337,8 @@ export async function correspondenceHint (handles, btn) {
 	document.body.append(svg);
 
 	const to = centreOf(btn);
-	const objects = handles.sourceObjects();
+	const empty = handles.emptySlots();
+	const objects = empty.length ? empty : handles.sourceObjects();
 
 	for (const el of objects) {
 		const from = centreOf(el);
@@ -329,24 +381,28 @@ export async function success (handles, q, btn) {
 	}
 
 	if (q.mode === 'sub') {
-		// The removed items visibly go to the actors; the rest stay in place.
-		const objects = handles.sourceObjects();
-		const removed = objects.slice(0, q.operands[1]);
-		const dest = centreOf(handles.removedGroup ?? handles.action);
-		const flights = removed.map((el, i) => {
-			const from = centreOf(el);
-			el.classList.add('leaving');
+		// The missing target objects arrive and fill the empty plates, so the
+		// child sees the correspondence complete itself one plate at a time.
+		const from = centreOf(btn);
+		const slots = handles.emptySlots();
+		const flights = slots.map((slot, i) => {
+			const dest = centreOf(slot);
+			const size = Math.max(20, dest.w * 0.82);
 
-			return fly(pairing.target, from, dest, from.w, i * 110, 620);
+			return fly(pairing.target, from, dest, size, i * 120, 620).then(() => {
+				slot.classList.remove('empty');
+				slot.classList.add('filled', 'just-filled');
+				slot.append(sprite(pairing.target, 'obj slot-obj'));
+			});
 		});
 		await Promise.all(flights);
 
-		// Highlight what is left, which is the answer.
-		for (const el of objects.slice(q.operands[1])) {
-			el.classList.add('counting');
-			await wait(REDUCED ? 4 : 130);
-		}
-		objects.slice(q.operands[1]).forEach(el => el.classList.remove('counting'));
+		// Now every actor has one: cheer down the row.
+		handles.sourceObjects().forEach((el, i) => {
+			el.style.animationDelay = `${i * 55}ms`;
+			el.classList.add('cheer');
+		});
+		await wait(REDUCED ? 10 : 420);
 	}
 	else {
 		// The chosen quantity of targets travels into the container.

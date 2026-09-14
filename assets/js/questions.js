@@ -14,6 +14,8 @@ export const TIMEOUT_BANDS = [25000, 16000, 10000];
 /**
  * Difficulty tiers, easiest first within each mode. `max` is a ceiling, not a
  * requirement: a tier draws across its whole range.
+ *
+ * For `sub`, `subMax` caps how many actors may already be paired.
  */
 export const TIERS = {
 	count: [
@@ -106,8 +108,10 @@ export function validate (q) {
 	if (q.mode === 'sub') {
 		if (q.operands[0] - q.operands[1] !== q.answer)
 			problems.push('subtraction operands disagree with answer');
-		if (q.operands[1] > q.operands[0])
-			problems.push('subtrahend larger than minuend');
+		if (q.operands[1] >= q.operands[0])
+			problems.push('as many already paired as there are actors');
+		if (q.operands[1] < 1)
+			problems.push('missing-addend task needs at least one already paired');
 	}
 
 	if (q.mode === 'count' && q.operands[0] !== q.answer)
@@ -131,10 +135,13 @@ function generateOnce (mode, tier, pairing, knobs) {
 		operands = [a, b];
 	}
 	else {
+		// Missing addend: `total` actors, `present` of them already paired, and
+		// the child supplies the difference. present >= 1 and < total, so the
+		// answer is never zero and the task is never already complete.
 		const total = randInt(2, tier.max);
-		const removed = randInt(1, Math.min(tier.subMax, total - 1));
-		answer = total - removed;
-		operands = [total, removed];
+		const present = randInt(1, Math.min(tier.subMax, total - 1));
+		answer = total - present;
+		operands = [total, present];
 	}
 
 	const q = {

@@ -36,9 +36,16 @@ no voice and no sound effects in this phase.
 
 - **Six pairings** — cat/fish, monkey/banana, dog/bone, rabbit/carrot,
   bird/seed, lamp/star, each with its own container art and success interaction.
-- **Three modes that alternate** — counting (source group unlabelled, so the
-  quantity has to be counted), addition (two labelled groups merge), and
-  subtraction (items visibly leave the group; the remainder stays on screen).
+- **Three modes that alternate**, all sharing one visual grammar: the source
+  group (cats, monkeys...) is always the actor on the left, the target group
+  (fish, bananas...) is always what the child supplies.
+  - *counting* — the source group is unlabelled, so the quantity has to be
+    counted rather than read.
+  - *addition* — two labelled source groups merge, and the child picks the
+    total the combined group needs.
+  - *subtraction* — a missing-addend task: `N` actors each have a plate, `k`
+    plates already hold a target object, and the child counts the empty plates
+    to say how many more are needed. `N − k = answer`, shown on success.
 - **Quantities up to 10.** Zero is only ever offered when it is the real answer.
 - **Difficulty factors raised independently** — quantity range, operation
   structure, visual density, pairing familiarity, distractor distance, number-label
@@ -48,8 +55,9 @@ no voice and no sound effects in this phase.
   only after the entrance animation. Tightening requires a run of comfortable
   first-try answers; a timeout gives time back immediately and is recorded
   separately from a wrong answer.
-- **Wrong answers are never punished.** The card wobbles back, source objects
-  are highlighted one at a time, and after a second miss two distractors dim and
+- **Wrong answers are never punished.** The card wobbles back, the things that
+  need counting are highlighted one at a time (the empty plates in subtraction,
+  the source objects otherwise), and after a second miss two distractors dim and
   a correspondence hint is drawn — the child still completes the last step.
   A miss queues one gentler question in the same family rather than a replay.
 - **Icons only.** Pause, hint, undo, confirm, grown-up panel and home are
