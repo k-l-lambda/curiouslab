@@ -15,6 +15,20 @@
 	--ring: #2f8f9d;
 	--slot: #f0e9db;
 	--r: 20px;
+
+	/* Object sizing. Sprites sit in `repeat(--cols, auto)` grid tracks, so their
+	   width multiplies by the column count: a size that reads well for three
+	   objects overflows the panel at ten. So `--obj-size` is the smaller of an
+	   ideal size and what one column can actually afford, and `--panel-w` is a
+	   deliberately low estimate of the width a panel has to give away. */
+	--obj-ideal: clamp(2.8rem, 8.5vh, 5rem);
+	--panel-w: calc((min(100vw, 1200px) - 15.5rem) / 2);
+	/* Addition shows two groups side by side with an operator between them, so
+	   each group can only claim a share of the panel. board.js sets --groups on
+	   the panel; --group-w resolves there so it picks that value up. The share
+	   is deliberately generous — fitPanel() measures the operator's real width
+	   and corrects downward, which a fixed reserve here cannot do. */
+	--groups: 1;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -85,7 +99,7 @@ body {
 
 .board {
 	display: grid;
-	grid-template-columns: 1fr auto 1fr;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	align-items: center;
 	gap: clamp(.4rem, 1.5vw, 1.25rem);
 	min-height: 0;
@@ -96,8 +110,10 @@ body {
 	border: 2px solid var(--line);
 	border-radius: var(--r);
 	padding: clamp(.5rem, 1.6vh, 1rem);
+	--group-w: calc(var(--panel-w) / var(--groups));
 	height: 100%;
 	min-height: 0;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -116,11 +132,20 @@ body {
 	min-width: clamp(3rem, 9vw, 6rem);
 }
 .action .arrow { width: clamp(2rem, 5vw, 3.4rem); height: clamp(2rem, 5vw, 3.4rem); }
-.action .container-art { width: clamp(3.5rem, 11vw, 7rem); height: clamp(3.5rem, 11vw, 7rem); }
+.action .container-art { width: clamp(4rem, 13vw, 8rem); height: clamp(4rem, 13vw, 8rem); }
 
 /* Object groups */
 
 .group { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+
+.objects, .pair-grid {
+	/* Widest-case fit. The gap term uses the sparse .5rem even in compact
+	   groups, so a group does not change object size when density changes. */
+	--obj-size: min(
+		var(--obj-ideal),
+		calc((var(--group-w) - (var(--cols, 1) - 1) * .5rem) / var(--cols, 1))
+	);
+}
 
 .objects {
 	display: grid;
@@ -152,8 +177,9 @@ body {
 	line-height: 1;
 }
 
-.sub-source { display: flex; align-items: center; gap: clamp(.3rem, 1.2vw, .8rem); flex-wrap: wrap; justify-content: center; }
-.add-source { display: flex; align-items: center; gap: clamp(.3rem, 1.2vw, .8rem); flex-wrap: wrap; justify-content: center; }
+/* The operator has to read as separating two groups, so its clearance does not
+   shrink as far as a general-purpose gap would. */
+.add-source { display: flex; align-items: center; gap: clamp(.55rem, 1.2vw, .8rem); justify-content: center; }
 
 /* Subtraction: one column per actor, each with a plate underneath. */
 .pair-grid {
@@ -173,8 +199,9 @@ body {
 
 /* An empty plate is the thing being counted, so it has to read as a gap. */
 .slot {
-	width: var(--slot-size, clamp(1.7rem, 5vh, 3rem));
-	height: var(--slot-size, clamp(1.7rem, 5vh, 3rem));
+	--slot-fit: min(var(--obj-size, 2.2rem), clamp(1.9rem, 5.6vh, 3.4rem));
+	width: var(--slot-size, var(--slot-fit));
+	height: var(--slot-size, var(--slot-fit));
 	border-radius: 50%;
 	display: grid;
 	place-items: center;
@@ -234,8 +261,10 @@ body {
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
 }
-.choice .mini { display: grid; gap: .1rem; justify-content: center; }
-.choice .mini svg { width: clamp(.7rem, 1.9vh, 1.15rem); height: clamp(.7rem, 1.9vh, 1.15rem); }
+.choice .mini { display: grid; gap: .1rem; justify-items: center; width: 100%; }
+/* 1fr tracks against the card's own width, so five previews shrink to fit
+   instead of pushing the card wider. Height follows the sprite's viewBox. */
+.choice .mini svg { width: 100%; max-width: clamp(.85rem, 2.4vh, 1.5rem); height: auto; }
 
 /* Selected state: outline + scale + movement, never colour alone. */
 .choice.selected {
@@ -383,11 +412,24 @@ body {
 /* ---------- Narrow screens: stack the board ---------- */
 
 @media (max-width: 720px), (orientation: portrait) {
-	.board { grid-template-columns: 1fr; grid-template-rows: 1fr auto 1.1fr; }
-	.slot { --slot-size: clamp(1.5rem, 4vh, 2.4rem); }
+	/* One column, so a panel gets the whole stage width rather than half. */
+	:root { --panel-w: calc(100vw - 4.5rem); }
+	/* The cards hold a numeral and a small preview — about 110px of content in
+	   a 262px card at 390x844. The objects are what has to be counted, so the
+	   spare height goes to the source panel rather than the cards. */
+	.board {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1.7fr) auto minmax(0, 1fr);
+	}
+	/* Nine fixed-width controls need 579px and a phone offers 371, so the HUD
+	   takes a second line here instead of forcing the stage wider than the
+	   viewport. The spacer becomes the break itself, so the split lands
+	   between the action buttons and the status group rather than wherever
+	   the items happen to run out of room. */
+	.hud { flex-wrap: wrap; row-gap: .45rem; justify-content: center; }
+	.hud-spacer { flex-basis: 100%; height: 0; }
 	.action { flex-direction: row; min-width: 0; }
 	.choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-	.choice .mini { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

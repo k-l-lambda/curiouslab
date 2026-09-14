@@ -23,6 +23,61 @@ function columnsFor (n) {
 	return 5;
 }
 
+/* An object smaller than this stops being countable, so overflow is preferred. */
+const MIN_OBJ_PX = 22;
+
+/**
+ * Shrink the objects in a panel until the group fits inside it.
+ *
+ * The stylesheet gets the width close, but it cannot know the operator sign's
+ * real width, the row count, or that a plate caps at its own clamp. So measure
+ * the laid-out result and scale by whichever axis is tighter. Scaling is not
+ * quite linear, so it converges over a few passes rather than in one step.
+ * @param {HTMLElement} panel
+ */
+function fitPanel (panel) {
+	// Addition has two groups, and they have to shrink together or the two
+	// addends stop looking like the same kind of thing.
+	const grids = [...panel.querySelectorAll('.objects, .pair-grid')];
+	if (!grids.length)
+		return;
+
+	// The panel centres its content, so the budget is its content box.
+	const style = getComputedStyle(panel);
+	const availH = panel.clientHeight
+		- parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+	const availW = panel.clientWidth
+		- parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+	if (availH <= 0 || availW <= 0)
+		return;
+
+	for (let pass = 0; pass < 4; ++pass) {
+		const box = panel.firstElementChild.getBoundingClientRect();
+		const ratio = Math.min(availH / box.height, availW / box.width);
+		if (ratio >= 1)
+			return;
+
+		const current = parseFloat(getComputedStyle(grids[0].querySelector('.obj')).width);
+		const next = Math.max(MIN_OBJ_PX, current * ratio);
+		if (next >= current - 0.5)
+			return;
+
+		for (const grid of grids)
+			grid.style.setProperty('--obj-size', `${next}px`);
+	}
+}
+
+/**
+ * Lay a grid out in `n` equal tracks and publish the count to CSS.
+ * @param {HTMLElement} el
+ * @param {number} n
+ * @param {string} track
+ */
+function setColumns (el, n, track) {
+	el.style.gridTemplateColumns = `repeat(${n}, ${track})`;
+	el.style.setProperty('--cols', String(n));
+}
+
 /**
  * Build a group of object sprites.
  * @param {string} spriteId
@@ -32,7 +87,9 @@ function columnsFor (n) {
 function objectGroup (spriteId, count, density) {
 	const grid = document.createElement('div');
 	grid.className = `objects ${density}`;
-	grid.style.gridTemplateColumns = `repeat(${columnsFor(count)}, auto)`;
+	// --cols lets the stylesheet work out how big a sprite can be: the tracks
+	// are `auto`, so width multiplies by the column count.
+	setColumns(grid, columnsFor(count), 'auto');
 
 	for (let i = 0; i < count; ++i) {
 		const el = sprite(spriteId, 'obj');
@@ -70,7 +127,7 @@ function pairGrid (pairing, total, filled, density) {
 
 	const grid = document.createElement('div');
 	grid.className = `pair-grid ${density}`;
-	grid.style.gridTemplateColumns = `repeat(${columnsFor(total)}, auto)`;
+	setColumns(grid, columnsFor(total), 'auto');
 
 	for (let i = 0; i < total; ++i) {
 		const col = document.createElement('div');
@@ -133,7 +190,8 @@ function choiceCard (value, pairing, preview) {
 	if (preview === 'objects' && value > 0) {
 		const mini = document.createElement('div');
 		mini.className = 'mini';
-		mini.style.gridTemplateColumns = `repeat(${columnsFor(value)}, auto)`;
+		// Equal fractions of the card, so previews shrink rather than widen it.
+		setColumns(mini, columnsFor(value), 'minmax(0, 1fr)');
 		for (let i = 0; i < value; ++i)
 			mini.append(sprite(pairing.target));
 		btn.append(mini);
@@ -176,6 +234,8 @@ export function render (board, q, opts = {}) {
 		const b = labelledGroup(pairing.source, q.operands[1], q.knobs.density, true);
 		row.append(a, opSign('+'), b);
 		left.append(row);
+		// Two groups share the panel width, so each may only claim half of it.
+		left.style.setProperty('--groups', '2');
 		sourceGroups = [a, b];
 	}
 	else {
@@ -218,6 +278,12 @@ export function render (board, q, opts = {}) {
 	right.append(choices);
 
 	board.append(left, action, right);
+
+	// The stylesheet gets object size close from the column count alone; this
+	// corrects it against the panel it actually landed in. It runs before the
+	// entrance classes, so nothing is transformed yet and nothing has been
+	// painted: no visible resize.
+	fitPanel(left);
 
 	// ---- entrance animation ----
 	const dur = REDUCED ? 0.01 : 0.5 * enterScale;
