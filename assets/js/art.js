@@ -99,15 +99,18 @@ const SPRITES = `
 </symbol>
 
 <symbol id="sp-carrot" viewBox="0 0 100 100">
-  <path d="M50 94 L33 42 q17 -9 34 0 Z" fill="#f0862f"/>
-  <g fill="#e0741f">
-    <path d="M40 56 l8 3"/><path d="M45 70 l9 3"/>
+  <!-- Wide enough to survive a 20px answer-card preview: a carrot drawn at its
+       true slenderness shrinks to a few pixels across and reads as nothing. -->
+  <path d="M50 90 L28 46 q22 -11 44 0 Z" fill="#f0862f"/>
+  <path d="M50 90 L61 68 q7 -12 11 -22 q-11 -5 -22 -1 Z" fill="#e0741f"/>
+  <g stroke="#c9611a" stroke-width="3" stroke-linecap="round">
+    <path d="M36 55 L47 59"/>
+    <path d="M40 68 L52 72"/>
+    <path d="M45 79 L55 82"/>
   </g>
-  <path d="M40 56 L48 60" stroke="#d76c1c" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M44 70 L53 74" stroke="#d76c1c" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M50 42 q-4 -22 -18 -24 q2 16 14 24 Z" fill="#54a84b"/>
-  <path d="M50 42 q4 -22 18 -24 q-2 16 -14 24 Z" fill="#63bd57"/>
-  <path d="M50 42 q0 -22 0 -28 q8 14 4 28 Z" fill="#4a9a42"/>
+  <path d="M50 46 q-10 -19 -29 -21 q4 17 23 25 Z" fill="#54a84b"/>
+  <path d="M50 46 q10 -19 29 -21 q-4 17 -23 25 Z" fill="#63bd57"/>
+  <path d="M50 46 q-6 -21 0 -32 q10 15 6 32 Z" fill="#4a9a42"/>
 </symbol>
 
 <symbol id="sp-bird" viewBox="0 0 100 100">
@@ -230,6 +233,61 @@ const SPRITES = `
 </symbol>
 `;
 
+/* How much of the viewBox a drawing should occupy along its longer axis. Short
+   of 100 so neighbouring objects in a compact group still have visible air
+   between them, and so a drawing that is slightly lopsided has room to centre. */
+const FILL = 94;
+
+/**
+ * Scale every object sprite so its drawing fills its viewBox.
+ *
+ * The sprites are hand-drawn and each one ended up with its own margin: the
+ * bone occupied 70 of its 100 units, the seed 46. That margin is invisible but
+ * not free — the layout reserves a square per object, so a sprite drawn at 70%
+ * shows up 30% smaller than the space paid for it. Rather than nudge nineteen
+ * sets of path coordinates by hand, measure each one and wrap it in the scale
+ * that centres it and fills the box. Uniform scale, so nothing is distorted;
+ * the longer axis sets it, so nothing spills out.
+ *
+ * Icons are left alone: they share a stroke weight and a deliberate optical
+ * padding, and normalising them individually would break both.
+ */
+function normalizeSprites (sheet) {
+	for (const sym of sheet.querySelectorAll('symbol[id^="sp-"]')) {
+		// A <symbol> is never rendered, so it has no box of its own to measure.
+		// A throwaway <use> of it does.
+		const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		probe.setAttribute('viewBox', '0 0 100 100');
+		const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+		use.setAttribute('href', `#${sym.id}`);
+		probe.append(use);
+		sheet.parentElement.append(probe);
+
+		let box = null;
+		try {
+			box = use.getBBox();
+		}
+		catch {
+			// A browser that will not measure gets the sprite as drawn.
+		}
+		probe.remove();
+		if (!box || !box.width || !box.height)
+			continue;
+
+		const scale = FILL / Math.max(box.width, box.height);
+		const cx = box.x + box.width / 2;
+		const cy = box.y + box.height / 2;
+
+		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		// Read right to left: centre the drawing on the origin, scale it, then
+		// put it back in the middle of the viewBox.
+		g.setAttribute('transform', `translate(50 50) scale(${scale.toFixed(4)}) translate(${-cx} ${-cy})`);
+		while (sym.firstChild)
+			g.append(sym.firstChild);
+		sym.append(g);
+	}
+}
+
 /** Inject the sprite sheet once, hidden, at the top of <body>. */
 export function injectSprites () {
 	if (document.getElementById('cl-sprites'))
@@ -241,6 +299,8 @@ export function injectSprites () {
 	holder.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
 	holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg">${SPRITES}</svg>`;
 	document.body.prepend(holder);
+
+	normalizeSprites(holder.querySelector('svg'));
 
 	// A <use> already in the static HTML resolved against a symbol that did not
 	// exist yet, and browsers do not retry on their own. Re-assign href so the
