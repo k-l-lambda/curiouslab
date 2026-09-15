@@ -98,7 +98,10 @@ a.card:hover, a.card:focus-visible {
 	height: 4.5rem;
 	margin-bottom: .35rem;
 }
-.card-art svg { width: 3rem; height: 3rem; }
+/* --ar is set by art.js, which crops each sprite's viewBox to its own drawing.
+   Deriving the height from it means a wide fish is not letterboxed inside a
+   square box, and the 4.5rem row has room for the taller sprites. */
+.card-art svg { width: 3rem; height: calc(3rem / var(--ar, 1)); }
 .card-art .plus { color: var(--ink-soft); font-size: 1.5rem; }
 
 .tag {

@@ -22,7 +22,7 @@
 	   deliberately low estimate of the width a panel can give away, and
 	   --obj-ideal is the ceiling the measured pass may not exceed. Its floor is
 	   what matters in landscape, where 13vh is small but the panel is not. */
-	--obj-ideal: clamp(4rem, 13vh, 7.5rem);
+	--obj-ideal: clamp(4rem, 14vh, 8.5rem);
 	--panel-w: calc((min(100vw, 1200px) - 15.5rem) / 2);
 	/* Addition shows two groups side by side with an operator between them, so
 	   each group can only claim a share of the panel. board.js sets --groups on
@@ -34,14 +34,17 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-html, body { height: 100%; }
+/* Overflow is clipped on the root, not just the body: the entrance animation
+   slides the panels in from +-46px, and a body-only rule leaves the document
+   itself scrollable for those few hundred milliseconds. A swipe landing in that
+   window would shift the whole board sideways. */
+html, body { height: 100%; overflow: hidden; }
 
 body {
 	margin: 0;
 	background: linear-gradient(180deg, var(--sky) 0%, var(--sky-2) 100%);
 	color: var(--ink);
 	font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-	overflow: hidden;
 	touch-action: manipulation;
 	user-select: none;
 }
@@ -86,7 +89,7 @@ body {
 
 /* Streak stars: visual progress, no score text. */
 .streak { display: flex; gap: .2rem; align-items: center; }
-.streak svg { width: clamp(1.3rem, 3.2vh, 1.9rem); height: clamp(1.3rem, 3.2vh, 1.9rem); opacity: .22; transition: opacity .3s ease, transform .3s ease; }
+.streak svg { width: clamp(1.3rem, 3.2vh, 1.9rem); height: auto; opacity: .22; transition: opacity .3s ease, transform .3s ease; }
 .streak svg.lit { opacity: 1; transform: scale(1.12); }
 
 /* Timer ring, wordless. */
@@ -102,7 +105,7 @@ body {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	align-items: center;
-	gap: clamp(.4rem, 1.5vw, 1.25rem);
+	gap: clamp(.35rem, 1vw, .9rem);
 	min-height: 0;
 }
 
@@ -110,7 +113,9 @@ body {
 	background: var(--panel);
 	border: 2px solid var(--line);
 	border-radius: var(--r);
-	padding: clamp(.5rem, 1.6vh, 1rem);
+	/* The objects are what this panel is for, so it keeps only enough padding to
+	   read as a panel. On a 390px phone this hands about 10px back to them. */
+	padding: clamp(.35rem, 1vh, .7rem);
 	--group-w: calc(var(--panel-w) / var(--groups));
 	height: 100%;
 	min-height: 0;
@@ -119,7 +124,7 @@ body {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: clamp(.3rem, 1vh, .7rem);
+	gap: clamp(.25rem, .7vh, .5rem);
 	position: relative;
 }
 
@@ -133,7 +138,8 @@ body {
 	min-width: clamp(3rem, 9vw, 6rem);
 }
 .action .arrow { width: clamp(2rem, 5vw, 3.4rem); height: clamp(2rem, 5vw, 3.4rem); }
-.action .container-art { width: clamp(4.5rem, 15vw, 9.5rem); height: clamp(4.5rem, 15vw, 9.5rem); }
+/* Height from the sprite's own proportions: a bowl is not square. */
+.action .container-art { width: clamp(4.5rem, 15vw, 9.5rem); height: auto; }
 
 /* Object groups */
 
@@ -152,16 +158,21 @@ body {
 	justify-content: center;
 	align-content: center;
 	/* Spacing is a share of the object, not a fixed length: the objects range
-	   from about 40px to 120px depending on the screen and the count, and a gap
-	   that reads as separation at 40px disappears at 120px. Density is a
-	   difficulty knob, so it has to mean the same thing on every screen. */
-	gap: var(--obj-gap, calc(var(--obj-size, 2.5rem) * .1));
+	   from about 40px to 130px depending on the screen and the count, and a gap
+	   that reads as separation at 40px disappears at 130px. Density is a
+	   difficulty knob, so it has to mean the same thing on every screen.
+	   The sprites are cropped to their own ink now, so this gap is the whole
+	   separation — there is no leftover margin inside the drawing. */
+	gap: var(--obj-gap, calc(var(--obj-size, 2.5rem) * .055));
 }
-.objects.compact { --obj-gap: calc(var(--obj-size, 2.5rem) * .03); }
+.objects.compact { --obj-gap: calc(var(--obj-size, 2.5rem) * .018); }
 
 .obj {
 	width: var(--obj-size, clamp(2.2rem, 6.5vh, 4rem));
-	height: var(--obj-size, clamp(2.2rem, 6.5vh, 4rem));
+	/* --ar comes from the sprite itself: art.js crops each drawing's viewBox to
+	   its own ink, so the cell takes the drawing's shape instead of padding a
+	   fish out to a square and leaving 45% of the cell empty. */
+	height: calc(var(--obj-size, clamp(2.2rem, 6.5vh, 4rem)) / var(--ar, 1));
 	transform-origin: 50% 50%;
 }
 
@@ -190,9 +201,9 @@ body {
 	display: grid;
 	justify-content: center;
 	align-content: center;
-	gap: var(--pair-gap, calc(var(--obj-size, 2.5rem) * .09));
+	gap: var(--pair-gap, calc(var(--obj-size, 2.5rem) * .05));
 }
-.pair-grid.compact { --pair-gap: calc(var(--obj-size, 2.5rem) * .035); }
+.pair-grid.compact { --pair-gap: calc(var(--obj-size, 2.5rem) * .02); }
 
 .pair-col {
 	display: flex;
@@ -275,7 +286,7 @@ body {
    the fallback only has to survive the first paint. */
 .choice .mini svg {
 	width: var(--mini-size, clamp(.85rem, 2.4vh, 1.5rem));
-	height: var(--mini-size, clamp(.85rem, 2.4vh, 1.5rem));
+	height: calc(var(--mini-size, clamp(.85rem, 2.4vh, 1.5rem)) / var(--ar, 1));
 	max-width: 100%;
 }
 
@@ -374,7 +385,7 @@ body {
 	overflow: hidden;
 	padding: 0 .5rem;
 }
-.garden svg { width: clamp(1.3rem, 4vh, 2.2rem); height: clamp(1.3rem, 4vh, 2.2rem); }
+.garden svg { width: clamp(1.3rem, 4vh, 2.2rem); height: auto; }
 .garden svg.sprout { animation: pop .5s cubic-bezier(.2,1.4,.35,1) both; }
 
 /* ---------- Overlays ---------- */

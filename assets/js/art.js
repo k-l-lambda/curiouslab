@@ -233,59 +233,85 @@ const SPRITES = `
 </symbol>
 `;
 
-/* How much of the viewBox a drawing should occupy along its longer axis. Short
-   of 100 so neighbouring objects in a compact group still have visible air
-   between them, and so a drawing that is slightly lopsided has room to centre. */
-const FILL = 94;
+/**
+ * Each object sprite's own box, in the coordinates it was drawn in.
+ * Filled once by measureSprites(); empty for icons, which are left square.
+ * @type {Map<string, {x: number, y: number, w: number, h: number}>}
+ */
+const BOXES = new Map();
+
+/** The box a sprite actually occupies, or undefined for an unmeasured one. */
+export const spriteBox = id => BOXES.get(id);
+
+/** viewBox attribute value for a measured box. */
+const boxAttr = b => `${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.w.toFixed(2)} ${b.h.toFixed(2)}`;
 
 /**
- * Scale every object sprite so its drawing fills its viewBox.
+ * Crop every object sprite's viewBox to the drawing inside it.
  *
- * The sprites are hand-drawn and each one ended up with its own margin: the
- * bone occupied 70 of its 100 units, the seed 46. That margin is invisible but
- * not free — the layout reserves a square per object, so a sprite drawn at 70%
- * shows up 30% smaller than the space paid for it. Rather than nudge nineteen
- * sets of path coordinates by hand, measure each one and wrap it in the scale
- * that centres it and fills the box. Uniform scale, so nothing is distorted;
- * the longer axis sets it, so nothing spills out.
+ * The sprites were drawn by hand in a shared 100x100 square, and each ended up
+ * with its own margin — the bone used 70 units across, the seed 46. Worse, a
+ * fish is 84 wide and 45 tall: no margin trimming can make a fish square, so a
+ * square cell must leave 45% of itself empty and the fish arrives looking half
+ * the size the cell suggests.
  *
- * Icons are left alone: they share a stroke weight and a deliberate optical
- * padding, and normalising them individually would break both.
+ * So let each sprite carry its own proportions. Measure the drawing, crop the
+ * symbol's viewBox to it, and record the box so `sprite()` can give the element
+ * the same aspect ratio. The layout then reserves a fish-shaped cell for a fish,
+ * and every pixel of that cell is drawing.
+ *
+ * Icons keep the square: they share a stroke weight and an optical padding, and
+ * cropping each to its own ink would break both.
  */
-function normalizeSprites (sheet) {
+function measureSprites (sheet) {
+	// A <symbol> is never rendered and has no box to measure, and its children
+	// have no computed style either. A rendered copy has both.
+	const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+	probe.setAttribute('viewBox', '0 0 100 100');
+	probe.setAttribute('width', '100');
+	probe.setAttribute('height', '100');
+	probe.style.cssText = 'position:absolute;left:-9999px;top:0';
+	document.body.append(probe);
+
 	for (const sym of sheet.querySelectorAll('symbol[id^="sp-"]')) {
-		// A <symbol> is never rendered, so it has no box of its own to measure.
-		// A throwaway <use> of it does.
-		const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-		probe.setAttribute('viewBox', '0 0 100 100');
-		const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-		use.setAttribute('href', `#${sym.id}`);
-		probe.append(use);
-		sheet.parentElement.append(probe);
+		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		for (const child of sym.children)
+			g.append(child.cloneNode(true));
+		probe.append(g);
 
 		let box = null;
 		try {
-			box = use.getBBox();
+			box = g.getBBox();
 		}
 		catch {
 			// A browser that will not measure gets the sprite as drawn.
 		}
-		probe.remove();
+
+		// getBBox describes geometry, but a stroked path paints half its width
+		// outside that. Pad by the widest stroke so nothing lands outside the
+		// cropped viewBox and gets clipped.
+		let pad = 0;
+		for (const el of g.querySelectorAll('*')) {
+			const cs = getComputedStyle(el);
+			if (cs.stroke && cs.stroke !== 'none')
+				pad = Math.max(pad, parseFloat(cs.strokeWidth) / 2 || 0);
+		}
+		g.remove();
+
 		if (!box || !box.width || !box.height)
 			continue;
 
-		const scale = FILL / Math.max(box.width, box.height);
-		const cx = box.x + box.width / 2;
-		const cy = box.y + box.height / 2;
-
-		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-		// Read right to left: centre the drawing on the origin, scale it, then
-		// put it back in the middle of the viewBox.
-		g.setAttribute('transform', `translate(50 50) scale(${scale.toFixed(4)}) translate(${-cx} ${-cy})`);
-		while (sym.firstChild)
-			g.append(sym.firstChild);
-		sym.append(g);
+		const cropped = {
+			x: box.x - pad,
+			y: box.y - pad,
+			w: box.width + pad * 2,
+			h: box.height + pad * 2,
+		};
+		BOXES.set(sym.id, cropped);
+		sym.setAttribute('viewBox', boxAttr(cropped));
 	}
+
+	probe.remove();
 }
 
 /** Inject the sprite sheet once, hidden, at the top of <body>. */
@@ -300,16 +326,31 @@ export function injectSprites () {
 	holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg">${SPRITES}</svg>`;
 	document.body.prepend(holder);
 
-	normalizeSprites(holder.querySelector('svg'));
+	measureSprites(holder.querySelector('svg'));
 
 	// A <use> already in the static HTML resolved against a symbol that did not
 	// exist yet, and browsers do not retry on their own. Re-assign href so the
-	// markup on the hub page picks up the sprites it references.
+	// markup on the hub page picks up the sprites it references, and hand its
+	// <svg> the cropped viewBox its symbol now uses.
 	for (const use of document.querySelectorAll('use[href^="#sp-"], use[href^="#ic-"]')) {
 		const href = use.getAttribute('href');
 		use.removeAttribute('href');
 		use.setAttribute('href', href);
+
+		const box = BOXES.get(href.slice(1));
+		const svg = use.closest('svg');
+		if (box && svg)
+			applyBox(svg, box);
 	}
+}
+
+/**
+ * Give an <svg> the viewBox of the sprite it shows, and publish the aspect
+ * ratio so the stylesheet can derive height from width.
+ */
+function applyBox (svg, box) {
+	svg.setAttribute('viewBox', boxAttr(box));
+	svg.style.setProperty('--ar', (box.w / box.h).toFixed(4));
 }
 
 /**
@@ -322,6 +363,10 @@ export function sprite (id, extraClass = '') {
 	svg.setAttribute('viewBox', '0 0 100 100');
 	svg.setAttribute('class', `sprite ${extraClass}`.trim());
 	svg.setAttribute('aria-hidden', 'true');
+
+	const box = BOXES.get(id);
+	if (box)
+		applyBox(svg, box);
 
 	const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 	use.setAttribute('href', `#${id}`);

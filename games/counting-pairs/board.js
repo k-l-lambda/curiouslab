@@ -6,7 +6,7 @@
  * arrangement, object count, numerals, arithmetic symbols and motion.
  */
 
-import {sprite} from '../../assets/js/art.js';
+import {sprite, spriteBox} from '../../assets/js/art.js';
 import {pairingById} from '../../assets/js/pairings.js';
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -94,7 +94,13 @@ function idealObjectSize (panel, grid) {
 	const px = parseFloat(getComputedStyle(obj).width);
 	panel.style.removeProperty('--group-w');
 
-	return px;
+	// The stylesheet's ceiling is a width, but the sprites are not square: a lamp
+	// is 1.4 times as tall as it is wide, so capping its width alone would let it
+	// grow half again as large as a fish allowed the same ceiling. Cap the larger
+	// side instead, so "this big and no bigger" means the same for every sprite.
+	const ar = parseFloat(obj.style.getPropertyValue('--ar')) || 1;
+
+	return px * Math.min(1, ar);
 }
 
 /**
@@ -206,14 +212,21 @@ function fitMinis (panel) {
 		const availH = card.clientHeight
 			- parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - num - gap;
 		const n = mini.childElementCount;
+		// The preview is as wide as --mini-size and as tall as the sprite's own
+		// shape makes it, so every budget below is expressed as a width.
+		const ar = parseFloat(mini.querySelector('svg').style.getPropertyValue('--ar')) || 1;
+		// The numeral has to stay the loudest thing on the card, so cap the
+		// preview at equal visual area rather than equal width — otherwise a
+		// wide sprite reads as bigger than a tall one at the same number.
+		const cap = num * Math.sqrt(ar);
 
 		let best = {size: 0, cols: n};
 		for (const cols of columnCandidates(n)) {
 			const rows = Math.ceil(n / cols);
 			const size = Math.min(
 				(availW - (cols - 1) * inner) / cols,
-				(availH - (rows - 1) * inner) / rows,
-				num,
+				(availH - (rows - 1) * inner) / rows * ar,
+				cap,
 			);
 			// Widest row first again, so a taller grid needs a real advantage.
 			if (size > best.size * 1.03)
@@ -490,10 +503,13 @@ const centreOf = el => {
 /** Animate a temporary sprite from one point to another along a gentle arc. */
 function fly (spriteId, from, to, size, delay, duration) {
 	const el = sprite(spriteId, 'flyer');
+	// The sprite carries its own proportions, so a square flyer would letterbox.
+	const box = spriteBox(spriteId);
+	const height = box ? size * box.h / box.w : size;
 	el.style.width = `${size}px`;
-	el.style.height = `${size}px`;
+	el.style.height = `${height}px`;
 	el.style.left = `${from.x - size / 2}px`;
-	el.style.top = `${from.y - size / 2}px`;
+	el.style.top = `${from.y - height / 2}px`;
 	document.body.append(el);
 
 	const dx = to.x - from.x;
