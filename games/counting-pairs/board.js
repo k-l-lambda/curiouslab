@@ -11,7 +11,10 @@ import {pairingById} from '../../assets/js/pairings.js';
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Column count that keeps a group countable at a glance. */
+/**
+ * A first-guess column count, good enough to lay out before measuring.
+ * fitPanel() and fitMinis() replace it with whatever the real box can afford.
+ */
 function columnsFor (n) {
 	if (n <= 3)
 		return n;
@@ -23,20 +26,92 @@ function columnsFor (n) {
 	return 5;
 }
 
+/**
+ * Lay a grid out in `n` equal tracks and publish the count to CSS.
+ * @param {HTMLElement} el
+ * @param {number} n
+ * @param {string} track
+ */
+function setColumns (el, n, track) {
+	el.style.gridTemplateColumns = `repeat(${n}, ${track})`;
+	el.style.setProperty('--cols', String(n));
+}
+
 /* An object smaller than this stops being countable, so overflow is preferred. */
 const MIN_OBJ_PX = 22;
 
+/* Two measurements are enough to place a straight line, and panel width and
+   height are very nearly affine in object size. These are the two probes. */
+const PROBE_A = 40;
+const PROBE_B = 80;
+
 /**
- * Shrink the objects in a panel until the group fits inside it.
+ * Arrangements worth considering for `n` objects, widest row first.
  *
- * The stylesheet gets the width close, but it cannot know the operator sign's
- * real width, the row count, or that a plate caps at its own clamp. So measure
- * the laid-out result and scale by whichever axis is tighter. Scaling is not
- * quite linear, so it converges over a few passes rather than in one step.
+ * A group is not obliged to keep the arrangement columnsFor() suggested. A tall
+ * narrow panel — a phone held upright — can show ten objects far larger as 3x4
+ * than as 5x2, because five columns waste height it has and claim width it
+ * doesn't. So offer every plausible arrangement and let the caller measure
+ * which one actually buys the most size.
+ */
+function columnCandidates (n) {
+	if (n <= 2)
+		return [n];
+
+	const out = [];
+	for (let c = Math.min(5, n); c >= 2; --c)
+		out.push(c);
+
+	return out;
+}
+
+/** Every way to pick one entry from each list. */
+function combinations (lists) {
+	return lists.reduce(
+		(acc, list) => acc.flatMap(prefix => list.map(v => [...prefix, v])),
+		[[]],
+	);
+}
+
+/**
+ * What an arrangement is worth. Size, mostly — but a last row holding a single
+ * object reads as a stray rather than as part of the group, so a layout that
+ * leaves one behind has to be noticeably bigger to be worth it.
+ */
+function arrangementScore (size, n, cols) {
+	return n > cols && n % cols === 1 ? size * .9 : size;
+}
+
+/**
+ * The largest an object is allowed to get, whatever the space allows.
+ *
+ * `--obj-size` is a min() of that ideal and what one column can afford, so
+ * handing the panel an unreachable column width leaves the ideal behind.
+ */
+function idealObjectSize (panel, grid) {
+	const obj = grid.querySelector('.obj');
+	panel.style.setProperty('--group-w', '9999px');
+	const px = parseFloat(getComputedStyle(obj).width);
+	panel.style.removeProperty('--group-w');
+
+	return px;
+}
+
+/**
+ * Choose how each group is arranged and how big its objects are, so the groups
+ * fill the panel they landed in.
+ *
+ * The stylesheet can only guess: it knows the column count but not the panel's
+ * real shape, the operator sign's width, the number labels' height or where a
+ * plate hits its own clamp. So measure instead. For each candidate arrangement,
+ * lay the panel out at two probe sizes and read the box; width and height are
+ * affine in object size, so two readings give the size that exactly fills the
+ * tighter axis. The plate clamp puts a small kink in that line, so the chosen
+ * size is then relaxed against real measurements until it settles.
  * @param {HTMLElement} panel
  */
 function fitPanel (panel) {
-	// Addition has two groups, and they have to shrink together or the two
+	// Addition has two groups, and they have to share one object size or the two
 	// addends stop looking like the same kind of thing.
 	const grids = [...panel.querySelectorAll('.objects, .pair-grid')];
 	if (!grids.length)
@@ -51,31 +126,107 @@ function fitPanel (panel) {
 	if (availH <= 0 || availW <= 0)
 		return;
 
-	for (let pass = 0; pass < 4; ++pass) {
-		const box = panel.firstElementChild.getBoundingClientRect();
-		const ratio = Math.min(availH / box.height, availW / box.width);
-		if (ratio >= 1)
-			return;
+	const content = panel.firstElementChild;
+	const ideal = idealObjectSize(panel, grids[0]);
+	const counts = grids.map(grid => grid.childElementCount);
 
-		const current = parseFloat(getComputedStyle(grids[0].querySelector('.obj')).width);
-		const next = Math.max(MIN_OBJ_PX, current * ratio);
-		if (next >= current - 0.5)
-			return;
+	const apply = (cols, size) => {
+		grids.forEach((grid, i) => {
+			setColumns(grid, cols[i], 'auto');
+			grid.style.setProperty('--obj-size', `${size}px`);
+		});
 
-		for (const grid of grids)
-			grid.style.setProperty('--obj-size', `${next}px`);
+		return content.getBoundingClientRect();
+	};
+
+	/** The size at which this arrangement just fills the tighter axis. */
+	const sizeFor = cols => {
+		const a = apply(cols, PROBE_A);
+		const b = apply(cols, PROBE_B);
+		const solve = (avail, va, vb) => {
+			const slope = (vb - va) / (PROBE_B - PROBE_A);
+
+			return slope > 0 ? PROBE_A + (avail - va) / slope : Infinity;
+		};
+
+		return Math.min(ideal, solve(availW, a.width, b.width), solve(availH, a.height, b.height));
+	};
+
+	let best = null;
+	for (const cols of combinations(counts.map(columnCandidates))) {
+		const size = sizeFor(cols);
+		const score = cols.reduce(
+			(worst, c, i) => Math.min(worst, arrangementScore(size, counts[i], c)),
+			Infinity,
+		);
+		// Candidates arrive widest-row first, so a taller arrangement has to be
+		// clearly better before it displaces the more conventional one.
+		if (!best || score > best.score * 1.03)
+			best = {cols, size, score};
 	}
+
+	let size = Math.min(ideal, Math.max(MIN_OBJ_PX, best.size));
+	for (let pass = 0; pass < 5; ++pass) {
+		const box = apply(best.cols, size);
+		const ratio = Math.min(availH / box.height, availW / box.width);
+		// Fits, with under 2% of a gap left over: settled.
+		if (ratio >= 1 && ratio < 1.02)
+			return;
+
+		const next = Math.min(ideal, Math.max(MIN_OBJ_PX, size * Math.min(ratio, 1.5)));
+		if (Math.abs(next - size) < 0.5)
+			return;
+		size = next;
+	}
+	apply(best.cols, size);
 }
 
 /**
- * Lay a grid out in `n` equal tracks and publish the count to CSS.
- * @param {HTMLElement} el
- * @param {number} n
- * @param {string} track
+ * Size the answer-card previews.
+ *
+ * All the cards get the same preview size, so the only thing that varies
+ * between them is how many objects there are — which is the whole point of the
+ * preview. The size is whatever the most crowded card can afford, and it stays
+ * under the numeral's own size so the number keeps leading.
+ * @param {HTMLElement} panel
  */
-function setColumns (el, n, track) {
-	el.style.gridTemplateColumns = `repeat(${n}, ${track})`;
-	el.style.setProperty('--cols', String(n));
+function fitMinis (panel) {
+	const minis = [...panel.querySelectorAll('.mini')];
+	if (!minis.length)
+		return;
+
+	const picks = minis.map(mini => {
+		const card = mini.parentElement;
+		const cs = getComputedStyle(card);
+		const gap = parseFloat(cs.rowGap) || 0;
+		const inner = parseFloat(getComputedStyle(mini).rowGap) || 0;
+		const num = card.querySelector('.num').getBoundingClientRect().height;
+		const availW = card.clientWidth
+			- parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		const availH = card.clientHeight
+			- parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - num - gap;
+		const n = mini.childElementCount;
+
+		let best = {size: 0, cols: n};
+		for (const cols of columnCandidates(n)) {
+			const rows = Math.ceil(n / cols);
+			const size = Math.min(
+				(availW - (cols - 1) * inner) / cols,
+				(availH - (rows - 1) * inner) / rows,
+				num,
+			);
+			// Widest row first again, so a taller grid needs a real advantage.
+			if (size > best.size * 1.03)
+				best = {size, cols};
+		}
+
+		return {mini, ...best};
+	});
+
+	const size = Math.max(4, Math.min(...picks.map(p => p.size)));
+	for (const pick of picks)
+		setColumns(pick.mini, pick.cols, 'minmax(0, 1fr)');
+	panel.querySelector('.choices').style.setProperty('--mini-size', `${size}px`);
 }
 
 /**
@@ -190,7 +341,7 @@ function choiceCard (value, pairing, preview) {
 	if (preview === 'objects' && value > 0) {
 		const mini = document.createElement('div');
 		mini.className = 'mini';
-		// Equal fractions of the card, so previews shrink rather than widen it.
+		// A first guess only: fitMinis() re-picks this against the real card.
 		setColumns(mini, columnsFor(value), 'minmax(0, 1fr)');
 		for (let i = 0; i < value; ++i)
 			mini.append(sprite(pairing.target));
@@ -284,6 +435,7 @@ export function render (board, q, opts = {}) {
 	// entrance classes, so nothing is transformed yet and nothing has been
 	// painted: no visible resize.
 	fitPanel(left);
+	fitMinis(right);
 
 	// ---- entrance animation ----
 	const dur = REDUCED ? 0.01 : 0.5 * enterScale;
@@ -475,7 +627,9 @@ export async function success (handles, q, btn) {
 		const from = centreOf(btn);
 		const target = handles.container ?? handles.action;
 		const dest = centreOf(target);
-		const size = Math.min(48, Math.max(24, dest.w * 0.42 || 34));
+		// Proportional to the container it lands in, so the flight reads as the
+		// same objects arriving rather than as smaller tokens of them.
+		const size = Math.min(72, Math.max(28, dest.w * 0.42 || 34));
 		const flights = [];
 		for (let i = 0; i < q.answer; ++i)
 			flights.push(fly(pairing.target, from, {

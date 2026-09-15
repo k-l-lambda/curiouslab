@@ -16,12 +16,13 @@
 	--slot: #f0e9db;
 	--r: 20px;
 
-	/* Object sizing. Sprites sit in `repeat(--cols, auto)` grid tracks, so their
-	   width multiplies by the column count: a size that reads well for three
-	   objects overflows the panel at ten. So `--obj-size` is the smaller of an
-	   ideal size and what one column can actually afford, and `--panel-w` is a
-	   deliberately low estimate of the width a panel has to give away. */
-	--obj-ideal: clamp(2.8rem, 8.5vh, 5rem);
+	/* Object sizing, first paint only. board.js measures the real panel and both
+	   re-arranges the group and re-sizes the objects before anything is shown,
+	   so these values only have to be safe, not optimal: --panel-w stays a
+	   deliberately low estimate of the width a panel can give away, and
+	   --obj-ideal is the ceiling the measured pass may not exceed. Its floor is
+	   what matters in landscape, where 13vh is small but the panel is not. */
+	--obj-ideal: clamp(4rem, 13vh, 7.5rem);
 	--panel-w: calc((min(100vw, 1200px) - 15.5rem) / 2);
 	/* Addition shows two groups side by side with an operator between them, so
 	   each group can only claim a share of the panel. board.js sets --groups on
@@ -132,15 +133,14 @@ body {
 	min-width: clamp(3rem, 9vw, 6rem);
 }
 .action .arrow { width: clamp(2rem, 5vw, 3.4rem); height: clamp(2rem, 5vw, 3.4rem); }
-.action .container-art { width: clamp(4rem, 13vw, 8rem); height: clamp(4rem, 13vw, 8rem); }
+.action .container-art { width: clamp(4.5rem, 15vw, 9.5rem); height: clamp(4.5rem, 15vw, 9.5rem); }
 
 /* Object groups */
 
 .group { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
 
 .objects, .pair-grid {
-	/* Widest-case fit. The gap term uses the sparse .5rem even in compact
-	   groups, so a group does not change object size when density changes. */
+	/* First-paint guess only; fitPanel() measures and replaces it. */
 	--obj-size: min(
 		var(--obj-ideal),
 		calc((var(--group-w) - (var(--cols, 1) - 1) * .5rem) / var(--cols, 1))
@@ -151,9 +151,13 @@ body {
 	display: grid;
 	justify-content: center;
 	align-content: center;
-	gap: var(--obj-gap, .5rem);
+	/* Spacing is a share of the object, not a fixed length: the objects range
+	   from about 40px to 120px depending on the screen and the count, and a gap
+	   that reads as separation at 40px disappears at 120px. Density is a
+	   difficulty knob, so it has to mean the same thing on every screen. */
+	gap: var(--obj-gap, calc(var(--obj-size, 2.5rem) * .1));
 }
-.objects.compact { --obj-gap: .12rem; }
+.objects.compact { --obj-gap: calc(var(--obj-size, 2.5rem) * .03); }
 
 .obj {
 	width: var(--obj-size, clamp(2.2rem, 6.5vh, 4rem));
@@ -186,9 +190,9 @@ body {
 	display: grid;
 	justify-content: center;
 	align-content: center;
-	gap: var(--pair-gap, .45rem);
+	gap: var(--pair-gap, calc(var(--obj-size, 2.5rem) * .09));
 }
-.pair-grid.compact { --pair-gap: .14rem; }
+.pair-grid.compact { --pair-gap: calc(var(--obj-size, 2.5rem) * .035); }
 
 .pair-col {
 	display: flex;
@@ -199,7 +203,7 @@ body {
 
 /* An empty plate is the thing being counted, so it has to read as a gap. */
 .slot {
-	--slot-fit: min(var(--obj-size, 2.2rem), clamp(1.9rem, 5.6vh, 3.4rem));
+	--slot-fit: min(var(--obj-size, 2.2rem), clamp(1.9rem, 8vh, 4.6rem));
 	width: var(--slot-size, var(--slot-fit));
 	height: var(--slot-size, var(--slot-fit));
 	border-radius: 50%;
@@ -248,6 +252,10 @@ body {
 	gap: .1rem;
 	padding: .35rem;
 	min-height: 0;
+	/* Selection thickens the border, which takes 2px off the content box on each
+	   side. The preview was sized against the unselected card, so keep the extra
+	   inside rather than letting it spill past the rounded corner. */
+	overflow: hidden;
 	transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, opacity .3s ease;
 	font: inherit;
 	color: inherit;
@@ -262,9 +270,14 @@ body {
 	font-variant-numeric: tabular-nums;
 }
 .choice .mini { display: grid; gap: .1rem; justify-items: center; width: 100%; }
-/* 1fr tracks against the card's own width, so five previews shrink to fit
-   instead of pushing the card wider. Height follows the sprite's viewBox. */
-.choice .mini svg { width: 100%; max-width: clamp(.85rem, 2.4vh, 1.5rem); height: auto; }
+/* 1fr tracks against the card's own width, so previews shrink to fit instead of
+   pushing the card wider. board.js sets --mini-size from the card it measured;
+   the fallback only has to survive the first paint. */
+.choice .mini svg {
+	width: var(--mini-size, clamp(.85rem, 2.4vh, 1.5rem));
+	height: var(--mini-size, clamp(.85rem, 2.4vh, 1.5rem));
+	max-width: 100%;
+}
 
 /* Selected state: outline + scale + movement, never colour alone. */
 .choice.selected {
