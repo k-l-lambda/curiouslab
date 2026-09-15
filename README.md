@@ -2,7 +2,7 @@
 
 Small, self-contained learning games. Every page is static: no build step, no
 framework, no server, no analytics. Progress is stored in the visitor's own
-browser via `localStorage`.
+browser via IndexedDB.
 
 Live site: <https://k-l-lambda.github.io/curiouslab/>
 
@@ -17,7 +17,7 @@ Live site: <https://k-l-lambda.github.io/curiouslab/>
 | `assets/js/questions.js` | Question model, generation and validation |
 | `assets/js/levels.js` | The level ladder: item sets, mastery grades, stars, runs |
 | `assets/js/scheduler.js` | Adaptive selection, difficulty and timeout bands |
-| `assets/js/storage.js` | Local progress, skill mastery, item history |
+| `assets/js/storage.js` | Local progress in IndexedDB, skill mastery, item history |
 | `assets/levels/prompts.md` | Art briefs for the level covers and clear frames |
 
 ## Running locally
@@ -112,8 +112,24 @@ is how a level is finished.
 
 ### Progress
 
-`localStorage` key `curiouslab.counting-pairs.v1`, flushed on answer, tab hide
-and page unload, so it survives a refresh. The grown-up panel can erase it.
+Stored in **IndexedDB** — database `curiouslab`, object store `progress`, record
+key `curiouslab.counting-pairs.v1` — with a `localStorage` mirror under the same
+key. Flushed on answer, tab hide and page unload, so it survives a refresh. The
+grown-up panel can erase it. Nothing leaves the device.
+
+Both copies are written on every flush, and that is not redundancy for its own
+sake. IndexedDB has the room to grow: per-item, per-form history is already the
+biggest thing here and it grows with every question the child meets, while
+localStorage is a few megabytes shared across the whole origin. But IndexedDB
+writes are asynchronous and a closing tab need not wait for a transaction, so the
+last answer of a session — the one that just earned the star — is the write most
+likely to be dropped; `localStorage.setItem` is synchronous and has landed when it
+returns. On load the copy with the later `updated` wins, which is also what moves
+an existing player's localStorage-only history into IndexedDB with no separate
+import step.
+
+If IndexedDB is unavailable — private browsing, a locked-down profile — the game
+runs on the mirror alone rather than failing.
 
 The key keeps its `.v1` suffix — it names the storage slot, not the shape. The
 shape is versioned inside the blob and is currently 2, which added per-question

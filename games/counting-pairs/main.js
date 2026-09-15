@@ -911,6 +911,15 @@ function renderParent () {
 		const list = document.createElement('table');
 		const body = document.createElement('tbody');
 		for (const r of state.recent.slice(-12).reverse()) {
+			// The log is the one structure `hydrate` passes through as it found it,
+			// and it is carried across migrations untouched — so an entry written by
+			// an older version, or half-written when a tab died, can be missing
+			// `operands`. Skipped rather than rendered: reading it blind threw here
+			// and took the whole panel down with it, which is a bad trade for one
+			// unreadable row.
+			if (!Array.isArray(r.operands) || !r.operands.length)
+				continue;
+
 			const shown = r.mode === 'count'
 				? `count ${r.operands[0]}`
 				: `${r.operands[0]} ${r.mode === 'add' ? '+' : '−'} ${r.operands[1]} = ${r.answer}`;
@@ -1012,7 +1021,15 @@ function closeParent () {
 	resume();
 }
 
-function boot () {
+/**
+ * Async only because reading the save is: IndexedDB has no synchronous read. The
+ * sprites go in first so the page is not blank while the database opens, and
+ * everything that draws from records comes after the await — `buildHud` paints
+ * the streak and the garden from `progress`, and `showMap` reads every item
+ * record, so either one running against an empty state would show a first-time
+ * map to a child who has been playing for weeks.
+ */
+async function boot () {
 	injectSprites();
 	dom.mapView = document.querySelector('.map-view');
 	dom.playView = document.querySelector('.play-view');
@@ -1026,7 +1043,7 @@ function boot () {
 	// the save file would leave the child's real progress permanently unlockable.
 	ui.unlockAll = new URLSearchParams(window.location.search).has('unlock');
 
-	store.load();
+	await store.load();
 	buildHud();
 	buildMapHud();
 	buildOverlays();
