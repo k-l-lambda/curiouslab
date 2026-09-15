@@ -142,12 +142,10 @@ function buildHud () {
 	dom.undoBtn = iconButton('ic-undo', 'undo', onUndo);
 	dom.confirmBtn = iconButton('ic-check', 'confirm', onConfirm);
 	dom.parentBtn = iconButton('ic-gear', 'grown-up panel', openParent);
-
-	const home = document.createElement('a');
-	home.className = 'icon-btn';
-	home.href = '../../index.html';
-	home.setAttribute('aria-label', 'home');
-	home.append(sprite('ic-home'));
+	// Back to the map, not out to the hub. From inside a level the map is what
+	// "home" means: it is where the child came from and where the rest of the
+	// levels are. A button rather than a link, because it no longer navigates.
+	dom.homeBtn = iconButton('ic-home', 'back to the map', leaveRun);
 
 	dom.streak = document.createElement('div');
 	dom.streak.className = 'streak';
@@ -167,10 +165,29 @@ function buildHud () {
 	spacer.className = 'hud-spacer';
 
 	hud.append(dom.pauseBtn, dom.hintBtn, dom.undoBtn, dom.confirmBtn, spacer,
-		dom.runStrip, dom.streak, dom.timer, dom.parentBtn, home);
+		dom.runStrip, dom.streak, dom.timer, dom.parentBtn, dom.homeBtn);
 }
 
-/** The map's own HUD: no play controls, because there is no round to control. */
+/**
+ * Leave a level part-way through.
+ *
+ * The run is abandoned, not finished: no result screen, no stars ceremony, no
+ * clear. Nothing is lost that was earned, though — every answer was already
+ * written to storage as it happened, so mastery, best times and the coverage that
+ * opens the next level all survive. What the child gives up is only this run's
+ * chance at clearing, which is the honest price of not finishing it.
+ */
+function leaveRun () {
+	showMap();
+}
+
+/**
+ * The map's own HUD: no play controls, because there is no round to control.
+ *
+ * This is where the link out of the game lives. The play view's home button goes
+ * to the map instead, so leaving the site entirely is deliberately two taps from
+ * inside a question rather than one.
+ */
 function buildMapHud () {
 	const hud = dom.mapHud;
 	hud.textContent = '';

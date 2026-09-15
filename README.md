@@ -67,6 +67,10 @@ no voice and no sound effects in this phase.
   unpredictable. A missed question simply carries more weight into the next run.
 - **Icons only.** Pause, hint, undo, confirm, grown-up panel and home are
   icons; the accessible names are numerals or single words for screen readers.
+  Home means the map while a level is being played, and the site hub from the map
+  — so leaving the game entirely is two taps from inside a question rather than
+  one. Leaving a level part-way abandons that run's chance at clearing, but every
+  answer already given is kept.
 - **Grown-up panel** (gear icon) is the only text surface. It reports per-skill
   attempts, first-try counts, errors, timeouts, mastery and the current time
   band, plus a plain-language list of what needs practice.
