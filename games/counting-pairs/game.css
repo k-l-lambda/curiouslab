@@ -387,20 +387,23 @@ body {
 	78% { translate: 0 -8%; rotate: -3deg; scale: 1.06; }
 }
 
-/* Turned away, and dimmed: a figure that was not given one.
+/* Dimmed and sunk: a figure that was not given one.
  *
- * `rotate: y` with no perspective flattens the sprite towards a quarter of its
- * width, which is the turning-away; the small drop and shrink underneath it are
- * what make that read as a body pulling back rather than a rendering glitch.
- * The pose is held for most of the animation instead of being passed through,
- * so it reads as a reaction and not a twitch, and the brightness drop is also
- * literally a lamp going dim. It ends where it started: nothing was decided
- * yet, and the child has another count coming. */
+ * This is only the body — it sinks a little and the colour goes out of it. The
+ * reaction itself is the figure's own parts, further down: ears flattening, a
+ * tail dropping, a lamp going dark. So the body deliberately does very little.
+ * It used to turn away as well, flattening the whole sprite edge-on with
+ * `rotate: y`, and that was the whole gesture when there was nothing else — but
+ * a drawing seen edge-on hides the very ears and tail now doing the work.
+ *
+ * The pose is held for most of the animation rather than passed through, so it
+ * reads as a reaction and not a twitch. It ends where it started: nothing was
+ * decided yet, and the child has another count coming. */
 .obj.let-down { animation: letDown .72s ease both; }
 @keyframes letDown {
-	30% { rotate: y 74deg; scale: .88; translate: 0 6%; filter: grayscale(.6) brightness(.8); }
-	78% { rotate: y 74deg; scale: .88; translate: 0 6%; filter: grayscale(.6) brightness(.8); }
-	100% { rotate: y 0deg; scale: 1; translate: 0 0; filter: none; }
+	30% { scale: .94; translate: 0 5%; filter: grayscale(.6) brightness(.85); }
+	78% { scale: .94; translate: 0 5%; filter: grayscale(.6) brightness(.85); }
+	100% { scale: 1; translate: 0 0; filter: none; }
 }
 
 /* Flying sprite: an object on its way from the card to a figure. */
@@ -526,10 +529,12 @@ body {
 	78% { --ear: -22deg; --tail: -26deg; --tongue: 0; }
 	100% { --ear: 0deg; --tail: 0deg; }
 }
-/* The grin goes flat, which on a squashed curve means nearly straight. */
+/* The grin turns over. Flattening it to nearly straight was the first attempt,
+   and at the size a figure actually appears on the board that came to about a
+   hundred pixels — true to the idea and invisible in practice. */
 @keyframes monkeyDown {
-	30% { --ear: -18deg; --tail: -22deg; --mouth: .08; }
-	78% { --ear: -18deg; --tail: -22deg; --mouth: .08; }
+	30% { --ear: -18deg; --tail: -22deg; --mouth: -1.1; }
+	78% { --ear: -18deg; --tail: -22deg; --mouth: -1.1; }
 	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
 }
 /* A rabbit folds its ears back along its head. */
