@@ -670,8 +670,12 @@ function levelView () {
 	const cleared = new Set();
 
 	for (const level of levels.LEVELS) {
-		stars.set(level.id, levels.starsFor(level, records));
-		if (store.level(level.id).cleared)
+		const rec = store.level(level.id);
+		// A level shows stars only once a run of it has been finished. Sets overlap,
+		// so an untouched level can already score against its own items on the
+		// strength of the level before it; see `starsFor`.
+		stars.set(level.id, levels.starsFor(level, records, {played: rec.runs > 0}));
+		if (rec.cleared)
 			cleared.add(level.id);
 	}
 
@@ -697,7 +701,6 @@ function startLevel (levelId) {
 	// Snapshot before the run, so the result can tell a star won just now from
 	// one the child already had.
 	ui.starsSeen = rec.starsSeen;
-	rec.runs += 1;
 	rec.lastPlayed = Date.now();
 	ui.run = levels.startRun(level);
 
@@ -717,6 +720,13 @@ async function endRun () {
 	const records = store.itemRecords();
 	const result = levels.finishRun(run, records, {starsSeen: ui.starsSeen});
 	const rec = store.level(run.level.id);
+
+	// Counted here rather than at the start, so `runs` means runs the child saw
+	// through to a result. Two things depend on that reading: it is what gets
+	// persisted (nothing saves between starting a level and finishing one), and it
+	// is the gate on showing stars — tapping into a level and leaving again should
+	// not light up a star that the level before it earned.
+	rec.runs += 1;
 
 	// Persist what the child has now been shown, so the next result only pops the
 	// stars that are genuinely new.

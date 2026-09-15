@@ -320,7 +320,30 @@ export function scoreLevel (level, records) {
 	};
 }
 
-export const starsFor = (level, records) => scoreLevel(level, records).stars;
+/**
+ * The star count to show for a level.
+ *
+ * `played` is not a formality. Levels share questions — level two's set contains
+ * level one's three counting questions — and the gate that opens level two is
+ * exactly those three being answered correctly. So the moment level two unlocks,
+ * its own set already scores 3 x (2/3) / 6 = 0.333, over the first threshold: a
+ * level nobody has touched would wear a star earned somewhere else. A level
+ * therefore shows none until a run of it has been played through to a result — the caller
+ * decides what counts, and `main.js` keys it on finished runs, so tapping in and
+ * leaving again does not light one either. The star then arrives on that first
+ * result screen, as a star genuinely won there.
+ *
+ * The underlying score is left alone. `scoreLevel` still answers for the whole
+ * item set, which is what makes a replay able to raise stars, and `complete` —
+ * the unlock gate — must keep accumulating across levels regardless of what has
+ * been played.
+ */
+export function starsFor (level, records, {played = true} = {}) {
+	if (!played)
+		return 0;
+
+	return scoreLevel(level, records).stars;
+}
 
 /**
  * Which levels are open.

@@ -98,7 +98,10 @@ is how a level is finished.
   correctly → answered correctly and quickly. "Quickly" scales with how many
   objects are involved, so a larger question is not penalised for being larger.
 - **Stars (0–3)** come from the level's whole item set, not from one run, so a
-  replay can raise them.
+  replay can raise them. A level shows none until one run of it has been played
+  through to a result: sets overlap, so level 2 would otherwise open already
+  wearing a star earned by the counting it shares with level 1, and tapping into a
+  level and leaving again would light it up just the same.
 - **Clearing** — which plays the celebration — needs no timeout in the run *and*
   at least one question ending up better known than it had ever been. A wrong
   answer the child then corrects is not a miss.
