@@ -392,7 +392,7 @@ export function render (board, q, opts = {}) {
 	const pairing = pairingById(q.pairingId);
 	const enterScale = opts.enterScale ?? 1;
 	board.textContent = '';
-	// Delivery leaves objects and badges parked on <body>, outside the board, so
+	// Delivery leaves flying objects parked on <body>, outside the board, so
 	// emptying the board does not take them with it. A round can also end while
 	// they are still on screen — a pause, a timeout — so clear them here rather
 	// than trusting every path out of an animation to tidy up after itself.
@@ -586,7 +586,7 @@ function fly (spriteId, from, to, size, delay, duration) {
 
 /** Everything delivery parks on <body>, gone. */
 function clearOverlaySprites () {
-	document.querySelectorAll('.flyer, .joy-badge').forEach(el => el.remove());
+	document.querySelectorAll('.flyer').forEach(el => el.remove());
 }
 
 /**
@@ -713,18 +713,6 @@ function strayRow (handles, btn, strays) {
 	});
 }
 
-/** A source figure gets a smiley badge above it while it celebrates. */
-function joyBadge (actor) {
-	const box = centreOf(actor);
-	const el = sprite('sp-smile', 'joy-badge');
-	const width = Math.max(16, box.w * 0.42);
-	placeAt(el, {x: box.x + box.w * 0.3, y: box.y - box.h * 0.26},
-		width, heightAt('sp-smile', width));
-	document.body.append(el);
-
-	return el;
-}
-
 /** Lay a stray object down where it stopped: nobody had a use for it. */
 function tipOver (el, size, delay) {
 	const dir = Math.random() < .5 ? -1 : 1;
@@ -821,21 +809,36 @@ export async function success (handles, q, btn) {
 	// Unhurried: this flight is the correspondence being completed, one at a time.
 	await deliver(handles, q.answer, btn, {step: 85, flight: 560});
 
-	// Everyone has one now: cheer down the row, each with a smile of its own.
-	// The animation goes on the cell rather than the figure, so the figure and
-	// whatever it was just given move together instead of one under the other.
-	const badges = [];
+	// Everyone has one now: cheer down the row, each in its own way. Two layers,
+	// on two elements, because they would otherwise contend for one property:
+	// the bounce goes on the cell, so a figure and what it was just given move
+	// together instead of one under the other, and the figure's own parts — a
+	// tail, an ear, a face — go on the figure. What each part does is the
+	// stylesheet's business; all this needs to know is which figure it is, and
+	// the sprite already carries that as a class.
+	const cheering = [];
 	handles.sourceObjects().forEach((el, i) => {
 		const cell = el.closest('.perch, .pair-col') || el;
-		cell.style.animationDelay = REDUCED ? '0s' : `${i * 60}ms`;
+		const delay = REDUCED ? '0s' : `${i * 60}ms`;
+		cell.style.animationDelay = delay;
 		cell.classList.add('cheer');
-		badges.push(joyBadge(el));
+		el.style.animationDelay = delay;
+		el.classList.add('rejoice');
+		cheering.push({cell, el});
 	});
 	await wait(REDUCED ? 10 : 620);
 
 	showEquation(handles.left, q);
 	await wait(REDUCED ? 20 : 900);
-	badges.forEach(el => el.remove());
+	// The board is about to be replaced, but a wrong answer on the next question
+	// renders into the same panel: leaving a figure mid-gesture would carry that
+	// pose into a question it has nothing to do with.
+	cheering.forEach(({cell, el}) => {
+		cell.classList.remove('cheer');
+		cell.style.removeProperty('animation-delay');
+		el.classList.remove('rejoice');
+		el.style.removeProperty('animation-delay');
+	});
 	clearOverlaySprites();
 }
 

@@ -9,17 +9,37 @@
 
 const SPRITES = `
 <symbol id="sp-cat" viewBox="0 0 100 100">
-  <path d="M68 80 q22 2 20 -18" fill="none" stroke="#e79a44" stroke-width="7" stroke-linecap="round"/>
+  <!-- Each moving part reads one custom property, defaulting to the resting
+       pose, so the drawing is unchanged until a rule outside sets one. A
+       positive --ear or --tail means perked and raised whatever the animal, so
+       one keyframe reads the same on all of them; each drawing absorbs its own
+       geometry's sign here rather than in the stylesheet. -->
+  <path d="M68 80 q22 2 20 -18" fill="none" stroke="#e79a44" stroke-width="7" stroke-linecap="round"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 68px 80px"/>
   <ellipse cx="46" cy="72" rx="24" ry="22" fill="#f7b264"/>
-  <path d="M28 32 L24 9 L43 22 Z" fill="#f7b264"/>
-  <path d="M64 32 L68 9 L49 22 Z" fill="#f7b264"/>
-  <path d="M30 29 L28 16 L39 23 Z" fill="#f8d6ae"/>
-  <path d="M62 29 L64 16 L53 23 Z" fill="#f8d6ae"/>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 32px 32px">
+    <path d="M28 32 L24 9 L43 22 Z" fill="#f7b264"/>
+    <path d="M30 29 L28 16 L39 23 Z" fill="#f8d6ae"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 60px 32px">
+    <path d="M64 32 L68 9 L49 22 Z" fill="#f7b264"/>
+    <path d="M62 29 L64 16 L53 23 Z" fill="#f8d6ae"/>
+  </g>
   <circle cx="46" cy="36" r="21" fill="#ffc478"/>
-  <circle cx="38" cy="34" r="3.6" fill="#33291f"/>
-  <circle cx="54" cy="34" r="3.6" fill="#33291f"/>
+  <!-- Open eyes and happy eyes are two drawings that cross-fade, because an arc
+       is not a circle squashed: a closed-up smiling eye curves the other way. -->
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="38" cy="34" r="3.6" fill="#33291f"/>
+    <circle cx="54" cy="34" r="3.6" fill="#33291f"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M34 35 q4 -5 8 0"/>
+    <path d="M50 35 q4 -5 8 0"/>
+  </g>
   <path d="M46 41 l-4.5 4.5 h9 Z" fill="#e8825f"/>
-  <path d="M41 48 q5 5 10 0" fill="none" stroke="#33291f" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M41 48 q5 5 10 0" fill="none" stroke="#33291f" stroke-width="2.4" stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 46px 48px"/>
   <g stroke="#33291f" stroke-width="1.8" stroke-linecap="round" opacity=".8">
     <path d="M25 40 L12 36"/><path d="M25 44 L13 46"/>
     <path d="M67 40 L80 36"/><path d="M67 44 L79 46"/>
@@ -38,18 +58,31 @@ const SPRITES = `
 </symbol>
 
 <symbol id="sp-monkey" viewBox="0 0 100 100">
-  <path d="M70 78 q20 -1 16 -20" fill="none" stroke="#a9723f" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="23" cy="40" r="9.5" fill="#a9723f"/>
-  <circle cx="73" cy="40" r="9.5" fill="#a9723f"/>
+  <path d="M70 78 q20 -1 16 -20" fill="none" stroke="#a9723f" stroke-width="6" stroke-linecap="round"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 70px 78px"/>
+  <!-- The ears swivel about the head's edge rather than their own middles, so a
+       small angle carries them up and out instead of spinning them in place. -->
+  <circle cx="23" cy="40" r="9.5" fill="#a9723f"
+    style="rotate: var(--ear, 0deg); transform-origin: 32px 40px"/>
+  <circle cx="73" cy="40" r="9.5" fill="#a9723f"
+    style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 64px 40px"/>
   <ellipse cx="48" cy="74" rx="21" ry="20" fill="#c98a58"/>
   <ellipse cx="48" cy="76" rx="13" ry="13" fill="#efd0a9"/>
   <circle cx="48" cy="40" r="23" fill="#c98a58"/>
   <ellipse cx="48" cy="48" rx="17" ry="14" fill="#efd0a9"/>
-  <circle cx="40" cy="35" r="3.6" fill="#33291f"/>
-  <circle cx="56" cy="35" r="3.6" fill="#33291f"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="35" r="3.6" fill="#33291f"/>
+    <circle cx="56" cy="35" r="3.6" fill="#33291f"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M36 36 q4 -5 8 0"/>
+    <path d="M52 36 q4 -5 8 0"/>
+  </g>
   <circle cx="44" cy="45" r="1.9" fill="#8a5c33"/>
   <circle cx="52" cy="45" r="1.9" fill="#8a5c33"/>
-  <path d="M41 52 q7 6 14 0" fill="none" stroke="#8a5c33" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M41 52 q7 6 14 0" fill="none" stroke="#8a5c33" stroke-width="2.4" stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 52px"/>
 </symbol>
 
 <symbol id="sp-banana" viewBox="0 0 100 100">
@@ -60,15 +93,29 @@ const SPRITES = `
 </symbol>
 
 <symbol id="sp-dog" viewBox="0 0 100 100">
-  <path d="M70 78 q18 -6 12 -22" fill="none" stroke="#a2724f" stroke-width="7" stroke-linecap="round"/>
+  <path d="M70 78 q18 -6 12 -22" fill="none" stroke="#a2724f" stroke-width="7" stroke-linecap="round"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 70px 78px"/>
   <ellipse cx="48" cy="74" rx="23" ry="20" fill="#c08f6a"/>
-  <ellipse cx="22" cy="44" rx="9" ry="17" fill="#a2724f"/>
-  <ellipse cx="74" cy="44" rx="9" ry="17" fill="#a2724f"/>
+  <!-- Long hanging ears: they pivot at the top, where they meet the head. -->
+  <ellipse cx="22" cy="44" rx="9" ry="17" fill="#a2724f"
+    style="rotate: var(--ear, 0deg); transform-origin: 28px 30px"/>
+  <ellipse cx="74" cy="44" rx="9" ry="17" fill="#a2724f"
+    style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 68px 30px"/>
   <circle cx="48" cy="40" r="22" fill="#d6a479"/>
   <ellipse cx="48" cy="52" rx="15" ry="11.5" fill="#f4e0c8"/>
+  <!-- Behind the muzzle, so it reads as coming out from under it. -->
+  <path d="M43 58 q5 13 10 0 Z" fill="#e8748a"
+    style="scale: 1 var(--tongue, 0); transform-origin: 48px 58px"/>
   <ellipse cx="48" cy="47" rx="5.5" ry="4.4" fill="#3a2f28"/>
-  <circle cx="39" cy="33" r="3.6" fill="#33291f"/>
-  <circle cx="57" cy="33" r="3.6" fill="#33291f"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="39" cy="33" r="3.6" fill="#33291f"/>
+    <circle cx="57" cy="33" r="3.6" fill="#33291f"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M35 34 q4 -5 8 0"/>
+    <path d="M53 34 q4 -5 8 0"/>
+  </g>
   <path d="M44 58 q4 7 8 0" fill="#e8748a"/>
 </symbol>
 
@@ -83,14 +130,28 @@ const SPRITES = `
 
 <symbol id="sp-rabbit" viewBox="0 0 100 100">
   <circle cx="76" cy="72" r="10" fill="#f3f0ea"/>
-  <ellipse cx="36" cy="26" rx="8" ry="20" fill="#e6e1d8" transform="rotate(-12 36 26)"/>
-  <ellipse cx="60" cy="26" rx="8" ry="20" fill="#e6e1d8" transform="rotate(12 60 26)"/>
-  <ellipse cx="36" cy="27" rx="4" ry="14" fill="#f2b8c0" transform="rotate(-12 36 27)"/>
-  <ellipse cx="60" cy="27" rx="4" ry="14" fill="#f2b8c0" transform="rotate(12 60 27)"/>
+  <!-- Each ear is one group so its lining travels with it, pivoting at the base
+       where it meets the head. The ellipses keep their own tilt; the group's
+       rotation is added on top of it. -->
+  <g style="rotate: var(--ear, 0deg); transform-origin: 40px 44px">
+    <ellipse cx="36" cy="26" rx="8" ry="20" fill="#e6e1d8" transform="rotate(-12 36 26)"/>
+    <ellipse cx="36" cy="27" rx="4" ry="14" fill="#f2b8c0" transform="rotate(-12 36 27)"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 56px 44px">
+    <ellipse cx="60" cy="26" rx="8" ry="20" fill="#e6e1d8" transform="rotate(12 60 26)"/>
+    <ellipse cx="60" cy="27" rx="4" ry="14" fill="#f2b8c0" transform="rotate(12 60 27)"/>
+  </g>
   <ellipse cx="48" cy="74" rx="22" ry="20" fill="#f3f0ea"/>
   <circle cx="48" cy="52" r="21" fill="#fbf9f4"/>
-  <circle cx="40" cy="49" r="3.6" fill="#33291f"/>
-  <circle cx="56" cy="49" r="3.6" fill="#33291f"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="49" r="3.6" fill="#33291f"/>
+    <circle cx="56" cy="49" r="3.6" fill="#33291f"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M36 50 q4 -5 8 0"/>
+    <path d="M52 50 q4 -5 8 0"/>
+  </g>
   <path d="M48 57 l-4 4 h8 Z" fill="#e88a9a"/>
   <g stroke="#b7ae9e" stroke-width="1.8" stroke-linecap="round">
     <path d="M28 58 L14 55"/><path d="M28 62 L15 65"/>
@@ -114,13 +175,22 @@ const SPRITES = `
 </symbol>
 
 <symbol id="sp-bird" viewBox="0 0 100 100">
-  <path d="M74 56 L96 44 q-4 14 -8 20 Z" fill="#4a8fc9"/>
+  <path d="M74 56 L96 44 q-4 14 -8 20 Z" fill="#4a8fc9"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 74px 56px"/>
   <ellipse cx="46" cy="58" rx="27" ry="22" fill="#5ba8e0"/>
-  <path d="M40 52 q20 -6 26 14 q-18 8 -26 -14 Z" fill="#4a8fc9"/>
+  <!-- The wing beats about the shoulder, where it joins the body. -->
+  <path d="M40 52 q20 -6 26 14 q-18 8 -26 -14 Z" fill="#4a8fc9"
+    style="rotate: calc(-1 * var(--wing, 0deg)); transform-origin: 40px 52px"/>
   <circle cx="34" cy="36" r="17" fill="#7cc0ef"/>
-  <path d="M18 36 L4 41 L18 46 Z" fill="#f5a24a"/>
-  <circle cx="30" cy="33" r="3.8" fill="#28323c"/>
-  <circle cx="31.4" cy="32" r="1.3" fill="#fff"/>
+  <!-- The beak opens by spreading about its tip, so the point stays put. -->
+  <path d="M18 36 L4 41 L18 46 Z" fill="#f5a24a"
+    style="scale: 1 calc(1 + var(--beak, 0)); transform-origin: 4px 41px"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="30" cy="33" r="3.8" fill="#28323c"/>
+    <circle cx="31.4" cy="32" r="1.3" fill="#fff"/>
+  </g>
+  <path d="M26 34 q4 -5 8 0" fill="none" stroke="#28323c" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)"/>
   <g stroke="#f5a24a" stroke-width="3.4" stroke-linecap="round">
     <path d="M40 79 L38 90"/><path d="M54 79 L56 90"/>
   </g>
@@ -132,11 +202,27 @@ const SPRITES = `
 </symbol>
 
 <symbol id="sp-lamp" viewBox="0 0 100 100">
+  <!-- A lamp has no face, so light is the whole of its expression: --glow
+       brightens the bulb and throws rays, --dim takes the light out of it, and
+       --tilt bows the shade the way an animal turns its head away. The rays
+       rest at zero scale so they add nothing to the drawing until they are
+       asked for, and stay inside the shade's own width when they arrive. -->
   <rect x="46" y="44" width="8" height="36" rx="3" fill="#8a6a5a"/>
   <ellipse cx="50" cy="84" rx="22" ry="8" fill="#7a5b4c"/>
+  <g stroke="#ffd469" stroke-width="3.4" stroke-linecap="round"
+    style="opacity: var(--glow, 0); scale: var(--glow, 0); transform-origin: 50px 50px">
+    <path d="M36 58 L26 66"/>
+    <path d="M64 58 L74 66"/>
+    <path d="M31 50 L21 50"/>
+    <path d="M69 50 L79 50"/>
+  </g>
   <circle cx="50" cy="50" r="10" fill="#ffe9a8"/>
-  <path d="M22 44 L78 44 L64 14 L36 14 Z" fill="#e0574f"/>
-  <path d="M22 44 L78 44 L74 50 L26 50 Z" fill="#c8443d"/>
+  <circle cx="50" cy="50" r="10" fill="#fff6d0" style="opacity: var(--glow, 0)"/>
+  <circle cx="50" cy="50" r="10" fill="#9a9083" style="opacity: var(--dim, 0)"/>
+  <g style="rotate: var(--tilt, 0deg); transform-origin: 50px 44px">
+    <path d="M22 44 L78 44 L64 14 L36 14 Z" fill="#e0574f"/>
+    <path d="M22 44 L78 44 L74 50 L26 50 Z" fill="#c8443d"/>
+  </g>
 </symbol>
 
 <symbol id="sp-star" viewBox="0 0 100 100">
@@ -188,17 +274,6 @@ const SPRITES = `
   <circle cx="50" cy="50" r="24" fill="none" stroke="#ffe796" stroke-width="5" stroke-dasharray="8 8"/>
 </symbol>
 
-<symbol id="sp-smile" viewBox="0 0 100 100">
-  <!-- Worn over a source figure while it celebrates. The figures have their own
-       faces, but a lamp does not, and the same badge on every one of them keeps
-       "it worked" reading the same way whatever the pairing is. -->
-  <circle cx="50" cy="50" r="41" fill="#ffd44d" stroke="#e9ae1f" stroke-width="5"/>
-  <g fill="none" stroke="#6d4f10" stroke-linecap="round">
-    <path d="M28 43 q7 -12 14 0" stroke-width="6"/>
-    <path d="M58 43 q7 -12 14 0" stroke-width="6"/>
-    <path d="M30 58 q20 21 40 0" stroke-width="7"/>
-  </g>
-</symbol>
 
 <symbol id="sp-flower" viewBox="0 0 100 100">
   <path d="M50 94 V56" fill="none" stroke="#54a84b" stroke-width="6" stroke-linecap="round"/>
@@ -431,7 +506,15 @@ function applyBox (svg, box) {
 export function sprite (id, extraClass = '') {
 	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	svg.setAttribute('viewBox', '0 0 100 100');
-	svg.setAttribute('class', `sprite ${extraClass}`.trim());
+	// `s-cat`, `s-lamp`: which drawing this is, for the stylesheet.
+	//
+	// The parts of a sprite live inside a <symbol> reached through <use>, so no
+	// document rule can select them. What does cross that boundary is an
+	// inherited custom property, and the parts above read them — so a rule needs
+	// only to know which kind of figure it is looking at to drive that figure's
+	// own gesture. This class is how it knows.
+	const kind = `s-${id.replace(/^(sp|ic)-/, '')}`;
+	svg.setAttribute('class', `sprite ${kind} ${extraClass}`.trim());
 	svg.setAttribute('aria-hidden', 'true');
 
 	const box = BOXES.get(id);

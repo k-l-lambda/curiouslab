@@ -406,15 +406,149 @@ body {
 /* Flying sprite: an object on its way from the card to a figure. */
 .flyer { position: fixed; pointer-events: none; z-index: 40; will-change: transform; }
 
-/* The smile a figure wears once it has what it was waiting for. */
-.joy-badge {
-	position: fixed;
-	pointer-events: none;
-	z-index: 41;
-	animation: badgePop .5s cubic-bezier(.2,1.5,.35,1) both;
+/* ---------- Each figure's own reaction ---------- */
+
+/* A figure's own parts carry the reaction: a tail, an ear, a face. The parts
+ * live inside a <symbol> reached through <use>, and no rule here can select
+ * them — but a custom property inherits across that boundary, and each part
+ * reads one. So the animations below never mention a shape. They animate the
+ * properties, and the drawing moves.
+ *
+ * Registering them is what makes them animate at all: an unregistered custom
+ * property has no type, so it jumps from keyframe to keyframe instead of
+ * sweeping through the values between.
+ *
+ * The convention across every drawing: positive --ear and --tail mean perked
+ * and raised, negative mean drooped. Each symbol absorbs its own geometry's
+ * sign, so a keyframe reads the same whichever animal it lands on. */
+@property --ear { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --tail { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --wing { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --tilt { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --joy { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --mouth { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tongue { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --beak { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --glow { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --dim { syntax: '<number>'; inherits: true; initial-value: 0; }
+
+/* A gesture can carry a tail or an ear past the edge of the box the sprite was
+   cropped to. The crop is measured at rest, so without this the raised end of
+   a wagging tail is clipped off; overflow costs nothing in layout. */
+.sprite { overflow: visible; }
+
+/* Delight, per figure. The body's bounce is on the cell (.cheer above); these
+   are the parts, on the figure itself, so the two compose instead of fighting
+   over one property. */
+.rejoice { animation-duration: .62s; animation-timing-function: ease; animation-fill-mode: both; }
+
+/* A cat's tail is the whole tell: it swings up and keeps flicking. */
+.s-cat.rejoice { animation-name: catJoy; }
+@keyframes catJoy {
+	0% { --tail: 0deg; --ear: 0deg; --joy: 0; --mouth: 1; }
+	30% { --tail: 34deg; --ear: 10deg; --joy: 1; --mouth: 2.1; }
+	55% { --tail: 8deg; --ear: 7deg; --joy: 1; --mouth: 2.1; }
+	80% { --tail: 30deg; --ear: 10deg; --joy: 1; --mouth: 2.1; }
+	100% { --tail: 22deg; --ear: 8deg; --joy: 1; --mouth: 1.8; }
 }
-@keyframes badgePop {
-	from { opacity: 0; scale: .3; translate: 0 30%; }
+
+/* A dog wags twice as fast as anything else here, and the tongue comes out. */
+.s-dog.rejoice { animation-name: dogJoy; }
+@keyframes dogJoy {
+	0% { --tail: 0deg; --ear: 0deg; --joy: 0; --tongue: 0; }
+	20% { --tail: 46deg; --ear: 16deg; --joy: 1; --tongue: 1; }
+	40% { --tail: -6deg; --ear: 14deg; --joy: 1; --tongue: 1; }
+	60% { --tail: 46deg; --ear: 16deg; --joy: 1; --tongue: 1; }
+	80% { --tail: -2deg; --ear: 14deg; --joy: 1; --tongue: 1; }
+	100% { --tail: 34deg; --ear: 14deg; --joy: 1; --tongue: 1; }
+}
+
+/* A monkey's ears wiggle and the grin goes wide. */
+.s-monkey.rejoice { animation-name: monkeyJoy; }
+@keyframes monkeyJoy {
+	0% { --tail: 0deg; --ear: 0deg; --joy: 0; --mouth: 1; }
+	25% { --tail: 26deg; --ear: 20deg; --joy: 1; --mouth: 2.3; }
+	50% { --tail: 14deg; --ear: -8deg; --joy: 1; --mouth: 2.3; }
+	75% { --tail: 26deg; --ear: 20deg; --joy: 1; --mouth: 2.3; }
+	100% { --tail: 20deg; --ear: 6deg; --joy: 1; --mouth: 2; }
+}
+
+/* A rabbit has one gesture and it is all in the ears: they spring upright. */
+.s-rabbit.rejoice { animation-name: rabbitJoy; }
+@keyframes rabbitJoy {
+	0% { --ear: 0deg; --joy: 0; }
+	35% { --ear: 22deg; --joy: 1; }
+	65% { --ear: 12deg; --joy: 1; }
+	100% { --ear: 18deg; --joy: 1; }
+}
+
+/* A bird flutters: the wing beats, the beak opens, the tail comes up. */
+.s-bird.rejoice { animation-name: birdJoy; }
+@keyframes birdJoy {
+	0% { --wing: 0deg; --tail: 0deg; --joy: 0; --beak: 0; }
+	20% { --wing: 40deg; --tail: 22deg; --joy: 1; --beak: .8; }
+	40% { --wing: -8deg; --tail: 14deg; --joy: 1; --beak: .3; }
+	60% { --wing: 40deg; --tail: 22deg; --joy: 1; --beak: .8; }
+	80% { --wing: -4deg; --tail: 16deg; --joy: 1; --beak: .3; }
+	100% { --wing: 24deg; --tail: 18deg; --joy: 1; --beak: .5; }
+}
+
+/* A lamp has no face, so it does what a lamp does: it lights up. */
+.s-lamp.rejoice { animation-name: lampJoy; }
+@keyframes lampJoy {
+	0% { --glow: 0; --tilt: 0deg; }
+	30% { --glow: 1; --tilt: -5deg; }
+	60% { --glow: .7; --tilt: 3deg; }
+	100% { --glow: 1; --tilt: 0deg; }
+}
+
+/* Disappointment, per figure. The shared turn-away above carries the body and
+   the grey; these carry the parts, so a row still reads as one group reacting
+   the same way while each figure does it in its own manner. Both animations
+   are named together because they land on the same element, and a second rule
+   for one class would replace the first rather than add to it. */
+.obj.let-down.s-cat { animation: letDown .72s ease both, catDown .72s ease both; }
+.obj.let-down.s-dog { animation: letDown .72s ease both, dogDown .72s ease both; }
+.obj.let-down.s-monkey { animation: letDown .72s ease both, monkeyDown .72s ease both; }
+.obj.let-down.s-rabbit { animation: letDown .72s ease both, rabbitDown .72s ease both; }
+.obj.let-down.s-bird { animation: letDown .72s ease both, birdDown .72s ease both; }
+.obj.let-down.s-lamp { animation: letDown .72s ease both, lampDown .72s ease both; }
+
+/* Ears flat, tail down: the pose a cat takes when it has had enough. */
+@keyframes catDown {
+	30% { --ear: -30deg; --tail: -20deg; --mouth: -1.2; }
+	78% { --ear: -30deg; --tail: -20deg; --mouth: -1.2; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* Tail tucked, ears down, and no tongue about it. */
+@keyframes dogDown {
+	30% { --ear: -22deg; --tail: -26deg; --tongue: 0; }
+	78% { --ear: -22deg; --tail: -26deg; --tongue: 0; }
+	100% { --ear: 0deg; --tail: 0deg; }
+}
+/* The grin goes flat, which on a squashed curve means nearly straight. */
+@keyframes monkeyDown {
+	30% { --ear: -18deg; --tail: -22deg; --mouth: .08; }
+	78% { --ear: -18deg; --tail: -22deg; --mouth: .08; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* A rabbit folds its ears back along its head. */
+@keyframes rabbitDown {
+	30% { --ear: -52deg; }
+	78% { --ear: -52deg; }
+	100% { --ear: 0deg; }
+}
+/* Wing folded in, tail and beak down. */
+@keyframes birdDown {
+	30% { --wing: -16deg; --tail: -18deg; --beak: 0; }
+	78% { --wing: -16deg; --tail: -18deg; --beak: 0; }
+	100% { --wing: 0deg; --tail: 0deg; }
+}
+/* The one figure whose disappointment is literal: the light goes out. */
+@keyframes lampDown {
+	30% { --dim: .85; --tilt: 12deg; --glow: 0; }
+	78% { --dim: .85; --tilt: 12deg; --glow: 0; }
+	100% { --dim: 0; --tilt: 0deg; }
 }
 
 /* Equation, numbers and symbols only, shown after a correct answer. */
