@@ -1,9 +1,11 @@
 /**
- * main.js — the round loop, HUD, timer bands, pause and the parent panel.
+ * main.js — the two views, the round loop, HUD, timer bands, pause and the
+ * parent panel.
  *
- * Play surface rules: numerals and arithmetic symbols are allowed, prose is
- * not. Every control is an icon. The parent panel is the only place with text,
- * and it is closed during normal play.
+ * The map is the entrance: a level is chosen there, which starts a bounded run
+ * on the board, which ends in a result. Play surface rules: numerals and
+ * arithmetic symbols are allowed, prose is not. Every control is an icon. The
+ * parent panel is the only place with text, and it is closed during normal play.
  */
 
 import {injectSprites, sprite} from '../../assets/js/art.js';
@@ -11,12 +13,21 @@ import * as store from '../../assets/js/storage.js';
 import {OUTCOME} from '../../assets/js/storage.js';
 import * as sched from '../../assets/js/scheduler.js';
 import {TIMEOUT_BANDS, TIERS, skillKey} from '../../assets/js/questions.js';
+import {PAIRINGS, pairingById} from '../../assets/js/pairings.js';
+import * as levels from '../../assets/js/levels.js';
 import * as board from './board.js';
+import * as map from './map.js';
 
 const STREAK_STARS = 5;
 const GARDEN_MAX = 14;
 const AUTO_SUBMIT_MS = 900;
 const HINT_AFTER_ERRORS = 2;
+/**
+ * Floor for a recorded answer time. A card tapped during the entrance animation
+ * would otherwise read as 0ms, which is not a time a child can produce; it also
+ * keeps a "fastest ever" comparison from latching onto an unbeatable zero.
+ */
+const MIN_ANSWER_MS = 250;
 
 const dom = {};
 const ui = {
@@ -37,17 +48,34 @@ const ui = {
 	feedback: false,
 	paused: false,
 	usedHelp: false,
-	timedOut: false,
 	/**
-	 * Incremented for every round. An async continuation captures it and
-	 * checks it before touching the DOM, so a sequence that outlives its
-	 * round can never act on the next one.
+	 * The stopwatch reading taken the moment the child settled on a card, in
+	 * milliseconds. Read at selection rather than at confirmation because
+	 * AUTO_SUBMIT_MS sits between the two, and that wait is the interface's,
+	 * not the child's.
+	 */
+	answerMs: null,
+	/** True between startTimer and clearTimers, so pauseTimer knows there is a clock. */
+	timerRunning: false,
+	/**
+	 * Incremented for every round, and for every view swap. An async
+	 * continuation captures it and checks it before touching the DOM, so a
+	 * sequence that outlives its round can never act on the next one — nor, now,
+	 * land a board animation on top of the map.
 	 */
 	generation: 0,
+	/** 'map' or 'play'. */
+	view: 'map',
+	/** The run in progress, from `levels.startRun`, or null in free play. */
+	run: null,
+	/** Stars the child had already been shown for this level before the run. */
+	starsSeen: 0,
+	/** Debug: `?unlock` opens every level without touching the saved progress. */
+	unlockAll: false,
 };
 
-/** True when `gen` is still the round on screen. */
-const current = gen => gen === ui.generation && !ui.paused;
+/** True when `gen` is still the round on screen, and the board is still up. */
+const current = gen => gen === ui.generation && !ui.paused && ui.view === 'play';
 
 /* --------------------------------------------------------------- plumbing */
 
@@ -58,6 +86,37 @@ const clearTimers = () => {
 	ui.timerId = null;
 	ui.tickId = null;
 	ui.autoSubmitId = null;
+	ui.timerRunning = false;
+};
+
+/* ------------------------------------------------- the answer stopwatch */
+
+/**
+ * How long the child has actually been looking at this question with the cards
+ * live. Deliberately not derived from the countdown, which cannot answer it:
+ * a retry restarts that clock on half a band, the entrance runs before it, and
+ * the feedback sequence stops it on purpose. What a best time compares is this.
+ */
+const clock = {accumMs: 0, since: 0};
+
+const clockRead = () =>
+	clock.accumMs + (clock.since ? performance.now() - clock.since : 0);
+
+const clockStart = () => {
+	if (!clock.since)
+		clock.since = performance.now();
+};
+
+const clockStop = () => {
+	if (clock.since) {
+		clock.accumMs += performance.now() - clock.since;
+		clock.since = 0;
+	}
+};
+
+const clockReset = () => {
+	clock.accumMs = 0;
+	clock.since = 0;
 };
 
 function iconButton (iconId, label, onClick) {
@@ -95,13 +154,37 @@ function buildHud () {
 	for (let i = 0; i < STREAK_STARS; ++i)
 		dom.streak.append(sprite('sp-star'));
 
+	// How far through the level's questions this run is. Separate from the streak
+	// strip on purpose: the streak is about answering well, this is about how much
+	// is left, and one strip meaning both would mean neither.
+	dom.runStrip = document.createElement('div');
+	dom.runStrip.className = 'run-strip';
+	dom.runStrip.hidden = true;
+
 	dom.timer = buildTimer();
 
 	const spacer = document.createElement('div');
 	spacer.className = 'hud-spacer';
 
 	hud.append(dom.pauseBtn, dom.hintBtn, dom.undoBtn, dom.confirmBtn, spacer,
-		dom.streak, dom.timer, dom.parentBtn, home);
+		dom.runStrip, dom.streak, dom.timer, dom.parentBtn, home);
+}
+
+/** The map's own HUD: no play controls, because there is no round to control. */
+function buildMapHud () {
+	const hud = dom.mapHud;
+	hud.textContent = '';
+
+	const home = document.createElement('a');
+	home.className = 'icon-btn';
+	home.href = '../../index.html';
+	home.setAttribute('aria-label', 'home');
+	home.append(sprite('ic-home'));
+
+	const spacer = document.createElement('div');
+	spacer.className = 'hud-spacer';
+
+	hud.append(spacer, iconButton('ic-gear', 'grown-up panel', openParent), home);
 }
 
 function buildTimer () {
@@ -146,6 +229,37 @@ function paintStreak () {
 	});
 }
 
+/**
+ * Repaint the run strip: one pip per question the level asks, filled for each
+ * one answered. A pip for a missed question is marked, so the child can see the
+ * run is no longer a clean one before the result says so.
+ */
+function paintRun () {
+	if (!dom.runStrip)
+		return;
+
+	dom.runStrip.hidden = !ui.run;
+	if (!ui.run)
+		return;
+
+	const {questions} = ui.run.level;
+	if (dom.runStrip.children.length !== questions) {
+		dom.runStrip.textContent = '';
+		for (let i = 0; i < questions; ++i) {
+			const pip = document.createElement('span');
+			pip.className = 'run-pip';
+			dom.runStrip.append(pip);
+		}
+	}
+
+	[...dom.runStrip.children].forEach((pip, i) => {
+		pip.classList.toggle('done', i < ui.run.answered);
+	});
+	dom.runStrip.classList.toggle('missed', ui.run.misses > 0);
+	dom.runStrip.setAttribute('aria-label',
+		`question ${Math.min(ui.run.answered + 1, questions)} of ${questions}`);
+}
+
 function paintGarden (sprouted) {
 	const {garden} = store.getState().progress;
 	const shown = Math.min(garden, GARDEN_MAX);
@@ -184,25 +298,90 @@ function startTimer (ms) {
 	};
 	ui.tickId = requestAnimationFrame(tick);
 	ui.timerId = setTimeout(onTimeout, ms);
+	ui.timerRunning = true;
 }
 
 function pauseTimer () {
+	// Only spend time against a clock that was actually running. A pause during
+	// the entrance animation would otherwise subtract from `startedAt` left by
+	// the previous round, driving remainingMs negative — and resume() only
+	// restarts a clock with time left on it, so the question would end up with
+	// no clock at all and could never time out.
+	const running = ui.timerRunning;
 	clearTimers();
-	ui.remainingMs -= performance.now() - ui.startedAt;
+	clockStop();
+	if (running)
+		ui.remainingMs -= performance.now() - ui.startedAt;
 }
 
 /* ----------------------------------------------------------- round flow */
 
+/**
+ * The next question, from the run if one is in progress.
+ *
+ * A run's question comes from the level's own item set; free practice keeps the
+ * scheduler's whole-ladder policy. Both then go through `applyBand`, and a run
+ * asks it to relax: see the note on `applyBand` for why a tightening band would
+ * otherwise fight the clear rule.
+ */
+function drawQuestion () {
+	if (!ui.run)
+		return sched.nextQuestion();
+
+	const q = levels.nextInRun(ui.run, {
+		records: store.itemRecords(),
+		// The level fixes the arithmetic, not the cast. Varying the figures
+		// across a run keeps six questions from reading as one question asked
+		// six times.
+		pickPairing: pickPairing,
+		knobsFor: sched.knobsFor,
+	});
+
+	return q ? sched.applyBand(q, {relax: true}) : null;
+}
+
+/**
+ * Which figures the next question wears.
+ *
+ * The level's own pair leads, because that is the one on its map node, but a run
+ * of six identical scenes is a run a child stops looking at. Familiarity order
+ * still applies to the alternatives, so nothing arrives before its turn.
+ */
+function pickPairing () {
+	const own = pairingById(ui.run?.level?.pairing ?? '');
+	const gate = Math.floor(store.getState().progress.answered / 4) + 1;
+	const pool = PAIRINGS.filter(p => p.familiarity <= gate);
+	const options = pool.length ? pool : [PAIRINGS[0]];
+
+	if (own && Math.random() < 0.5)
+		return own;
+
+	return options[Math.floor(Math.random() * options.length)];
+}
+
 function nextRound () {
 	clearTimers();
 	ui.generation += 1;
-	ui.question = sched.nextQuestion();
+	const q = drawQuestion();
+	// A run with nothing left to ask is a finished run, not a broken one.
+	if (!q) {
+		endRun();
+
+		return;
+	}
+
+	ui.question = q;
 	ui.errors = 0;
 	ui.selected = null;
 	ui.resolving = false;
 	ui.feedback = false;
 	ui.usedHelp = false;
-	ui.timedOut = false;
+	ui.answerMs = null;
+	// The countdown state is reset too. It never was, so a pause before the
+	// clock started reached back into the previous round's timestamp.
+	ui.remainingMs = 0;
+	ui.startedAt = 0;
+	clockReset();
 
 	// Entrance shortens as the child gets used to the scene, so it never
 	// becomes a delay.
@@ -219,12 +398,15 @@ function nextRound () {
 	dom.hintBtn.disabled = false;
 	paintTimer(1);
 	paintStreak();
+	paintRun();
 
 	// The clock only starts once the scene has settled.
 	const gen = ui.generation;
 	setTimeout(() => {
-		if (current(gen) && !ui.resolving && !ui.feedback)
+		if (current(gen) && !ui.resolving && !ui.feedback) {
 			startTimer(ui.question.timeoutMs);
+			clockStart();
+		}
 	}, ui.handles.entranceMs);
 }
 
@@ -240,6 +422,11 @@ function onChoice (btn) {
 	}
 
 	ui.selected = btn;
+	// Taken now, while the choice is fresh: AUTO_SUBMIT_MS elapses before
+	// onConfirm runs, and that wait belongs to the interface. Choosing again
+	// after an undo deliberately keeps the clock running — hesitation is part
+	// of how long the question took.
+	ui.answerMs = Math.max(MIN_ANSWER_MS, Math.round(clockRead()));
 	board.select(btn, ui.handles.buttons);
 	dom.confirmBtn.disabled = false;
 	dom.undoBtn.disabled = false;
@@ -289,17 +476,37 @@ async function resolveCorrect (btn) {
 	dom.undoBtn.disabled = true;
 	dom.hintBtn.disabled = true;
 
-	const elapsed = q.timeoutMs - Math.max(0, ui.remainingMs);
-	const outcome = ui.errors === 0 && !ui.usedHelp && !ui.timedOut
+	clockStop();
+	// `answerMs` is the child's own time on the card they settled on; `roundMs`
+	// is everything they spent on the question. A best time compares the first.
+	//
+	// The old reading here was `q.timeoutMs - ui.remainingMs`, which cannot
+	// answer either question: a retry restarts the countdown on half a band, the
+	// entrance runs before the countdown exists, and the 900ms auto-submit wait
+	// landed inside the measurement.
+	const timing = {answerMs: ui.answerMs, roundMs: Math.round(clockRead())};
+	// A timeout ends its own round, so by here the child has answered without
+	// running out of time; only errors and help can hold this back.
+	const outcome = ui.errors === 0 && !ui.usedHelp
 		? OUTCOME.FIRST_TRY
 		: OUTCOME.AFTER_HELP;
 
-	sched.recordAnswer(q, outcome, elapsed, ui.errors);
+	const report = sched.recordAnswer(q, outcome, timing, ui.errors);
+	if (ui.run)
+		levels.recordRunAnswer(ui.run, q, outcome, report, !q.reinforcement);
 	paintStreak();
+	paintRun();
 	paintGarden(true);
 
 	await board.success(ui.handles, q, btn);
-	if (gen === ui.generation)
+	// The generation check, not `current`: a finished run leaves the play view,
+	// and this continuation is what takes it there.
+	if (gen !== ui.generation)
+		return;
+
+	if (ui.run && levels.runComplete(ui.run))
+		endRun();
+	else
 		nextRound();
 }
 
@@ -310,11 +517,16 @@ async function resolveWrong (btn) {
 	// The clock stops for the whole feedback sequence: the counting hint can run
 	// for seconds, and it must not be spent out of the child's thinking time.
 	clearTimers();
+	clockStop();
 	ui.feedback = true;
 	ui.errors += 1;
 	ui.selected = null;
 	dom.confirmBtn.disabled = true;
 	dom.undoBtn.disabled = true;
+
+	// A number-only question has nothing on screen to count, so the hints that
+	// follow would all run against an empty panel. Bring the objects out first.
+	board.revealObjects(ui.handles, q);
 
 	// Carry the chosen number out before anything else: the child sees what
 	// that many objects actually does to the figures, which is the reason it is
@@ -346,6 +558,7 @@ async function resolveWrong (btn) {
 
 	// A retry gets a fresh half-band, so it is never a race.
 	startTimer(Math.max(ui.remainingMs, q.timeoutMs * 0.5));
+	clockStart();
 }
 
 async function onTimeout () {
@@ -353,21 +566,47 @@ async function onTimeout () {
 	if (ui.resolving || ui.feedback)
 		return;
 
+	// Nor may it take a question the child has already answered. A card chosen in
+	// the last moments waits AUTO_SUBMIT_MS for its confirmation, and the band can
+	// expire inside that wait — recording a miss for an answer that is sitting
+	// there selected, and in a level run breaking the clear over it.
+	if (ui.selected) {
+		clearTimeout(ui.autoSubmitId);
+		await onConfirm();
+
+		return;
+	}
+
 	ui.resolving = true;
 	clearTimers();
-	ui.timedOut = true;
+	clockStop();
 
 	const gen = ui.generation;
 	const q = ui.question;
 	// Recorded as a timeout, not an arithmetic error: the child may have known it.
-	sched.recordAnswer(q, OUTCOME.TIMEOUT, q.timeoutMs, ui.errors);
+	// `answerMs` is null rather than the band: nobody produced an answer, and a
+	// band length recorded as a time would poison the best-time comparison.
+	const report = sched.recordAnswer(q, OUTCOME.TIMEOUT,
+		{answerMs: null, roundMs: Math.round(clockRead())}, ui.errors);
+	if (ui.run)
+		levels.recordRunAnswer(ui.run, q, OUTCOME.TIMEOUT, report, !q.reinforcement);
 	paintStreak();
+	paintRun();
+
+	// Same reason as a wrong answer: a number-only question needs its objects
+	// before a counting walkthrough can walk over anything.
+	board.revealObjects(ui.handles, q);
 
 	// A gentle counting walkthrough, then a fresh question with more time.
 	await board.countingHint(ui.handles);
 	board.lockChoices(ui.handles);
 	await new Promise(resolve => setTimeout(resolve, 500));
-	if (gen === ui.generation)
+	if (gen !== ui.generation)
+		return;
+
+	if (ui.run && levels.runComplete(ui.run))
+		endRun();
+	else
 		nextRound();
 }
 
@@ -381,6 +620,124 @@ async function onHint () {
 	await board.countingHint(ui.handles);
 	if (current(gen))
 		dom.hintBtn.disabled = false;
+}
+
+/* --------------------------------------------------------------- views */
+
+/**
+ * Swap views.
+ *
+ * The generation bump is the important part: every board animation checks it
+ * before touching the DOM, so leaving the play view cancels whatever was still
+ * in flight rather than letting it land on the map.
+ */
+function showView (name) {
+	ui.generation += 1;
+	ui.view = name;
+	clearTimers();
+	clockStop();
+	ui.paused = false;
+	dom.pause.hidden = true;
+	// Both overlays belong to a round, so neither may outlive the view. The result
+	// sheet is the one that matters: Escape out of it goes to the map, and without
+	// this it would sit over the map with its own buttons still the only way out.
+	dom.result.hidden = true;
+	dom.mapView.hidden = name !== 'map';
+	dom.playView.hidden = name !== 'play';
+}
+
+function levelView () {
+	const records = store.itemRecords();
+	const unlocked = levels.unlockedLevels(records, {unlockAll: ui.unlockAll});
+	const stars = new Map();
+	const cleared = new Set();
+
+	for (const level of levels.LEVELS) {
+		stars.set(level.id, levels.starsFor(level, records));
+		if (store.level(level.id).cleared)
+			cleared.add(level.id);
+	}
+
+	return {unlocked, stars, cleared, unlockAll: ui.unlockAll, onPick: startLevel};
+}
+
+function showMap () {
+	ui.run = null;
+	showView('map');
+	// Board flyers park on <body>, so they would hang over the map; the board
+	// clears its own strays rather than main.js reaching into its DOM.
+	board.teardown();
+	map.render(dom.mapHost, levelView());
+	paintRun();
+}
+
+function startLevel (levelId) {
+	const level = levels.levelById(levelId);
+	if (!level)
+		return;
+
+	const rec = store.level(level.id);
+	// Snapshot before the run, so the result can tell a star won just now from
+	// one the child already had.
+	ui.starsSeen = rec.starsSeen;
+	rec.runs += 1;
+	rec.lastPlayed = Date.now();
+	ui.run = levels.startRun(level);
+
+	showView('play');
+	nextRound();
+}
+
+/* -------------------------------------------------------------- the result */
+
+async function endRun () {
+	const run = ui.run;
+	if (!run)
+		return showMap();
+
+	clearTimers();
+	clockStop();
+	const records = store.itemRecords();
+	const result = levels.finishRun(run, records, {starsSeen: ui.starsSeen});
+	const rec = store.level(run.level.id);
+
+	// Persist what the child has now been shown, so the next result only pops the
+	// stars that are genuinely new.
+	rec.starsSeen = Math.max(rec.starsSeen, result.stars);
+	if (result.cleared)
+		rec.cleared = true;
+	if (!rec.bestRun || result.stars > rec.bestRun.stars)
+		rec.bestRun = {stars: result.stars, at: Date.now(), misses: result.misses};
+	store.save();
+
+	ui.run = null;
+	ui.question = null;
+	paintRun();
+
+	const gen = ui.generation;
+	map.renderResult(dom.result, result, {
+		onReplay: () => {
+			dom.result.hidden = true;
+			startLevel(result.levelId);
+		},
+		onMap: () => {
+			dom.result.hidden = true;
+			showMap();
+		},
+	});
+	dom.result.hidden = false;
+
+	if (result.cleared)
+		await map.playClear(dom.result);
+
+	// The unlock is shown on the map, where the newly open level actually is.
+	// Only when this run is what completed the coverage, and only if the child has
+	// not already tapped their way somewhere else.
+	if (result.unlocked && gen === ui.generation) {
+		dom.result.hidden = true;
+		showMap();
+		await map.playUnlock(dom.mapHost, result.unlocked);
+	}
 }
 
 /* --------------------------------------------------------------- pause */
@@ -407,9 +764,14 @@ function softPause () {
 function resume () {
 	ui.paused = false;
 	dom.pause.hidden = true;
-	// The question survives the pause with whatever time was left.
-	if (ui.remainingMs > 0 && !ui.resolving && !ui.feedback)
+	// The question survives the pause with whatever time was left. The view check
+	// matters because the gear is on the map too: closing the panel there must not
+	// start a countdown against whatever question was last on the board.
+	if (ui.view === 'play' && ui.question
+		&& ui.remainingMs > 0 && !ui.resolving && !ui.feedback) {
 		startTimer(ui.remainingMs);
+		clockStart();
+	}
 }
 
 /* -------------------------------------------------- parent / dev panel */
@@ -589,6 +951,14 @@ function buildOverlays () {
 		paintGarden(false);
 		paintStreak();
 		renderParent();
+		// The map is drawn from the records, so a wipe has to redraw it — otherwise
+		// it keeps showing stars and open levels that no longer exist, and tapping
+		// one would start a level the save says is locked.
+		if (ui.view === 'map')
+			map.render(dom.mapHost, levelView());
+		else
+			// A run against erased records has nothing left to be a run of.
+			showMap();
 	});
 	const closeBtn = document.createElement('button');
 	closeBtn.type = 'button';
@@ -599,7 +969,14 @@ function buildOverlays () {
 	sheet.append(actions);
 
 	dom.parent.append(sheet);
-	document.body.append(dom.pause, dom.parent);
+
+	// The result of a run. Filled by map.js; kept here because it belongs to the
+	// same overlay stack as the pause and parent sheets.
+	dom.result = document.createElement('div');
+	dom.result.className = 'overlay result';
+	dom.result.hidden = true;
+
+	document.body.append(dom.pause, dom.parent, dom.result);
 }
 
 function closeParent () {
@@ -610,30 +987,62 @@ function closeParent () {
 
 function boot () {
 	injectSprites();
+	dom.mapView = document.querySelector('.map-view');
+	dom.playView = document.querySelector('.play-view');
+	dom.mapHud = document.querySelector('.map-hud');
+	dom.mapHost = document.querySelector('.map-host');
 	dom.hud = document.querySelector('.hud');
 	dom.board = document.querySelector('.board');
 	dom.garden = document.querySelector('.garden');
 
+	// Debug only, and deliberately not persisted: a switch that wrote itself into
+	// the save file would leave the child's real progress permanently unlockable.
+	ui.unlockAll = new URLSearchParams(window.location.search).has('unlock');
+
 	store.load();
 	buildHud();
+	buildMapHud();
 	buildOverlays();
 	paintGarden(false);
 	paintStreak();
-	nextRound();
+	showMap();
 
 	document.addEventListener('keydown', event => {
-		if (event.key === 'Escape') {
-			if (!dom.parent.hidden)
-				closeParent();
-			else
-				togglePause();
-		}
+		if (event.key !== 'Escape')
+			return;
+
+		if (!dom.parent.hidden)
+			closeParent();
+		else if (!dom.result.hidden)
+			// Escape out of the result goes back to the map, which is the only
+			// other thing that screen can do.
+			showMap();
+		else if (ui.view === 'play')
+			// Never on the map: there is no round to pause there, and the pause
+			// overlay would sit over it with no way to read what it means.
+			togglePause();
 	});
 
-	// Losing focus mid-question should not spend the child's time.
+	// Losing focus mid-question should not spend the child's time. Only in play:
+	// backgrounding the map would otherwise raise a pause sheet over it.
 	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'hidden' && !ui.paused && !ui.resolving)
+		if (document.visibilityState === 'hidden'
+			&& ui.view === 'play' && !ui.paused && !ui.resolving)
 			pause();
+	});
+
+	// The map measures its host to choose a path shape, so a box that changes shape
+	// needs a re-render. Debounced, because a drag-resize fires this continuously
+	// and each render throws the nodes away and measures the path again. Skipped
+	// while the unlock animation is running: a re-render would remove the very node
+	// mid-flight.
+	let resizeId = 0;
+	window.addEventListener('resize', () => {
+		clearTimeout(resizeId);
+		resizeId = setTimeout(() => {
+			if (ui.view === 'map' && !dom.mapHost.querySelector('.unlocking'))
+				map.render(dom.mapHost, levelView());
+		}, 150);
 	});
 }
 

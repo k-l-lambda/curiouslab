@@ -318,6 +318,15 @@ const SPRITES = `
   <path d="M8 50 H70" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
   <path d="M58 26 L92 50 L58 74 Z" fill="currentColor"/>
 </symbol>
+<!-- A closed padlock, for a level not yet open. The shackle is a separate path
+     so a stylesheet can lift it off the body when the lock breaks. -->
+<symbol id="ic-lock" viewBox="0 0 100 100">
+  <path class="shackle" d="M32 46 V33 a18 18 0 0 1 36 0 V46" fill="none" stroke="currentColor"
+    stroke-width="11" stroke-linecap="round"/>
+  <rect x="22" y="44" width="56" height="44" rx="10" fill="currentColor"/>
+  <circle cx="50" cy="62" r="6" fill="#fff"/>
+  <rect x="47" y="64" width="6" height="14" rx="3" fill="#fff"/>
+</symbol>
 `;
 
 /**

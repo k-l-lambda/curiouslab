@@ -357,6 +357,52 @@ function opSign (sign) {
 	return el;
 }
 
+/**
+ * The question written out, as a list of numerals and symbols.
+ *
+ * Shared by the bare prompt and the answer reveal so the two cannot drift apart
+ * — in particular over the minus sign, which is U+2212 and not a hyphen.
+ */
+function equationParts (q, withAnswer) {
+	const head = q.mode === 'add'
+		? [q.operands[0], '+', q.operands[1]]
+		: q.mode === 'sub'
+			? [q.operands[0], '−', q.operands[1]]
+			: [];
+
+	if (!head.length)
+		return withAnswer ? [q.answer] : [];
+
+	return withAnswer ? [...head, '=', q.answer] : [...head, '='];
+}
+
+/**
+ * A question with no objects at all: the numerals are the question.
+ *
+ * The blank is dashed, borrowing the vocabulary the subtraction layout already
+ * teaches with its empty plates — a dashed outline is the shape of something
+ * missing. And the row of numerals itself is not new to the child: it is what
+ * the board shows them after every correct answer, so by the time it becomes the
+ * question it is already familiar.
+ */
+function equationPrompt (q) {
+	const wrap = document.createElement('div');
+	wrap.className = 'equation prompt';
+
+	for (const part of equationParts(q, false)) {
+		const el = document.createElement('span');
+		el.textContent = String(part);
+		wrap.append(el);
+	}
+
+	const blank = document.createElement('span');
+	blank.className = 'blank';
+	wrap.append(blank);
+	wrap.setAttribute('aria-label', `${equationParts(q, false).join(' ')} ?`);
+
+	return wrap;
+}
+
 /** One answer card: a numeral, optionally over a matching object preview. */
 function choiceCard (value, pairing, preview) {
 	const btn = document.createElement('button');
@@ -409,7 +455,14 @@ export function render (board, q, opts = {}) {
 
 	let sourceGroups = [];
 
-	if (q.mode === 'count') {
+	if (q.form === 'bare') {
+		// Nothing to count: the question is the arithmetic itself. The panel keeps
+		// the height it would have had with objects in it, so that materialising
+		// them later cannot shift the answer cards under the child's finger.
+		left.classList.add('bare-panel');
+		left.append(equationPrompt(q));
+	}
+	else if (q.mode === 'count') {
 		// The source stays unlabelled by design: the quantity must be
 		// established by counting, not read off a label.
 		const g = labelledGroup(pairing.source, q.operands[0], q.knobs.density, false);
@@ -437,7 +490,11 @@ export function render (board, q, opts = {}) {
 	}
 
 	// Centre: the action area.
-	if (q.mode === 'sub') {
+	if (q.form === 'bare')
+		// The prompt already carries the operator, so a second sign here would say
+		// it twice. The arrow still points from the question to the cards.
+		action.append(sprite('ic-arrow', 'arrow'));
+	else if (q.mode === 'sub') {
 		// Only the sign and the numeral: the fish themselves are already on the
 		// plates, so repeating them here would contradict the visible count.
 		const have = document.createElement('div');
@@ -741,6 +798,67 @@ export function deselect (buttons) {
 	buttons.forEach(b => b.classList.remove('selected'));
 }
 
+/**
+ * Put countable objects into a `bare` panel.
+ *
+ * The number-only form has nothing on screen to count, so every hint that
+ * follows a mistake is silently a no-op there: `countingHint` walks
+ * `sourceObjects()`, `correspondenceHint` draws lines from them, and both get an
+ * empty list. A child who has just got it wrong is exactly the child who needs
+ * the objects, so the first miss brings them out — the question becomes the
+ * cartoon form for the rest of the round.
+ *
+ * Idempotent: a second miss must not double the group.
+ *
+ * @returns {boolean} true if this call is what revealed them
+ */
+export function revealObjects (handles, q) {
+	const left = handles.left;
+	if (!left.classList.contains('bare-panel') || left.dataset.revealed === '1')
+		return false;
+
+	left.dataset.revealed = '1';
+	const pairing = handles.pairing;
+	// The prompt stays: it is the question, and taking it away mid-round would
+	// change what was asked. The objects join it.
+	const objects = document.createElement('div');
+	objects.className = 'bare-objects';
+
+	if (q.mode === 'add') {
+		const row = document.createElement('div');
+		row.className = 'add-source';
+		row.append(
+			labelledGroup(pairing.source, q.operands[0], q.knobs.density, true),
+			opSign('+'),
+			labelledGroup(pairing.source, q.operands[1], q.knobs.density, true));
+		objects.append(row);
+		left.style.setProperty('--groups', '2');
+	}
+	else if (q.mode === 'sub')
+		objects.append(pairGrid(pairing, q.operands[0], q.operands[1], q.knobs.density));
+	else
+		objects.append(labelledGroup(pairing.source, q.operands[0], q.knobs.density, false));
+
+	left.append(objects);
+	// Same correction the first render makes: the objects have to fit the panel
+	// they actually landed in, not the one the stylesheet guessed.
+	fitPanel(left);
+
+	return true;
+}
+
+/**
+ * Leave the board.
+ *
+ * Delivery parks flyers on <body> and the correspondence hint parks an <svg>
+ * there, so neither is inside the board element — emptying it would leave them
+ * floating over whatever comes next. Called when the view changes.
+ */
+export function teardown () {
+	clearOverlaySprites();
+	document.querySelectorAll('.hint-svg').forEach(el => el.remove());
+}
+
 /** Retry: the card returns with a wobble, nothing is marked as failure. */
 export async function retry (btn) {
 	btn.classList.remove('selected');
@@ -805,6 +923,24 @@ export async function correspondenceHint (handles, btn) {
 export async function success (handles, q, btn) {
 	btn.classList.add('correct');
 	handles.buttons.forEach(b => b.classList.remove('selected'));
+
+	// A bare question has no figures to deliver to and none to cheer. Delivery
+	// would read every object as surplus and pile them under the card — the very
+	// picture a wrong answer makes. So it gets its own quieter ending: the blank
+	// fills in, and that is the whole reward.
+	//
+	// Quieter is right rather than merely simpler. This is the form for a child
+	// who no longer needs the objects, and they do not need a parade either.
+	if (!handles.anchors().length) {
+		const blank = handles.left.querySelector('.equation.prompt .blank');
+		if (blank) {
+			blank.textContent = String(q.answer);
+			blank.classList.add('filled');
+		}
+		await wait(REDUCED ? 20 : 700);
+
+		return;
+	}
 
 	// Unhurried: this flight is the correspondence being completed, one at a time.
 	await deliver(handles, q.answer, btn, {step: 85, flight: 560});
@@ -881,17 +1017,27 @@ export async function wrongReveal (handles, value, btn) {
 	clearOverlaySprites();
 }
 
-/** Numbers and symbols only. */
+/**
+ * Numbers and symbols only.
+ *
+ * A `bare` panel that grew its objects after a miss already has the question
+ * written in it, so the answer fills that blank instead of arriving as a second
+ * equation underneath — otherwise the child ends the round looking at `2 + 3 = ?`
+ * above `2 + 3 = 5`, and has to work out that both are the same question.
+ */
 function showEquation (host, q) {
+	const blank = host.querySelector('.equation.prompt .blank');
+	if (blank) {
+		blank.textContent = String(q.answer);
+		blank.classList.add('filled');
+
+		return;
+	}
+
 	const eq = document.createElement('div');
 	eq.className = 'equation';
-
-	const parts = q.mode === 'add'
-		? [q.operands[0], '+', q.operands[1], '=', q.answer]
-		: q.mode === 'sub'
-			? [q.operands[0], '−', q.operands[1], '=', q.answer]
-			: [q.answer];
-
+	// Shared with the prompt so the two can never disagree about the operator.
+	const parts = equationParts(q, true);
 	eq.textContent = parts.join(' ');
 	eq.setAttribute('aria-label', parts.join(' '));
 	host.append(eq);

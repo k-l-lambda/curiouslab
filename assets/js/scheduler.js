@@ -13,8 +13,11 @@ import * as store from './storage.js';
 import {OUTCOME} from './storage.js';
 import {
 	MODES, TIERS, TIMEOUT_BANDS,
-	generate, siblingOf, skillKey, tierIndex, pick,
+	generate, siblingOf, skillKey, tierIndex, pick, quantityOf,
 } from './questions.js';
+// One-way edge: levels.js imports neither this module nor storage.js, so the
+// grading rules stay assertable on their own.
+import {gradeFor} from './levels.js';
 
 const UNLOCK_MASTERY = 0.8;
 const UNLOCK_ATTEMPTS = 6;
@@ -68,8 +71,13 @@ function availableTiers (mode) {
  * Difficulty knobs for a skill. Pressure grows with mastery, but only one knob
  * is raised per pressure step and the order rotates, so quantity, density,
  * distractor distance and label dependence never all jump together.
+ *
+ * The `preview` knob it sets is advisory. A level declares which presentation
+ * forms it asks for, and `levels.buildQuestion` overwrites `preview` from the
+ * chosen form after calling this — so on the level path, what the level says it
+ * asks is what gets asked. Free practice is where this knob still decides.
  */
-function knobsFor (mode, tierId) {
+export function knobsFor (mode, tierId) {
 	const rec = store.skill(skillKey(mode, tierId));
 	const knobs = {density: 'sparse', distractor: 'far', preview: 'objects'};
 
@@ -202,10 +210,20 @@ function weakestSkill () {
 	return worst;
 }
 
-/** Apply the stored timeout band for this skill to a question. */
-function applyBand (q) {
+/**
+ * Apply the stored timeout band for this skill to a question.
+ *
+ * `relax` gives one band back, and level runs ask for it. Without it the rules
+ * work against each other: the band tightens as a skill improves, while clearing
+ * a level asks for no timeouts — so getting better at a level would make clearing
+ * it harder, and a child could be timed out of the very level they had just
+ * mastered. A level run is a statement about their counting, not about the clock
+ * they earned in free practice.
+ */
+export function applyBand (q, {relax = false} = {}) {
 	const rec = store.skill(q.skill);
-	q.band = Math.min(rec.band, TIMEOUT_BANDS.length - 1);
+	const band = relax ? Math.max(0, rec.band - 1) : rec.band;
+	q.band = Math.min(band, TIMEOUT_BANDS.length - 1);
 	q.timeoutMs = TIMEOUT_BANDS[q.band];
 	// An unfamiliar pairing always gets the generous band.
 	if (!store.pairingRecord(q.pairingId).seen) {
@@ -314,11 +332,37 @@ function updateMastery (rec, outcome) {
  * @param {number} elapsedMs
  * @param {number} [errorCount] wrong taps made before the round resolved
  */
-export function recordAnswer (q, outcome, elapsedMs, errorCount = 0) {
+/**
+ * Record one answer, move the policy on, and report what the answer changed.
+ *
+ * @param {object} q the question just answered
+ * @param {string} outcome one of OUTCOME
+ * @param {{answerMs: number|null, roundMs: number}} timing
+ *   `answerMs` is the child's own time on the card they settled on, and is null
+ *   when nobody ever got it right. `roundMs` is everything spent on the question.
+ *   Passed as an object rather than a bare number so that a caller which has not
+ *   been updated fails loudly instead of quietly recording `undefined`.
+ * @param {number} [errorCount]
+ * @returns {{improved: boolean, gradeBefore: number, gradeAfter: number,
+ *            bestMsBefore: number, bestMsAfter: number, firstEverCorrect: boolean,
+ *            itemId: string, form: string}}
+ */
+export function recordAnswer (q, outcome, timing, errorCount = 0) {
+	if (!timing || typeof timing !== 'object')
+		throw new TypeError('recordAnswer: timing must be {answerMs, roundMs}');
+
+	const answerMs = timing.answerMs;
 	const state = store.getState();
 	const rec = store.skill(q.skill);
 	const pRec = store.pairingRecord(q.pairingId);
 	const iRec = store.item(q.key);
+	// Every question has a presentation; free practice questions are `full`
+	// unless the knobs took the previews away.
+	const form = q.form ?? (q.knobs?.preview === 'numbers' ? 'prompt' : 'full');
+	const fRec = store.itemForm(q.key, form);
+	// Snapshot before anything moves: grade is computed from the record rather
+	// than stored on it, so "what it was" has to be captured, not read back.
+	const before = {...fRec};
 	const now = Date.now();
 
 	rec.attempts += 1;
@@ -342,6 +386,31 @@ export function recordAnswer (q, outcome, elapsedMs, errorCount = 0) {
 		iRec.timeouts += 1;
 	}
 
+	/* ---- this exact question, in this exact presentation ---- */
+
+	fRec.seen += 1;
+	fRec.lastSeen = now;
+
+	if (correct) {
+		// What opens the next level, and it is set here for any correct answer:
+		// with help or without, the child produced the right number.
+		iRec.everCorrect = true;
+		fRec.correct += 1;
+		if (answerMs != null)
+			fRec.lastMs = Math.round(answerMs);
+	}
+
+	if (outcome === OUTCOME.FIRST_TRY && answerMs != null) {
+		fRec.firstTry += 1;
+		// Only an unaided answer sets the best time. One that followed a counting
+		// hint would be measuring the hint.
+		if (!fRec.bestMs || answerMs < fRec.bestMs)
+			fRec.bestMs = Math.round(answerMs);
+	}
+
+	if (outcome === OUTCOME.TIMEOUT)
+		fRec.misses += 1;
+
 	// A question solved only after help counts against the recent window, so it
 	// keeps raising future practice probability rather than looking mastered.
 	rec.window.push(outcome === OUTCOME.FIRST_TRY);
@@ -352,7 +421,7 @@ export function recordAnswer (q, outcome, elapsedMs, errorCount = 0) {
 
 	// Timeout band: tighten only after a run of comfortable first-try answers,
 	// and give time back immediately after a timeout.
-	if (outcome === OUTCOME.FIRST_TRY && elapsedMs < q.timeoutMs * 0.6) {
+	if (outcome === OUTCOME.FIRST_TRY && answerMs != null && answerMs < q.timeoutMs * 0.6) {
 		rec.fastRun += 1;
 		if (rec.fastRun >= BAND_ADVANCE_RUN && rec.band < TIMEOUT_BANDS.length - 1) {
 			rec.band += 1;
@@ -399,7 +468,15 @@ export function recordAnswer (q, outcome, elapsedMs, errorCount = 0) {
 	iRec.consecutive = tail.filter(k => k === q.key).length;
 
 	// After a miss, queue one gentler sibling instead of replaying the same item.
-	if ((!correct || errorCount > 0) && !q.reinforcement)
+	//
+	// Not on the level path. A level run asks a fixed number of questions, and an
+	// injected extra would either eat one of them — leaving some of the level's own
+	// questions unasked, which is exactly what the coverage gate counts — or make
+	// the length of a run unpredictable. `siblingOf` also steps down a tier to find
+	// something easier, which can land outside the level's range entirely. Levels
+	// do their own weighting instead: a missed question simply carries more weight
+	// into the next run.
+	if ((!correct || errorCount > 0) && !q.reinforcement && !q.levelId)
 		session.reinforceQueue.push(siblingOf(q, pairingById(q.pairingId)));
 
 	store.pushRecent({
@@ -411,11 +488,35 @@ export function recordAnswer (q, outcome, elapsedMs, errorCount = 0) {
 		answer: q.answer,
 		outcome,
 		errorCount,
-		elapsedMs: Math.round(elapsedMs),
+		// Null when nobody answered. Rounded only for storage; the comparison
+		// above uses the real value.
+		elapsedMs: answerMs == null ? null : Math.round(answerMs),
+		roundMs: Math.round(timing.roundMs ?? 0),
+		form,
+		levelId: q.levelId ?? null,
 		band: q.band,
 	});
 
 	store.save();
+
+	const quantity = q.quantity ?? quantityOf(q.mode, q.operands);
+	const gradeBefore = gradeFor(before, quantity);
+	const gradeAfter = gradeFor(fRec, quantity);
+
+	return {
+		itemId: q.key,
+		form,
+		gradeBefore,
+		gradeAfter,
+		bestMsBefore: before.bestMs ?? 0,
+		bestMsAfter: fRec.bestMs,
+		firstEverCorrect: correct && !before.correct,
+		// Either the child reached a rung they had not reached before, or they beat
+		// their own best time on this question. Both count as getting better, and
+		// either one is enough to clear a level.
+		improved: gradeAfter > gradeBefore
+			|| (fRec.bestMs > 0 && before.bestMs > 0 && fRec.bestMs < before.bestMs),
+	};
 }
 
 export {TIMEOUT_BANDS};

@@ -52,12 +52,15 @@ body {
 .stage {
 	height: 100%;
 	display: grid;
-	grid-template-rows: auto 1fr auto;
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: clamp(.5rem, 1.5vh, 1rem);
 	gap: clamp(.4rem, 1vh, .9rem);
 }
+/* HUD, board, garden. The map has its own two-row shape. */
+.play-view { grid-template-rows: auto 1fr auto; }
+.map-view { grid-template-rows: auto 1fr; }
+.stage[hidden] { display: none !important; }
 
 /* ---------- HUD: icons and numbers only ---------- */
 
@@ -640,6 +643,297 @@ body {
 }
 .parent button.text-btn.danger { color: #b42318; border-color: #f3c3bd; }
 .parent .weak { color: #b42318; }
+
+/* ---------- Number-only questions ---------- */
+
+/* The panel keeps the height it would have had with objects in it. Without this
+   the board reflows the moment a miss materialises them, and the answer cards
+   move out from under a finger already on the way down. */
+.bare-panel { justify-content: center; min-height: clamp(8rem, 30vh, 16rem); }
+
+/* The prompt is the question, so unlike the reveal it sits in the middle of the
+   panel at full size rather than tucked along the bottom edge. */
+.equation.prompt {
+	position: static;
+	transform: none;
+	animation: none;
+	background: transparent;
+	color: var(--ink);
+	font-size: clamp(2rem, 8vh, 4rem);
+	gap: .45rem;
+	padding: 0;
+}
+
+/* The blank borrows the dashed vocabulary of an empty plate: the same shape
+   already means "something goes here" everywhere else on this board. */
+.equation.prompt .blank {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.2em;
+	border-bottom: 4px dashed #a8c6d0;
+	color: var(--ok);
+}
+.equation.prompt .blank.filled {
+	border-bottom-color: var(--ok);
+	animation: pop .45s cubic-bezier(.2,1.3,.35,1) both;
+}
+
+/* Objects brought out after a miss: they join the prompt rather than replacing
+   it, so the panel becomes the cartoon form for the rest of the round. */
+.bare-objects { display: grid; place-items: center; width: 100%; animation: pop .4s ease-out both; }
+
+/* ---------- The level map ---------- */
+
+.map-hud { display: flex; align-items: center; gap: .6rem; }
+
+/* `html, body { overflow: hidden }` clips this view, so the map cannot rely on
+   the document scrolling and needs its own scroller. `min-height: 0` is what lets
+   a grid row shrink enough for that overflow to happen here rather than pushing
+   the row taller than the screen.
+   `safe center` centres the map when it fits and falls back to start alignment
+   when it does not: plain centring would push the top of an oversized map above
+   the scroll origin, where nothing can scroll it back into view. */
+.map-host {
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
+	display: flex;
+	flex-direction: column;
+	justify-content: safe center;
+	align-items: center;
+}
+
+/* The map fills its host exactly, and the curve stretches to fit.
+   No aspect-ratio, deliberately. The obvious version — a box shaped like the
+   viewBox — either overflows the screen or has to be capped, and a capped box is
+   the case that scrolled the first level out of view: the portrait path starts at
+   the bottom, so the level the child is meant to tap is the one that disappears.
+   Filling instead means the whole ladder is always on screen and nothing scrolls.
+   Distortion is not a correctness problem here: the ribbon is drawn with
+   preserveAspectRatio="none" and the nodes are placed as percentages of the same
+   viewBox, so both stretch by the same factors and a node cannot leave the curve.
+   What keeps the stretch from being ugly is map.js choosing the path shape from
+   this box's measured proportions. */
+.level-map {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	flex: 1 1 auto;
+	padding: 0;
+}
+
+.map-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-ribbon .trail-under { fill: none; stroke: #b9d4c6; stroke-width: 26; stroke-linecap: round; }
+.map-ribbon .trail {
+	fill: none;
+	stroke: var(--panel);
+	stroke-width: 20;
+	stroke-linecap: round;
+	stroke-dasharray: 1 34;
+	stroke-linejoin: round;
+}
+
+/* Level nodes: centred on their point of the path. */
+.level-node {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	width: clamp(4.2rem, 13vh, 6.4rem);
+	height: clamp(4.2rem, 13vh, 6.4rem);
+	border: 4px solid var(--panel);
+	border-radius: 50%;
+	background: var(--sky-2);
+	box-shadow: 0 4px 0 #a8c6d0, 0 8px 16px #23303a26;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	cursor: pointer;
+	transition: transform .18s ease, box-shadow .18s ease;
+}
+.level-node:hover { transform: translate(-50%, -50%) scale(1.06); }
+.level-node:active { transform: translate(-50%, -50%) scale(.95); }
+.level-node:focus-visible { outline: 3px solid var(--ring); outline-offset: 4px; }
+.level-node.cleared { background: #dff0e4; border-color: #fff; }
+
+.node-art { display: grid; place-items: center; width: 100%; height: 100%; position: relative; }
+.node-art .node-figure { width: 68%; height: auto; }
+/* The counted object, tucked into the corner: it says what the level is about
+   without competing with the figure for the middle. */
+.node-art .node-token {
+	position: absolute;
+	right: 4%;
+	bottom: 6%;
+	width: 30%;
+	height: auto;
+}
+
+/* Stars ride under the node rather than inside it, so they never crowd the art. */
+.node-stars {
+	position: absolute;
+	bottom: -.75rem;
+	display: flex;
+	gap: .1rem;
+	background: var(--panel);
+	border-radius: 999px;
+	padding: .1rem .3rem;
+	box-shadow: 0 2px 6px #23303a1f;
+}
+.node-stars svg { width: clamp(.85rem, 2.1vh, 1.15rem); height: auto; opacity: .22; }
+.node-stars svg.lit { opacity: 1; }
+
+/* Locked: greyed, and the padlock says why rather than the node just looking
+   inert. `filter` rather than a flat colour so the figure is still recognisable
+   underneath — the child can see which level is waiting for them. */
+.level-node.locked {
+	cursor: default;
+	background: #e3e9ec;
+	box-shadow: 0 3px 0 #c3d0d6;
+}
+.level-node.locked .node-art { filter: grayscale(1) opacity(.45); }
+.level-node.locked:hover { transform: translate(-50%, -50%); }
+.node-lock {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	color: #7d8f99;
+}
+.node-lock svg { width: clamp(1.6rem, 4.4vh, 2.3rem); height: auto; }
+
+/* Band markers: the hand sign for a stretch of the path. Offset off the curve so
+   the sign labels the road rather than sitting on it. */
+.band-marker {
+	position: absolute;
+	transform: translate(-50%, -50%);
+	margin-left: -3.6rem;
+	margin-top: -2.6rem;
+	font-size: clamp(1.5rem, 4.2vh, 2.3rem);
+	line-height: 1;
+	background: var(--panel);
+	border-radius: 999px;
+	padding: .2rem .45rem;
+	box-shadow: 0 2px 8px #23303a24;
+	pointer-events: none;
+}
+
+/* The debug flag. Text, deliberately: it is for whoever opened the URL, not for
+   the child, and it should not look like part of the game. */
+.debug-flag {
+	position: absolute;
+	top: .25rem;
+	right: .25rem;
+	font: 600 11px/1 ui-monospace, monospace;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	color: #b42318;
+	background: #fff;
+	border: 1px solid #f3c3bd;
+	border-radius: 6px;
+	padding: .25rem .4rem;
+}
+
+/* The lock coming off. Two stages on one element: the shackle lifts and the
+   whole lock drops away, then the node itself comes up out of grey. */
+.level-node.unlocking .node-lock { animation: lock-break .75s cubic-bezier(.3,1.3,.4,1) both; }
+.level-node.unlocking .node-lock svg .shackle { animation: shackle-lift .38s ease-out both; }
+.level-node.unlocking .node-art { animation: un-grey .5s .5s ease-out both; }
+
+@keyframes shackle-lift {
+	to { transform: translateY(-26%) rotate(-16deg); }
+}
+@keyframes lock-break {
+	60% { transform: translateY(-14%) rotate(-8deg); opacity: 1; }
+	100% { transform: translateY(70%) rotate(24deg); opacity: 0; }
+}
+@keyframes un-grey {
+	from { filter: grayscale(1) opacity(.45); }
+	to { filter: none; }
+}
+
+/* ---------- Run progress: how much of this level is left ---------- */
+
+.run-strip { display: flex; gap: .22rem; align-items: center; }
+.run-strip[hidden] { display: none !important; }
+.run-pip {
+	width: clamp(.5rem, 1.3vh, .7rem);
+	height: clamp(.5rem, 1.3vh, .7rem);
+	border-radius: 50%;
+	background: #ffffff9c;
+	box-shadow: inset 0 0 0 2px #a8c6d0;
+	transition: background .25s ease;
+}
+.run-pip.done { background: var(--ring); box-shadow: inset 0 0 0 2px var(--ring); }
+/* A run that has already lost its clean sheet says so while it is still being
+   played, rather than only in the result. */
+.run-strip.missed .run-pip.done { background: var(--warn); box-shadow: inset 0 0 0 2px var(--warn); }
+
+/* ---------- Result of a run ---------- */
+
+.result-sheet { display: grid; justify-items: center; gap: 1rem; max-width: 24rem; }
+
+.result-stars { display: flex; gap: .5rem; }
+.result-stars svg { width: clamp(3rem, 9vh, 4.4rem); height: auto; opacity: .2; }
+.result-stars svg.lit { opacity: 1; }
+.result-stars svg.gained { animation: star-pop .6s cubic-bezier(.2,1.5,.35,1) both; }
+
+@keyframes star-pop {
+	0% { transform: scale(0) rotate(-40deg); opacity: 0; }
+	70% { transform: scale(1.25) rotate(6deg); opacity: 1; }
+	100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Coverage: one pip per question in the level, filled for each one ever
+   answered correctly. This is what the next level is waiting on. */
+.result-coverage { display: flex; gap: .25rem; flex-wrap: wrap; justify-content: center; }
+.cov-pip {
+	width: .7rem;
+	height: .7rem;
+	border-radius: 3px;
+	background: #eceff1;
+	box-shadow: inset 0 0 0 2px #d8e0e4;
+}
+.cov-pip.done { background: var(--ok); box-shadow: inset 0 0 0 2px var(--ok); }
+
+.improve-list { display: grid; gap: .4rem; width: 100%; }
+.improve-row {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: .5rem;
+	background: #f4f8f9;
+	border-radius: 12px;
+	padding: .4rem .7rem;
+}
+.improve-item { font: 700 clamp(1.1rem, 3vh, 1.5rem)/1 ui-rounded, system-ui, sans-serif; }
+.improve-item.numerals { font-variant-numeric: tabular-nums; }
+/* Seconds, before and after. The old number is struck through: the point is that
+   it has been beaten, and a plain pair of numbers does not say which won. */
+.improve-row .was { color: #8a9aa4; text-decoration: line-through; font-variant-numeric: tabular-nums; }
+.improve-row .now { color: var(--ok); font-weight: 700; font-variant-numeric: tabular-nums; }
+.improve-arrow { width: 1.1rem; height: auto; color: #8a9aa4; }
+.improve-grade svg { width: 1.5rem; height: auto; }
+
+.result-actions { display: flex; gap: .8rem; }
+.result-actions .icon-btn { width: 3.6rem; height: 3.6rem; }
+
+/* The clear burst: stars thrown outward from the middle of the sheet. */
+.clear-burst {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	pointer-events: none;
+}
+.burst-star {
+	position: absolute;
+	width: clamp(1.4rem, 4vh, 2.2rem);
+	height: auto;
+	animation: burst .85s cubic-bezier(.15,.9,.3,1) both;
+}
+@keyframes burst {
+	0% { transform: rotate(var(--angle)) translateY(0) scale(.3); opacity: 0; }
+	35% { opacity: 1; }
+	100% { transform: rotate(var(--angle)) translateY(-42vmin) scale(1); opacity: 0; }
+}
 
 /* ---------- Narrow screens: stack the board ---------- */
 

@@ -42,7 +42,34 @@ export const OPTION_COUNT = 4;
 export const MAX_QUANTITY = 10;
 
 export const skillKey = (mode, tierId) => `${mode}:${tierId}`;
-export const itemKey = q => `${q.mode}:${q.tierId}:${q.operands.join('+')}`;
+
+/**
+ * One concrete question, independent of where it was drawn from: `count:3`,
+ * `add:1+2`, `sub:5-2`.
+ *
+ * Deliberately tier-free. `2+3` is the same piece of arithmetic whether it was
+ * drawn from a tier or asked by a level, and mastery of it should accumulate in
+ * one record rather than splitting by the route that produced it. Operand order
+ * is kept: `1+2` and `2+1` look different on the board, so a child can know one
+ * and not the other.
+ */
+export const itemId = (mode, operands) => mode === 'sub'
+	? `sub:${operands[0]}-${operands[1]}`
+	: `${mode}:${operands.join('+')}`;
+
+export const itemKey = q => itemId(q.mode, q.operands);
+
+/**
+ * How many objects the child is dealing with on this question.
+ *
+ * Not the same as the answer: in the missing-addend task the board shows all
+ * `operands[0]` figures and the answer is only the shortfall. This is what a
+ * fair time expectation has to scale with, since counting seven of something
+ * takes longer than counting two however well it is known.
+ */
+export const quantityOf = (mode, operands) => mode === 'sub'
+	? operands[0]
+	: operands.reduce((sum, n) => sum + n, 0);
 
 const randInt = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 const pick = list => list[Math.floor(Math.random() * list.length)];
@@ -58,7 +85,7 @@ export const defaultKnobs = () => ({
  * Build the option list: the answer plus distractors at the requested
  * distance, all inside 0..MAX_QUANTITY, all distinct, sorted ascending.
  */
-function buildOptions (answer, distance) {
+export function buildOptions (answer, distance) {
 	const options = new Set([answer]);
 	const offsets = distance === 'near' ? [1, -1, 2, -2] : [2, -2, 3, -3, 1, -1];
 	const ordered = offsets.slice().sort(() => Math.random() - 0.5);
@@ -155,6 +182,7 @@ function generateOnce (mode, tier, pairing, knobs) {
 		skill: skillKey(mode, tier.id),
 		timeoutMs: TIMEOUT_BANDS[0],
 		band: 0,
+		quantity: quantityOf(mode, operands),
 	};
 	q.key = itemKey(q);
 

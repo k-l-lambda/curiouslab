@@ -10,7 +10,15 @@
 <link rel="stylesheet" href="game.css">
 </head>
 <body>
-<main class="stage">
+<!-- Two views, swapped rather than navigated: the map and the board share a
+     document so a deep link, ?unlock and the loaded sprite sheet all survive
+     moving between them. `hidden` is in the static markup so the board never
+     flashes before main.js decides which view to show. -->
+<main class="stage map-view">
+	<div class="map-hud"></div>
+	<div class="map-host"></div>
+</main>
+<main class="stage play-view" hidden>
 	<div class="hud"></div>
 	<div class="board"></div>
 	<div class="garden"></div>
