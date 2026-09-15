@@ -240,11 +240,25 @@ const SPRITES = `
  */
 const BOXES = new Map();
 
+/* The square every sprite above was hand-drawn in. */
+const SPRITE_UNITS = 100;
+
 /** The box a sprite actually occupies, or undefined for an unmeasured one. */
 export const spriteBox = id => BOXES.get(id);
 
-/** viewBox attribute value for a measured box. */
+/** The box, as a viewBox attribute in the coordinates the sprite was drawn in. */
 const boxAttr = b => `${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.w.toFixed(2)} ${b.h.toFixed(2)}`;
+
+/**
+ * The same box as a viewBox for an <svg> that shows the sprite through a <use>.
+ *
+ * It starts at the origin, not at the crop offset, and that is the whole trick:
+ * a <use> whose symbol carries a viewBox maps that viewBox onto the use's own
+ * viewport, so the symbol has already moved the drawing to (0,0) by the time the
+ * outer <svg> sees it. Repeating the offset out here would scroll the drawing up
+ * and to the left by exactly the margin that was cropped, cutting off its corner.
+ */
+const originAttr = b => `0 0 ${b.w.toFixed(2)} ${b.h.toFixed(2)}`;
 
 /**
  * Crop every object sprite's viewBox to the drawing inside it.
@@ -267,10 +281,12 @@ function measureSprites (sheet) {
 	// A <symbol> is never rendered and has no box to measure, and its children
 	// have no computed style either. A rendered copy has both.
 	const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-	probe.setAttribute('viewBox', '0 0 100 100');
-	probe.setAttribute('width', '100');
-	probe.setAttribute('height', '100');
-	probe.style.cssText = 'position:absolute;left:-9999px;top:0';
+	probe.setAttribute('viewBox', `0 0 ${SPRITE_UNITS} ${SPRITE_UNITS}`);
+	// The pixel size is pinned inline, and to the same number as the viewBox, so
+	// one drawn unit is one pixel: the measurement below reads pixels and records
+	// user units. Inline so no stylesheet rule for `svg` can rescale it.
+	probe.style.cssText = 'position:absolute;left:-9999px;top:0;'
+		+ `width:${SPRITE_UNITS}px;height:${SPRITE_UNITS}px`;
 	document.body.append(probe);
 
 	for (const sym of sheet.querySelectorAll('symbol[id^="sp-"]')) {
@@ -279,36 +295,78 @@ function measureSprites (sheet) {
 			g.append(child.cloneNode(true));
 		probe.append(g);
 
-		let box = null;
+		// What the sprite actually paints, in the units it was drawn in.
+		//
+		// getBBox() describes geometry and excludes stroke, and in Chromium
+		// getBoundingClientRect() excludes it too (a 10-wide stroked line reports
+		// height 0), while getBBox({stroke: true}) is ignored. So the stroke has
+		// to be added by hand: each shape's own box, grown by half its own stroke
+		// width. Per shape, not one widest-stroke pad for the whole sprite — the
+		// cat's 7-unit tail stroke would otherwise be spent on all four sides of a
+		// drawing that is unstroked everywhere else, and give back 8% of the box.
+		//
+		// getBBox() ignores the element's own transform, so each box is mapped
+		// into the group's coordinates before being unioned: the rabbit's ears are
+		// rotated ellipses, and their untransformed boxes are in the wrong place.
+		let painted = null;
+		const grow = (x1, y1, x2, y2) => {
+			painted = painted ? {
+				x1: Math.min(painted.x1, x1), y1: Math.min(painted.y1, y1),
+				x2: Math.max(painted.x2, x2), y2: Math.max(painted.y2, y2),
+			} : {x1, y1, x2, y2};
+		};
+
 		try {
-			box = g.getBBox();
+			// Geometry union, transform-correct: the floor this can never go under.
+			const geo = g.getBBox();
+			if (geo.width || geo.height)
+				grow(geo.x, geo.y, geo.x + geo.width, geo.y + geo.height);
+
+			const toGroup = g.getCTM()?.inverse();
+			for (const el of g.querySelectorAll('*')) {
+				const b = el.getBBox();
+				if (!b.width && !b.height)
+					continue;
+
+				const cs = getComputedStyle(el);
+				// Every stroke in this sheet is a round- or butt-capped line or
+				// curve, so half the width is the exact painted overhang. A mitred
+				// join on a sharp corner could reach further, and none are stroked.
+				const pad = cs.stroke && cs.stroke !== 'none'
+					? (parseFloat(cs.strokeWidth) || 0) / 2
+					: 0;
+
+				const m = toGroup && el.getCTM() ? toGroup.multiply(el.getCTM()) : null;
+				const corners = [
+					[b.x - pad, b.y - pad], [b.x + b.width + pad, b.y - pad],
+					[b.x - pad, b.y + b.height + pad],
+					[b.x + b.width + pad, b.y + b.height + pad],
+				];
+				for (const [cx, cy] of corners) {
+					const x = m ? m.a * cx + m.c * cy + m.e : cx;
+					const y = m ? m.b * cx + m.d * cy + m.f : cy;
+					grow(x, y, x, y);
+				}
+			}
 		}
 		catch {
 			// A browser that will not measure gets the sprite as drawn.
-		}
-
-		// getBBox describes geometry, but a stroked path paints half its width
-		// outside that. Pad by the widest stroke so nothing lands outside the
-		// cropped viewBox and gets clipped.
-		let pad = 0;
-		for (const el of g.querySelectorAll('*')) {
-			const cs = getComputedStyle(el);
-			if (cs.stroke && cs.stroke !== 'none')
-				pad = Math.max(pad, parseFloat(cs.strokeWidth) / 2 || 0);
+			painted = null;
 		}
 		g.remove();
 
-		if (!box || !box.width || !box.height)
+		if (!painted)
 			continue;
 
-		const cropped = {
-			x: box.x - pad,
-			y: box.y - pad,
-			w: box.width + pad * 2,
-			h: box.height + pad * 2,
+		const box = {
+			x: painted.x1, y: painted.y1,
+			w: painted.x2 - painted.x1, h: painted.y2 - painted.y1,
 		};
-		BOXES.set(sym.id, cropped);
-		sym.setAttribute('viewBox', boxAttr(cropped));
+		if (!box.w || !box.h)
+			continue;
+
+		BOXES.set(sym.id, box);
+		sym.setAttribute('viewBox', boxAttr(box));
 	}
 
 	probe.remove();
@@ -349,7 +407,7 @@ export function injectSprites () {
  * ratio so the stylesheet can derive height from width.
  */
 function applyBox (svg, box) {
-	svg.setAttribute('viewBox', boxAttr(box));
+	svg.setAttribute('viewBox', originAttr(box));
 	svg.style.setProperty('--ar', (box.w / box.h).toFixed(4));
 }
 
