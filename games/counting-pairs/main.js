@@ -316,6 +316,13 @@ async function resolveWrong (btn) {
 	dom.confirmBtn.disabled = true;
 	dom.undoBtn.disabled = true;
 
+	// Carry the chosen number out before anything else: the child sees what
+	// that many objects actually does to the figures, which is the reason it is
+	// wrong. Only then does the card come back.
+	await board.wrongReveal(ui.handles, Number(btn.dataset.value), btn);
+	if (!current(gen))
+		return;
+
 	// Calm and instructional: the card comes back, the choices stay open.
 	await board.retry(btn);
 	if (!current(gen))

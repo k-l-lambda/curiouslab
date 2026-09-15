@@ -2,9 +2,11 @@
  * pairings.js — the six phase-one object pairings.
  *
  * `source` is the actor group (cats, monkeys...), `target` is the counted
- * group (fish, bananas...). `container` is the shared environment element the
- * targets travel into during the success animation. `familiarity` orders
- * introduction: lower numbers are shown first.
+ * group (fish, bananas...). `container` is the pairing's environment element —
+ * a bowl, a nest. The board no longer shows it: the targets are delivered to
+ * the source figures themselves, and a container in the middle would name a
+ * destination they never travel to. Kept because it belongs to the pairing.
+ * `familiarity` orders introduction: lower numbers are shown first.
  */
 
 export const PAIRINGS = [

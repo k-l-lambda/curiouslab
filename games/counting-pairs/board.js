@@ -1,15 +1,28 @@
 /**
- * board.js — renders one question and owns the four animation families
- * (entrance, selection, success, retry).
+ * board.js — renders one question and owns the animation families
+ * (entrance, selection, delivery, success, wrong reveal, retry).
  *
  * Nothing in here writes a word into the play surface. The task is carried by
  * arrangement, object count, numerals, arithmetic symbols and motion.
+ *
+ * Every answer, right or wrong, is played out the same way: the child's number
+ * of target objects flies out of the card and onto the source figures, one
+ * each. What happens next is the feedback — figures that got one celebrate,
+ * figures that went without turn away, and objects with nobody to go to fall
+ * over. The number is never contradicted; it is carried out and its
+ * consequence is shown.
  */
 
 import {sprite, spriteBox} from '../../assets/js/art.js';
 import {pairingById} from '../../assets/js/pairings.js';
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* The turn-away animation's own length, and the budget the whole wave of them
+   shares. Both are read by wrongReveal(); TURN_AWAY_MS must match the
+   `.obj.let-down` animation in game.css or the last figure is cut off. */
+const TURN_AWAY_MS = 720;
+const TURN_AWAY_SPREAD = 260;
 
 /**
  * A first-guess column count, good enough to lay out before measuring.
@@ -256,16 +269,23 @@ function objectGroup (spriteId, count, density) {
 	setColumns(grid, columnsFor(count), 'auto');
 
 	for (let i = 0; i < count; ++i) {
-		const el = sprite(spriteId, 'obj');
+		// The figure sits in a perch rather than directly in the grid, because an
+		// object delivered to it is appended inside that perch. Owning the object
+		// rather than being positioned next to it means the two reflow, scale and
+		// animate as one thing: a rotation between paints cannot separate them.
+		const perch = document.createElement('div');
+		perch.className = 'perch';
+		perch.append(sprite(spriteId, 'obj'));
 		// Compact groups sit closer and less regularly, so counting takes real
 		// attention — but never so far that objects overlap or the count blurs.
+		// On the perch, so whatever it is holding is carried along by the offset.
 		if (density === 'compact') {
 			const dx = (Math.random() - .5) * 10;
 			const dy = (Math.random() - .5) * 10;
 			const rot = (Math.random() - .5) * 9;
-			el.style.transform = `translate(${dx}%, ${dy}%) rotate(${rot}deg)`;
+			perch.style.transform = `translate(${dx}%, ${dy}%) rotate(${rot}deg)`;
 		}
-		grid.append(el);
+		grid.append(perch);
 	}
 
 	return grid;
@@ -372,6 +392,11 @@ export function render (board, q, opts = {}) {
 	const pairing = pairingById(q.pairingId);
 	const enterScale = opts.enterScale ?? 1;
 	board.textContent = '';
+	// Delivery leaves objects and badges parked on <body>, outside the board, so
+	// emptying the board does not take them with it. A round can also end while
+	// they are still on screen — a pause, a timeout — so clear them here rather
+	// than trusting every path out of an animation to tidy up after itself.
+	clearOverlaySprites();
 
 	const left = document.createElement('div');
 	left.className = 'panel source-panel';
@@ -425,9 +450,9 @@ export function render (board, q, opts = {}) {
 		action.append(have);
 	}
 	else {
+		// The arrow alone. The objects are delivered to the figures themselves
+		// now, so a bowl in the middle would show a destination they never go to.
 		action.append(sprite('ic-arrow', 'arrow'));
-		if (pairing.container)
-			action.append(sprite(pairing.container, 'container-art'));
 	}
 
 	// Right: answer cards.
@@ -482,11 +507,25 @@ export function render (board, q, opts = {}) {
 		right,
 		buttons,
 		sourceGroups,
-		container: action.querySelector('.container-art'),
 		entranceMs,
 		// Only the actors, never the target objects already on the plates.
-		sourceObjects: () => [...left.querySelectorAll('.pair-col > .obj, .objects > .obj')],
+		sourceObjects: () => [...left.querySelectorAll('.pair-col > .obj, .perch > .obj')],
 		emptySlots: () => [...left.querySelectorAll('.slot.empty')],
+		/**
+		 * Where the answer's objects are supposed to land, in order: one place
+		 * per object the correct answer calls for.
+		 *
+		 * In counting and addition every actor is waiting for one, so the actors
+		 * are the anchors. In subtraction the actors with a full plate are
+		 * already served, so only the columns with an empty plate are, and each
+		 * anchor carries the plate its object drops into.
+		 */
+		anchors: () => q.mode === 'sub'
+			? [...left.querySelectorAll('.pair-col')]
+				.map(col => ({actor: col.querySelector('.obj'), host: col.querySelector('.slot.empty')}))
+				.filter(a => a.host)
+			: [...left.querySelectorAll('.objects > .perch')]
+				.map(perch => ({actor: perch.querySelector('.obj'), host: perch})),
 	};
 }
 
@@ -500,16 +539,31 @@ const centreOf = el => {
 	return {x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height};
 };
 
-/** Animate a temporary sprite from one point to another along a gentle arc. */
+/** The height a sprite wants at this width, from its own proportions. */
+function heightAt (spriteId, width) {
+	const box = spriteBox(spriteId);
+
+	return box ? width * box.h / box.w : width;
+}
+
+/** Position a fixed-position sprite so its centre lands on a point. */
+function placeAt (el, point, width, height) {
+	el.style.width = `${width}px`;
+	el.style.height = `${height}px`;
+	el.style.left = `${point.x - width / 2}px`;
+	el.style.top = `${point.y - height / 2}px`;
+}
+
+/**
+ * Animate a temporary sprite from one point to another along a gentle arc.
+ * @returns {{el: SVGElement, done: Promise<void>}} the flyer and its landing.
+ *   It is left on screen: whoever asked for the flight decides how it ends.
+ */
 function fly (spriteId, from, to, size, delay, duration) {
 	const el = sprite(spriteId, 'flyer');
 	// The sprite carries its own proportions, so a square flyer would letterbox.
-	const box = spriteBox(spriteId);
-	const height = box ? size * box.h / box.w : size;
-	el.style.width = `${size}px`;
-	el.style.height = `${height}px`;
-	el.style.left = `${from.x - size / 2}px`;
-	el.style.top = `${from.y - height / 2}px`;
+	const height = heightAt(spriteId, size);
+	placeAt(el, from, size, height);
 	document.body.append(el);
 
 	const dx = to.x - from.x;
@@ -519,7 +573,7 @@ function fly (spriteId, from, to, size, delay, duration) {
 	const anim = el.animate([
 		{transform: 'translate(0, 0) scale(.7)', opacity: 0},
 		{transform: `translate(${dx * .5}px, ${dy * .5 - lift}px) scale(1.15)`, opacity: 1, offset: .55},
-		{transform: `translate(${dx}px, ${dy}px) scale(.85)`, opacity: 1},
+		{transform: `translate(${dx}px, ${dy}px) scale(1)`, opacity: 1},
 	], {
 		duration: REDUCED ? 1 : duration,
 		delay: REDUCED ? 0 : delay,
@@ -527,7 +581,164 @@ function fly (spriteId, from, to, size, delay, duration) {
 		fill: 'both',
 	});
 
-	return anim.finished.then(() => el.remove());
+	return {el, done: anim.finished.then(() => {})};
+}
+
+/** Everything delivery parks on <body>, gone. */
+function clearOverlaySprites () {
+	document.querySelectorAll('.flyer, .joy-badge').forEach(el => el.remove());
+}
+
+/**
+ * Put the object where it is going to end up, invisibly, and hand back the
+ * controls for revealing it.
+ *
+ * The resting object is a child of the figure that receives it — the plate in
+ * subtraction, the perch around the figure otherwise — and the stylesheet
+ * places it there. So its resting position is a layout fact rather than a pair
+ * of viewport coordinates: it survives a resize, a rotation and any reflow
+ * during the celebration, and it moves with the figure when the figure moves.
+ *
+ * It is created before the flight so the flight can be aimed at its measured
+ * box. Landing is then a swap between two sprites in the same place at the
+ * same size, with nothing to line up by hand.
+ */
+function seat (anchor, spriteId) {
+	const slot = anchor.host.classList.contains('slot');
+	const el = sprite(spriteId, slot ? 'obj slot-obj landing' : 'held landing');
+	anchor.host.append(el);
+
+	return {
+		el,
+		slot,
+		/** The flyer has arrived: this is what it turns into. */
+		show () {
+			el.classList.remove('landing');
+			if (slot) {
+				anchor.host.classList.remove('empty');
+				anchor.host.classList.add('filled', 'just-filled');
+			}
+		},
+		/** Never mind: a wrong answer leaves the picture as it found it. */
+		undo () {
+			el.remove();
+			if (slot) {
+				anchor.host.classList.add('empty');
+				anchor.host.classList.remove('filled', 'just-filled');
+			}
+		},
+	};
+}
+
+/**
+ * Carry `count` target objects out of the card and onto the source figures,
+ * one each, in order.
+ *
+ * This is the part that is the same whether the answer was right or wrong: the
+ * number the child chose is taken at face value and acted out. Objects with an
+ * anchor waiting land on it. Objects past the last anchor have nowhere to go
+ * and fall over below the card, which is what "too many" looks like.
+ *
+ * @param pace `{step, flight}` in ms: how far apart the objects leave and how
+ *   long each one is in the air.
+ * @returns the anchors that received an object and now hold it, the anchors
+ *   that went without, and the surplus flyers left lying on screen.
+ */
+async function deliver (handles, count, btn, pace) {
+	const {pairing} = handles;
+	const from = centreOf(btn);
+	const anchors = handles.anchors();
+	const strays = Math.max(0, count - anchors.length);
+	const row = strayRow(handles, btn, strays);
+	const flights = [];
+	const landed = [];
+	const spare = [];
+
+	for (let i = 0; i < count; ++i) {
+		const anchor = anchors[i];
+		if (anchor) {
+			const held = seat(anchor, pairing.target);
+			const box = centreOf(held.el);
+			const flight = fly(pairing.target, from, box, box.w, i * pace.step, pace.flight);
+			// Each object hands over as it lands rather than waiting for the wave
+			// to finish, so a figure has what it was given the moment it arrives.
+			flights.push(flight.done.then(() => {
+				held.show();
+				flight.el.remove();
+			}));
+			landed.push({anchor, held});
+		}
+		else {
+			const {point, size} = row(i - anchors.length);
+			const flight = fly(pairing.target, from, point, size, i * pace.step, pace.flight * .93);
+			flights.push(flight.done);
+			spare.push({el: flight.el, size});
+		}
+	}
+
+	await Promise.all(flights);
+
+	return {
+		anchors,
+		landed,
+		spare,
+		unserved: anchors.slice(Math.min(count, anchors.length)),
+	};
+}
+
+/**
+ * Where the objects nobody could use come to rest: a row just clear of the card
+ * that asked for them, so they stay in the answer's own half of the screen.
+ *
+ * They are spread across the whole card row rather than across the one card,
+ * because five strays over one card would land on top of each other and read as
+ * a single object instead of as the surplus they are.
+ * @returns {(index: number) => {point: {x: number, y: number}, size: number}}
+ */
+function strayRow (handles, btn, strays) {
+	const card = centreOf(btn);
+	const panel = centreOf(handles.right);
+	const size = Math.max(18, Math.min(card.w * 0.42, 54));
+	const spread = Math.min(panel.w * 0.86, size * 1.25 * Math.max(1, strays));
+	// Clear of the card's top edge, so the numeral the child chose stays legible
+	// underneath its own surplus.
+	const y = card.y - card.h / 2 - size * 0.55;
+
+	return i => ({
+		size,
+		point: {
+			x: panel.x - spread / 2 + spread * (strays <= 1 ? .5 : i / (strays - 1)),
+			y,
+		},
+	});
+}
+
+/** A source figure gets a smiley badge above it while it celebrates. */
+function joyBadge (actor) {
+	const box = centreOf(actor);
+	const el = sprite('sp-smile', 'joy-badge');
+	const width = Math.max(16, box.w * 0.42);
+	placeAt(el, {x: box.x + box.w * 0.3, y: box.y - box.h * 0.26},
+		width, heightAt('sp-smile', width));
+	document.body.append(el);
+
+	return el;
+}
+
+/** Lay a stray object down where it stopped: nobody had a use for it. */
+function tipOver (el, size, delay) {
+	const dir = Math.random() < .5 ? -1 : 1;
+	el.animate([
+		{transform: `translate(0, 0) rotate(0deg)`, filter: 'grayscale(0)'},
+		{transform: `translate(${dir * size * .1}px, ${size * .34}px) rotate(${dir * 84}deg)`,
+			filter: 'grayscale(.55)'},
+	], {
+		duration: REDUCED ? 1 : 420,
+		delay: REDUCED ? 0 : delay,
+		easing: 'cubic-bezier(.4,1.6,.6,1)',
+		fill: 'forwards',
+		composite: 'add',
+	});
 }
 
 /* ------------------------------------------------------------ animations */
@@ -592,80 +803,79 @@ export async function correspondenceHint (handles, btn) {
 }
 
 /**
- * Success: make the arithmetic visible before any celebration.
- * count/add — the answer's worth of targets travels into the container;
- * add     — the two source groups merge first;
- * sub     — the removed items leave the group and the remainder stays put.
+ * Success: carry the answer out, then let the figures show what it did.
+ *
+ * The objects fly one to each figure — into the empty plate in subtraction,
+ * onto the figure itself otherwise — and only once every figure has its own
+ * does the celebration start. The order matters: the child sees the
+ * correspondence complete before being told it was right.
+ *
+ * The groups are deliberately left where they are. Addition used to slide the
+ * two groups together here, which moved the very objects the child had just
+ * counted while they were still looking at them.
  */
 export async function success (handles, q, btn) {
-	const {pairing} = handles;
 	btn.classList.add('correct');
 	handles.buttons.forEach(b => b.classList.remove('selected'));
 
-	if (q.mode === 'add') {
-		// Merge the two groups so "these and these together" is seen.
-		const [a, b] = handles.sourceGroups;
-		const ca = centreOf(a);
-		const cb = centreOf(b);
-		const mid = (ca.x + cb.x) / 2;
-		const opts = {duration: REDUCED ? 1 : 480, easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'both'};
-		a.animate([{transform: 'translateX(0)'}, {transform: `translateX(${mid - ca.x - ca.w * .1}px)`}], opts);
-		b.animate([{transform: 'translateX(0)'}, {transform: `translateX(${mid - cb.x + cb.w * .1}px)`}], opts);
-		await wait(REDUCED ? 10 : 420);
-	}
+	// Unhurried: this flight is the correspondence being completed, one at a time.
+	await deliver(handles, q.answer, btn, {step: 85, flight: 560});
 
-	if (q.mode === 'sub') {
-		// The missing target objects arrive and fill the empty plates, so the
-		// child sees the correspondence complete itself one plate at a time.
-		const from = centreOf(btn);
-		const slots = handles.emptySlots();
-		const flights = slots.map((slot, i) => {
-			const dest = centreOf(slot);
-			const size = Math.max(20, dest.w * 0.82);
-
-			return fly(pairing.target, from, dest, size, i * 120, 620).then(() => {
-				slot.classList.remove('empty');
-				slot.classList.add('filled', 'just-filled');
-				slot.append(sprite(pairing.target, 'obj slot-obj'));
-			});
-		});
-		await Promise.all(flights);
-
-		// Now every actor has one: cheer down the row.
-		handles.sourceObjects().forEach((el, i) => {
-			el.style.animationDelay = `${i * 55}ms`;
-			el.classList.add('cheer');
-		});
-		await wait(REDUCED ? 10 : 420);
-	}
-	else {
-		// The chosen quantity of targets travels into the container.
-		const from = centreOf(btn);
-		const target = handles.container ?? handles.action;
-		const dest = centreOf(target);
-		// Proportional to the container it lands in, so the flight reads as the
-		// same objects arriving rather than as smaller tokens of them.
-		const size = Math.min(72, Math.max(28, dest.w * 0.42 || 34));
-		const flights = [];
-		for (let i = 0; i < q.answer; ++i)
-			flights.push(fly(pairing.target, from, {
-				x: dest.x + (Math.random() - .5) * dest.w * .5,
-				y: dest.y + (Math.random() - .5) * dest.h * .35,
-			}, size, i * 95, 600));
-
-		if (handles.container)
-			handles.container.classList.add('glow');
-
-		await Promise.all(flights);
-		handles.sourceObjects().forEach((el, i) => {
-			el.style.animationDelay = `${i * 60}ms`;
-			el.classList.add('cheer');
-		});
-		await wait(REDUCED ? 10 : 420);
-	}
+	// Everyone has one now: cheer down the row, each with a smile of its own.
+	// The animation goes on the cell rather than the figure, so the figure and
+	// whatever it was just given move together instead of one under the other.
+	const badges = [];
+	handles.sourceObjects().forEach((el, i) => {
+		const cell = el.closest('.perch, .pair-col') || el;
+		cell.style.animationDelay = REDUCED ? '0s' : `${i * 60}ms`;
+		cell.classList.add('cheer');
+		badges.push(joyBadge(el));
+	});
+	await wait(REDUCED ? 10 : 620);
 
 	showEquation(handles.left, q);
 	await wait(REDUCED ? 20 : 900);
+	badges.forEach(el => el.remove());
+	clearOverlaySprites();
+}
+
+/**
+ * A wrong answer, played out: the number the child chose is delivered, and the
+ * figures and objects show why it does not work.
+ *
+ * Too few, and some figures are left with nothing — they turn away, briefly.
+ * Too many, and the objects nobody could use fall over below the card. Either
+ * way it is over in about a second and the board is handed back untouched, so
+ * the next attempt starts from the same picture the child was counting.
+ */
+export async function wrongReveal (handles, value, btn) {
+	// Brisker than the success flight: the retry wobble and the counting hint
+	// still follow this, and on ten plates the whole chain is what the child
+	// waits through before they can count again.
+	const {landed, spare, unserved} = await deliver(handles, value, btn, {step: 52, flight: 440});
+
+	// The turn-away is a wave down the row, but the wave shares a fixed budget
+	// however long the row is — a per-figure delay would put the last figure's
+	// animation past the wait below, and it would be cut off mid-turn.
+	const spread = unserved.length > 1 ? TURN_AWAY_SPREAD / (unserved.length - 1) : 0;
+	spare.forEach(({el, size}, i) => tipOver(el, size, i * spread));
+	unserved.forEach(({actor}, i) => {
+		actor.style.animationDelay = REDUCED ? '0s' : `${Math.round(i * spread)}ms`;
+		actor.classList.add('let-down');
+	});
+
+	// Long enough for the last figure in the wave to finish turning back.
+	await wait(REDUCED ? 10 : TURN_AWAY_MS + TURN_AWAY_SPREAD);
+
+	// Put the picture back exactly as it was: the objects were never really
+	// given, and the figures have another try coming.
+	unserved.forEach(({actor}) => {
+		actor.classList.remove('let-down');
+		actor.style.removeProperty('animation-delay');
+	});
+	landed.forEach(({held}) => held.undo());
+	spare.forEach(({el}) => el.remove());
+	clearOverlaySprites();
 }
 
 /** Numbers and symbols only. */

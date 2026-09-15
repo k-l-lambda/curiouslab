@@ -188,6 +188,18 @@ const SPRITES = `
   <circle cx="50" cy="50" r="24" fill="none" stroke="#ffe796" stroke-width="5" stroke-dasharray="8 8"/>
 </symbol>
 
+<symbol id="sp-smile" viewBox="0 0 100 100">
+  <!-- Worn over a source figure while it celebrates. The figures have their own
+       faces, but a lamp does not, and the same badge on every one of them keeps
+       "it worked" reading the same way whatever the pairing is. -->
+  <circle cx="50" cy="50" r="41" fill="#ffd44d" stroke="#e9ae1f" stroke-width="5"/>
+  <g fill="none" stroke="#6d4f10" stroke-linecap="round">
+    <path d="M28 43 q7 -12 14 0" stroke-width="6"/>
+    <path d="M58 43 q7 -12 14 0" stroke-width="6"/>
+    <path d="M30 58 q20 21 40 0" stroke-width="7"/>
+  </g>
+</symbol>
+
 <symbol id="sp-flower" viewBox="0 0 100 100">
   <path d="M50 94 V56" fill="none" stroke="#54a84b" stroke-width="6" stroke-linecap="round"/>
   <path d="M50 74 q-16 -6 -18 -18 q16 0 18 18 Z" fill="#63bd57"/>
