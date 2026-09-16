@@ -607,9 +607,9 @@ async function afterMiss (gen, cause) {
 
 	await map.playMiss(dom.miss, ui.run.level, cause);
 
-	// The check is after the screen, not before: it holds for over a second, and
-	// the child can leave for the map inside that time — in which case the run is
-	// already over and `failRun` would be undoing a state it does not own.
+	// The check is after the screen, not before: it waits for a tap, and the child
+	// can leave for the map before giving it one — in which case the run is already
+	// over and `failRun` would be undoing a state it does not own.
 	if (gen !== ui.generation)
 		return;
 
@@ -994,22 +994,31 @@ async function endRun () {
 	dom.result.hidden = false;
 
 	// The level's own clip, and `endRun` waits for it — which is what keeps an
-	// unlock from cutting the story off part-way through. `playClear` takes over
-	// the clip the cover started fetching; a run that did not earn it hands that
-	// buffer back instead of holding megabytes for a celebration that is not
-	// coming.
+	// unlock from cutting the story off part-way through. It reports back whether
+	// the child tapped during the beat the last frame is held for.
+	//
+	// `playClear` takes over the clip the cover started fetching; a run that did not
+	// earn it hands that buffer back instead of holding megabytes for a celebration
+	// that is not coming.
+	let tapped = false;
 	if (result.cleared)
-		await map.playClear(dom.result, run.level);
+		tapped = await map.playClear(dom.result, run.level);
 	else
 		map.releaseClear();
 
-	// The unlock is shown on the map, where the newly open level actually is.
-	// Only when this run is what completed the coverage, and only if the child has
-	// not already tapped their way somewhere else.
-	if (result.unlocked && gen === ui.generation) {
+	// Two reasons to leave the result sheet behind, and they end in the same place.
+	// A tap on the held last frame is the child saying they have finished looking,
+	// and the sheet has nothing on it they need — it offers replaying or leaving,
+	// and leaving is what they just asked for. An unlock has to be shown on the map
+	// because that is where the newly open level actually is.
+	//
+	// `gen` guards both: neither should drag the child back if they have already
+	// tapped their way somewhere else.
+	if ((tapped || result.unlocked) && gen === ui.generation) {
 		dom.result.hidden = true;
 		showMap();
-		await map.playUnlock(dom.mapHost, result.unlocked);
+		if (result.unlocked)
+			await map.playUnlock(dom.mapHost, result.unlocked);
 	}
 }
 
@@ -1264,9 +1273,9 @@ function buildOverlays () {
 	dom.cover.hidden = true;
 
 	// The encouragement screen after a lost question. No dismiss control of its
-	// own: it holds for a moment and goes, and a tap anywhere shortens that — a
-	// button here would be one more thing to understand at the least good moment
-	// to be asking a child to understand something.
+	// own: a tap anywhere is what moves it on — a button here would be one more
+	// thing to understand at the least good moment to be asking a child to
+	// understand something.
 	dom.miss = document.createElement('div');
 	dom.miss.className = 'overlay miss';
 	dom.miss.hidden = true;
@@ -1314,11 +1323,17 @@ async function boot () {
 		if (event.key !== 'Escape')
 			return;
 
-		// The encouragement screen dismisses itself, and it owns the continuation of
-		// the run. Escape must not fall through to the pause toggle underneath it,
-		// which would leave a round waiting behind a screen nobody can see.
-		if (!dom.miss.hidden)
+		// The encouragement screen waits for a tap and owns the continuation of the
+		// run, so Escape must not fall through to the pause toggle underneath it —
+		// that would leave a round waiting behind a screen nobody can see. But it
+		// cannot simply be swallowed either, now that the screen no longer goes on
+		// its own: that would leave a keyboard with no way past it at all. So
+		// Escape is the tap.
+		if (!dom.miss.hidden) {
+			dom.miss.click();
+
 			return;
+		}
 
 		if (!dom.parent.hidden)
 			closeParent();

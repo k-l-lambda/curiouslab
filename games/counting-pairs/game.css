@@ -1105,20 +1105,25 @@ body {
 .miss-figure {
 	width: 62%;
 	height: auto;
-	animation: miss-hop 1.05s cubic-bezier(.3,1.4,.4,1) 2 both;
+	/* Infinite, because this screen now waits for a tap instead of dismissing
+	   itself: a figure frozen mid-scene reads as over rather than as waiting. The
+	   rest between hops is in the keyframes, not in the count, so the loop does
+	   not turn a hop into a jitter. */
+	animation: miss-hop 1.9s cubic-bezier(.3,1.4,.4,1) infinite both;
 }
 .miss-glow {
 	position: absolute;
 	width: 100%;
 	height: auto;
 	opacity: .5;
-	animation: miss-pulse 1.5s ease-out both;
+	animation: miss-pulse 1.9s ease-out infinite both;
 }
 
 @keyframes miss-hop {
 	0% { transform: translateY(0) scale(1); }
-	35% { transform: translateY(-16%) scale(1.04); }
-	60% { transform: translateY(0) scale(.98); }
+	19% { transform: translateY(-16%) scale(1.04); }
+	33% { transform: translateY(0) scale(.98); }
+	42% { transform: translateY(0) scale(1); }
 	100% { transform: translateY(0) scale(1); }
 }
 @keyframes miss-pulse {
@@ -1142,7 +1147,7 @@ body {
 	height: auto;
 	color: var(--ok);
 	transform: rotate(-38deg);
-	animation: miss-onward 1.5s ease-out both;
+	animation: miss-onward 1.9s ease-out infinite both;
 }
 @keyframes miss-onward {
 	0% { opacity: 0; transform: rotate(-38deg) translate(-40%, 40%); }

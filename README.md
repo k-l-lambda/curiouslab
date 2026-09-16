@@ -197,10 +197,16 @@ time a level pairs the two.
 - **The cover opens the level and the clip closes it.** Tapping a level shows its
   cover full-screen before the first question; clearing it plays that level's clip
   over the result. The clip starts from the cover frame, so the two read as one
-  place. A cover or clip that will not load degrades rather than breaks — sprites
-  for the cover, the star burst for the clip — and under
-  `prefers-reduced-motion` the cover is held as a still instead of the clip
-  playing, since that query does not reach a `<video>` on its own.
+  place. **The last frame is then held for two seconds**, paused on the clip's own
+  final pose rather than cut away from it, and a tap inside that beat goes straight
+  back to the map — the child has finished looking, and the result sheet only offers
+  replaying or leaving. A skipped clip is not held — it was skipped because the child
+  had seen enough — and neither is a broken one, which has already been replaced by
+  the star burst. A clip that stalls past the nine-second ceiling *is* held, on
+  whatever frame it reached. A cover or clip that will not load degrades rather than
+  breaks — sprites for the cover, the star burst for the clip — and under
+  `prefers-reduced-motion` the cover is held as a still instead of the clip playing,
+  since that query does not reach a `<video>` on its own.
 - **The clip is fetched while the level is being played**, starting the moment its
   cover opens rather than when the celebration begins. These files run from three
   to seven megabytes, so on a slow connection a download that starts at the
@@ -213,8 +219,12 @@ time a level pairs the two.
   play.
 - **A lost question gets its own screen**: the level's character, a pulse and three
   arrows running the way the map's path runs. Vector art from the existing sprite
-  sheet, wordless, gone in a second and a half or on a tap. It is encouragement,
-  not a verdict — the run continues either way.
+  sheet, wordless, and it waits for a tap rather than timing out. This screen is
+  where a run ends, and a screen that leaves on its own would take that moment away
+  from the child before they had read it. Its figure loops for the same reason — a
+  still frame with no motion on it reads as finished rather than as waiting, and
+  there is no text here to say which it is. Escape counts as the tap, so a keyboard
+  is not stranded behind it.
 - **`?unlock`** opens every level. Debug only: it is never written to the save, so
   it cannot corrupt real progress, and the map shows a flag while it is on.
 
