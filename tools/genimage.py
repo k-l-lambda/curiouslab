@@ -19,6 +19,7 @@ them.
 """
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -30,6 +31,7 @@ import urllib.request
 # eventually be wrong.
 BASE_URL = os.environ.get('CLAUDE_BASE_URL', '').rstrip('/')
 MODEL = 'gpt-image-2-text-to-image'
+EDIT_MODEL = 'gpt-image-2-edit'
 
 # Only these are accepted; the server rejects anything else with a 400 that
 # quotes the whole schema back. Kept here so a typo fails locally and instantly
@@ -63,10 +65,24 @@ def read_prompt (path):
 	return text
 
 
-def request_images (payload, key):
+def encode_image (path):
+	"""Read an image for the edit endpoint.
+
+	An http(s) URL is passed through untouched; a local file becomes bare base64.
+	The endpoint accepts bare base64, a `data:` URI and a URL, so the simplest
+	form that works is used.
+	"""
+	if path.startswith('http://') or path.startswith('https://'):
+		return path
+
+	with open(path, 'rb') as fh:
+		return base64.b64encode(fh.read()).decode('ascii')
+
+
+def request_images (payload, key, model=MODEL):
 	"""POST the payload and return the list of image URLs."""
 	req = urllib.request.Request(
-		'%s/v3/%s' % (BASE_URL, MODEL),
+		'%s/v3/%s' % (BASE_URL, model),
 		data=json.dumps(payload).encode('utf-8'),
 		headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'},
 		method='POST')
@@ -127,6 +143,11 @@ def main ():
 		help='how many variants to ask for in one call (default: 1)')
 	ap.add_argument('--compression', type=int, default=None, metavar='0-100',
 		help='jpeg only; png must be 100 or unset')
+	ap.add_argument('--edit', action='append', metavar='IMAGE',
+		help='edit an existing image (local path or URL) instead of generating from '
+			'text; repeat to pass several reference images')
+	ap.add_argument('--mask', metavar='PNG',
+		help='edit only where this PNG is fully transparent; requires an alpha channel')
 	args = ap.parse_args()
 
 	if not BASE_URL:
@@ -138,6 +159,9 @@ def main ():
 
 	if args.compression is not None and args.output_format != 'jpeg':
 		raise SystemExit('genimage: --compression applies to jpeg only')
+
+	if args.mask and not args.edit:
+		raise SystemExit('genimage: --mask only applies with --edit')
 
 	prompt = read_prompt(args.prompt_file)
 
@@ -152,10 +176,21 @@ def main ():
 	if args.compression is not None:
 		payload['output_compression'] = args.compression
 
-	print('generating %d image(s), %s %s, %d chars of prompt'
-		% (args.n, args.size, args.quality, len(prompt)), file=sys.stderr)
+	model = MODEL
+	if args.edit:
+		model = EDIT_MODEL
+		# A single image may be sent as a string or a one-item array; several
+		# reference images go as an array.
+		images = [encode_image(p) for p in args.edit]
+		payload['image'] = images[0] if len(images) == 1 else images
+		if args.mask:
+			payload['mask'] = encode_image(args.mask)
 
-	urls = request_images(payload, key)
+	what = 'editing' if args.edit else 'generating'
+	print('%s %d image(s), %s %s, %d chars of prompt'
+		% (what, args.n, args.size, args.quality, len(prompt)), file=sys.stderr)
+
+	urls = request_images(payload, key, model)
 
 	# The server may return fewer images than requested, so name outputs from
 	# what actually arrived rather than from what was asked for.

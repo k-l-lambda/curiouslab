@@ -38,6 +38,11 @@ echo "a red ball" | tools/genimage.py - ball.png --quality low
 | `n` | 1–10 | one call, several variants; may return fewer |
 | `moderation` | `low`, `auto` | default `auto` |
 | `output_compression` | 0–100 | jpeg only; png must be 100 or unset |
+| `image` | base64, `data:` URI or URL; string or array | **`-edit` only, required there** |
+| `mask` | PNG with an alpha channel | `-edit` only; transparent areas are what may change |
+
+A 400 lists the valid values for whichever parameter is wrong, so the table above
+can be re-derived from the server at any time rather than trusted blindly.
 
 Measured timings at `1024x1024`: `low` ~18–22s, `medium` ~35–50s, `high` ~2m20s.
 `n` does not scale the wait linearly — three `low` images came back in 22s, about
@@ -46,16 +51,46 @@ the same as one — so asking for several variants at once is close to free.
 `high` exceeds a 120s foreground command timeout. Run it in the background and
 wait on the output file appearing rather than blocking on the call.
 
+## Editing an existing image
+
+A second endpoint, `POST $CLAUDE_BASE_URL/v3/gpt-image-2-edit`, edits an image
+instead of generating one from nothing:
+
+```bash
+tools/genimage.py PROMPT_FILE OUT.png --edit SOURCE.png [--mask MASK.png]
+tools/genimage.py PROMPT_FILE OUT.png --edit a.png --edit b.png   # several references
+```
+
+Same response shape as text-to-image. Its parameters differ in three ways worth
+knowing: `image` is **required**, `quality` defaults to **`low`** rather than
+`medium`, and a `mask` is accepted — a PNG whose **fully transparent areas mark
+where editing is allowed**, which is inpainting. `image` takes a bare base64
+string, a `data:` URI, or an http(s) URL, and either a single string or an array
+for multiple references; PNG, JPEG, GIF and WebP are supported. The wrapper
+base64-encodes a local path and passes a URL through untouched.
+
+**It genuinely preserves the source.** Asked to warm the sky of a finished cover,
+it moved the sky from `#e2f2f5` to `#faefda` while **0.0% of pixels changed by
+more than 30**, and the three fish came back within 0.5% of their original areas.
+A second edit changing only flowers altered 2.26% of pixels and left the fish
+count and the cat's coverage intact. So this is the tool for keeping a character
+consistent across images — generate one figure, then edit it into new situations
+rather than re-rolling the prompt and hoping.
+
+It does **not** solve video start frames; that is a property of the video API,
+not this one.
+
 ## What this endpoint cannot do
 
-- **No image-to-image and no start frame.** Only the text-to-image contract is
-  live. Every other model name under `/v3/` — including a deliberately bogus one
-  — returns the same `unsupported native endpoint contract` error, so this is the
-  whole surface, not a naming problem. Any plan that needs "continue from this
-  image" needs a different service.
 - **No transparent background.** `background` accepts only `opaque` and `auto`;
   neither yields an alpha channel. Output is RGB. Anything needing cut-out layers
   must be composited another way.
+- Only these two contracts are live under `/v3/` for images: `-text-to-image` and
+  `-edit`. Other names return `unsupported native endpoint contract` — but note
+  that error also appears for a *valid* path given a body it cannot match, so it
+  is not by itself proof that an endpoint is absent. Guessing `-image-to-image`
+  and reading its failure as "no such capability" is exactly the wrong inference
+  to draw; the capability existed under a different name.
 
 ## Two traps that cost real time
 

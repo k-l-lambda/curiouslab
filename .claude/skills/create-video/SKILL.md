@@ -111,16 +111,35 @@ ffprobe -v quiet -print_format json -show_format -show_streams OUT.mp4
 That gives duration, dimensions, codec, fps, frame count, and whether an audio
 stream exists — the last one catches `generate_audio` being left on.
 
-Then check the content **per frame**, which is the check with real value. Decode
-with `cv2.VideoCapture`, sample every Nth frame, and run the same colour-family
-blob count described in `create-image` on each one. Scale the blob area floor to
-the frame size; these clips come back smaller than a 1024px cover.
+Then check the content **per frame**. Decode with `cv2.VideoCapture`, sample
+every Nth frame, and measure the colour family described in `create-image` on
+each one. Scale any area floor to the frame size; these clips come back smaller
+than a 1024px cover.
 
-This is what catches an object appearing or vanishing partway through — verified
-against a synthetic clip holding three figures for half its length and four for
-the rest, which the check reported frame by frame. **Build that control before
-trusting a clean result**: a counter that reports the right number for frame 0
-and never looks again is indistinguishable from a correct clip.
+**Measure total area of the colour family, not the number of blobs.** Blob count
+is what a still image wants, and it is wrong for video: two figures that touch or
+overlap merge into one connected component, so the count collapses while nothing
+has actually left the frame. On a real clip this produced a dramatic false alarm
+— 14 of 25 sampled frames appeared to break a "exactly three fish" rule. Two
+things were actually happening, neither a defect:
+
+- the splash the brief asked for threw **droplets in the same colour family**,
+  counted as extra figures. Sizes separated the populations cleanly: fish
+  ~5000–5500px, droplets 620–1828px, no overlap between the groups.
+- during the splash the fish **touched and merged**, so the count read 1 while
+  the total blue area was still 1.06–1.24x its pre-splash baseline.
+
+Total area over a size floor stayed within 0.80–1.51x baseline for the whole
+clip, which is the honest statement that nothing vanished. So: use area as the
+invariant, use a size floor to exclude effects like droplets, and treat a
+count anomaly as **a frame range to look at**, never as a verdict. Occlusion and
+absence are not distinguishable by these means, and claiming otherwise is how a
+good clip gets thrown away.
+
+**Build a control before trusting a clean result.** A synthetic clip holding
+three figures for half its length and four for the rest confirmed the per-frame
+check reports the frame where a count changes. A checker that reads frame 0 and
+never looks again is indistinguishable from a correct clip.
 
 What cannot be checked here: whether text appears, and whether characters
 resemble a reference. No OCR is available and no sudo to install one. Report both
