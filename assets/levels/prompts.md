@@ -167,6 +167,27 @@ finishing is risky.
 | Chick | *clip only, no sprite* | body `#ffd96b`, beak and feet `#f5a24a`, eyes `#33291f` |
 | Sheep | *`sp-sheep`, to draw* | wool `#f2e6cf`, wool shading `#dcc9a8`, face and legs `#4a4a52`, ears `#3d3d44` |
 | Clover | *`sp-clover`, to draw* | leaf `#4f9a34`, pale lobe `#63bd57` |
+| Cow | *`sp-cow`, to draw* | body `#8a5a3c`, patches `#f2e6cf`, muzzle `#f2b8c0`, horns `#e0c9a0`, hooves `#4a4a52`, features `#33291f` |
+| Hay bale | *`sp-haybale`, to draw* | bale `#e0b455`, straw ends `#f0cf90`, cords `#c98a1f` |
+| Pony | *`sp-horse`, to draw* | body `#b4663a`, mane and tail `#7a4a2a`, muzzle `#e8c9a8`, hooves `#4a4a52`, features `#33291f` |
+| Horseshoe | *`sp-horseshoe`, to draw* | shoe `#8fa3b2`, inner edge `#6b7d8a`, nail holes `#566672` |
+| Duck | *`sp-duck`, to draw* | body `#f5d76e`, wing `#e0bd4a`, bill and feet `#f0862f`, features `#33291f` |
+| Snail | *`sp-snail`, to draw* | shell `#8a63c0`, spiral `#6b4a99`, body `#c9c0cc` |
+| Bee | *`sp-bee`, to draw* | body `#f0b429`, stripes `#3a2f28`, wings `#dff0f7`, features `#33291f` |
+| Flower | `sp-flower` | petals `#f27a9b`, centre `#ffd44d`, stem `#54a84b`, leaf `#63bd57` |
+| Goat | *`sp-goat`, to draw* | body `#c9bfae`, horns `#f2e6cf`, beard and hooves `#4a4a52`, muzzle `#e8dcc9`, features `#33291f` |
+| Cabbage | *`sp-cabbage`, to draw* | body `#7fb069`, outer edges `#5c8f4a`, heart `#a8cc8a` |
+| Squirrel | *`sp-squirrel`, to draw* | body `#c4703a`, tail plume `#a85a28`, chest `#f2e6cf`, features `#33291f` |
+| Acorn | *`sp-acorn`, to draw* | nut `#e8c9a0`, cap `#6b4a24` |
+| Elephant | *`sp-elephant`, to draw* | body `#9aa8b4`, inner ear `#c9b2b8`, toenails `#f2e6cf`, features `#33291f` |
+| Peanut | *`sp-peanut`, to draw* | shell `#d9a86b`, seam `#b8813f` |
+| Panda | *`sp-panda`, to draw* | fur `#fbf9f4`, patches, arms and legs `#33291f`, muzzle `#f2e6cf` |
+| Bamboo | *`sp-bamboo`, to draw* | cane `#b5c94a`, joint rings `#8a9a2f`, cut end `#d4e07a` |
+| Frog | *`sp-frog`, to draw* | body `#5aab4a`, belly `#8ecc6b`, features `#33291f` |
+| Lotus pad | *`sp-lotus`, to draw* | pad `#3f9e9d`, veins `#2f7d7c` |
+| Giraffe | *`sp-giraffe`, to draw* | body `#e0a84a`, patches `#b06f28`, mane `#8a5a3c`, muzzle `#f2e6cf`, hooves `#4a4a52`, features `#33291f` |
+| Leaf | *`sp-leaf`, to draw* | blade `#4a8f5a`, centre vein `#7fb069` |
+| Butterfly | *clip only, no sprite* | wings `#7d5bb8` |
 
 Containers, if a brief needs one: bowl `#7fc8e8` / `#a8ddf2` with `#bfe6f5`
 water, dog bowl `#c07f4c` / `#d99a63` / `#f0c9a0`, basket `#a5702f` / `#c98d4e`,
@@ -669,35 +690,438 @@ the same places. The sheep act above and around them, never on them. And there i
 exactly one butterfly, never a second: one is unmistakably not a quantity, and a
 pair invites the child to count the wrong thing at the top of a counting ladder.
 
+## Levels eleven to twenty — the third and fourth five
+
+Nothing in `assets/js/levels.js` yet, same as levels six to ten were when their art
+was written. The art goes first for the same reason: a cover is the slowest link in
+a level's chain.
+
+The clips get longer again — **7 seconds for levels eleven to fifteen, 8 seconds for
+sixteen to twenty**. Two things pay for the extra time. The resistance beat is
+carrying more weight now: by level eleven a child has seen ten of these and knows
+the objects are going to do something, so the *trying and failing* has to last long
+enough to stop being a formality. And the last frame is now held on screen after the
+clip ends — `playClear` pauses on it for two seconds waiting for a tap — so the
+closing pose is looked at rather than glimpsed. Beats become roughly
+1.8 / 0.5 / 2.3 / 1.3 / 1.1 at seven seconds and 2.0 / 0.5 / 2.7 / 1.5 / 1.3 at
+eight.
+
+Band assignment is a plan and not something the code agrees to yet: twelve for
+eleven to thirteen, fifteen for fourteen and fifteen, twenty for sixteen to
+eighteen, and the last two on doubles and then everything at once. It keeps the
+3/2/3/2 shape the first twenty levels have had.
+
+### Ten twists, and what makes them different from the first ten
+
+The first ten escalated by *what the objects do* — they wiggle, they fly, they
+build, they carry, they turn out to be alive. That line is spent; a child who has
+seen level nine is not surprised by an object moving. These ten escalate along two
+different axes at once.
+
+**The objects acquire intent toward the actor.** Not motion but attitude: the bale
+offers itself as a seat, the horseshoe dresses the pony, the flower turns to watch,
+the acorn raises its cap, the bamboo catches the panda. In the first ten the objects
+acted; here they *behave*, and a three-year-old reads behaviour as personality
+without being told.
+
+**The world gets bigger than the pair.** Levels eleven to fifteen stay in the
+farmyard grammar the child knows. Sixteen to twenty leave it: woodland, then
+savanna, then the first weather in the whole game, then a tree that bends. Level
+nineteen is the only clip with rain in it and level twenty is the only one where
+something larger than an animal moves.
+
+Both axes land on the same closing note. Level twenty's twist is not a bigger
+trick than level ten's — it is a quieter one. What the child could not reach comes
+down.
+
+Everything below inherits the rebuilt-brief rule that came out of level ten's first
+version: few named colours, **one** lighting change and it is the amber horizon at
+the end, at most one new figure on stage, a want whose object is a solid graspable
+thing, and a payoff that is a **pose** rather than a light show.
+
+Full prompts as sent are in `prompts/lN-cover.txt` and `prompts/lN-clear.txt`.
+Each clip starts from its own cover.
+
+## Level 11 — counting within 12 · cow and hay bale · accent `#c98a1f`
+
+First level of the twelve band, and counting returns the way it did at four and six.
+It opens the third five deliberately slowly: a cow is the most placid figure in the
+set and the clip's joke is about weight, which is a good place to start after level
+ten's tower.
+
+**Cover** — `l11-cover.webp`
+
+> Three round cows in a mown hayfield, front-facing and three-quarter, large round
+> heads, bodies `#8a5a3c` with cream `#f2e6cf` patches, muzzles `#f2b8c0`, blunt
+> horns `#e0c9a0`, hooves `#4a4a52`, `#33291f` features with long lashes,
+> overlapping so they form no countable row. Small round hay bales `#e0b455` with
+> paler `#f0cf90` straw ends and two darker `#c98a1f` cords bound crosswise,
+> scattered loosely on the stubble. The winding cream path, open sky `#eaf4f7` to
+> `#d9ecf2` across the upper two thirds. Light from the upper left. No text,
+> numerals or letters.
+
+**Clear video** — `l11-clear.mp4`, 7s, **first frame is `l11-cover.webp`**
+
+Twist: *the heavy thing wants to be furniture.* The cows shove at bales that will
+not move an inch, and then the bales roll to them, bump their legs twice — plainly
+an invitation — and the cows climb up and sit on them.
+
+The nudge is the whole clip. An object that moves is level two; an object that
+*asks* is new, and it is the cheapest possible way to give a bale a personality.
+
+Every bale stays whole and bound. Nothing may unroll: loose hay would be an
+uncountable mass where a countable set used to be, which is the same fault a wall of
+undifferentiated cheese would have been at level eight.
+
+## Level 12 — counting and addition within 12 · pony and horseshoe · accent `#8fa3b2`
+
+Addition in the twelve band. The first cool-grey object in the set — the warm band
+was full by level nine, and a metal grey-blue is the widest gap left in it.
+
+**Cover** — `l12-cover.webp`
+
+> Three sturdy round ponies in a green paddock, front-facing and three-quarter,
+> large round heads, bodies `#b4663a`, manes and tails `#7a4a2a`, muzzles
+> `#e8c9a8`, hooves `#4a4a52`, `#33291f` features, overlapping so they form no
+> countable row. Open U-shaped horseshoes `#8fa3b2` with `#6b7d8a` inner edges and
+> four `#566672` nail holes each, lying flat in a loose scatter on the grass. The
+> winding cream path, open sky `#eaf4f7` to `#d9ecf2` across the upper two thirds.
+> Light from the upper left. No text, numerals or letters.
+
+**Clear video** — `l12-clear.mp4`, 7s, **first frame is `l12-cover.webp`**
+
+Twist: *the objects dress the actors.* Hooves scrape uselessly over shoes that stay
+flat in the grass; then the shoes stand on their arms, spin like wheels, and one
+clicks onto each pony's raised hoof. The payoff is three ponies discovering they can
+prance.
+
+The one-to-one is exact and it matters: **one** shoe onto **one** hoof of **one**
+pony, and the rest stay in the grass. Four shoes on one pony is the anatomically
+obvious reading and it would state a four-to-one correspondence the game never
+teaches — the same reason level one keeps the fish in their pool.
+
+## Level 13 — addition and subtraction within 12 · duck and snail · accent `#8a63c0`
+
+Arithmetic only, the twelve band's answer to levels three and eight. The snail's
+violet shell is the second use of violet, after level ten's butterfly; legal because
+the two never share a scene, and it is the only cold colour on a warm-bodied actor
+in the set.
+
+**Cover** — `l13-cover.webp`
+
+> Three small round ducks on a pond bank, front-facing and three-quarter, large
+> round heads, bodies `#f5d76e`, folded wings `#e0bd4a`, bills and webbed feet
+> `#f0862f`, `#33291f` features, overlapping so they form no countable row. Small
+> snails with spiral shells `#8a63c0` marked by a darker `#6b4a99` spiral, pale grey
+> `#c9c0cc` bodies and two stalk eyes each, in a loose scatter on the bank. Pale
+> blue pond water `#bfe6f5` along the lower right, the winding cream path, open sky
+> `#eaf4f7` to `#d9ecf2`. Light from the upper left. No text, numerals or letters.
+
+**Clear video** — `l13-clear.mp4`, 7s, **first frame is `l13-cover.webp`**
+
+Twist: *the slowest one sets the pace.* The ducks bustle, stamp and flap trying to
+hurry the snails along, and get nowhere. Then the snails set off — at a magnificent
+crawl — and take the lead, and the ducks have to go this slowly too. One duck's foot
+hangs frozen in the air for a long comic moment before it can put it down.
+
+This is the only clip in twenty whose joke is *timing* rather than event, and it is
+the one a four-year-old will imitate. The held foot is the shot.
+
+The snails may not withdraw into their shells, however natural that is: a snail out
+of sight reads as one fewer snail. They also stay out of the water — the pond is
+scenery, and a counted object floating away is a counted object leaving.
+
+## Level 14 — counting and addition within 15 · bee and flower · accent `#f27a9b`
+
+First level of the fifteen band. The cheapest level in the set to draw: `sp-flower`
+already exists in `art.js` as garden decoration, at exactly these colours, so this
+row needs one new actor and no new target.
+
+**Cover** — `l14-cover.webp`
+
+> Three plump round bees hovering just above a low flower meadow, front-facing and
+> three-quarter, large round heads, bodies `#f0b429` with two broad `#3a2f28`
+> stripes, pale translucent wings `#dff0f7`, `#33291f` features, overlapping so they
+> form no countable row. Simple round flowers rooted in the grass with five broad
+> `#f27a9b` petals, a `#ffd44d` centre disc and `#54a84b` stems with one `#63bd57`
+> leaf each, at slightly different heights in a loose scatter. Green `#3f9e6b`
+> meadow, the winding cream path, open sky `#eaf4f7` to `#d9ecf2`. Light from the
+> upper left. No text, numerals or letters.
+
+**Clear video** — `l14-clear.mp4`, 7s, **first frame is `l14-cover.webp`**
+
+Twist: *the quiet things were watching.* The bees waggle and tap and loop and the
+flowers ignore them completely — then every flower head swings round at once to
+face them. A bee darts left and the whole meadow snaps round after it; it darts
+right and they all follow. Then the flowers bow, and the bees land on them.
+
+Rooted flowers are the safest counted set in the twenty: they physically cannot
+drift, so the only rule to state is that they turn on their stems without their
+bases moving. Nothing may be picked, closed, or shed — a fallen petal is a change in
+what is on screen.
+
+## Level 15 — counting, addition and subtraction within 15 · goat and cabbage · accent `#7fb069`
+
+Everything in play at the top of the fifteen band, and the last level before the
+setting leaves the farm.
+
+**Cover** — `l15-cover.webp`
+
+> Three round goats on a low grassy slope, front-facing and three-quarter, large
+> round heads, bodies `#c9bfae`, short curved horns `#f2e6cf`, beards and hooves
+> `#4a4a52`, muzzles `#e8dcc9`, `#33291f` features with rectangular pupils,
+> overlapping so they form no countable row. Round layered cabbages `#7fb069` with
+> darker `#5c8f4a` curling outer leaf edges and a paler `#a8cc8a` heart, in a loose
+> scatter on the grass. The winding cream path, open sky `#eaf4f7` to `#d9ecf2`.
+> Light from the upper left. No text, numerals or letters.
+
+**Clear video** — `l15-clear.mp4`, 7s, **first frame is `l15-cover.webp`**
+
+Twist: *the animal famous for eating everything chooses to hold it instead.* Three
+goats lunge and every cabbage rolls clear just in time. Then the cabbages roll
+*back*, up against their chests and under their chins, and each goat opens its mouth
+to bite — and stops. The payoff is three goats holding a cabbage under the chin with
+visible enormous effort, one tongue lolling out from the strain.
+
+The forbidden thing is the point here, which is new. Level seven had to say *no pig
+eats an apple* as a constraint fighting the scene; here the restraint **is** the
+joke, so the counting rule and the comedy want the same thing for once. Nothing may
+be bitten, and no leaf may come off — an unwrapped cabbage is one object becoming
+many, which reads as *more*.
+
+## Level 16 — counting within 20 · squirrel and acorn · accent `#6b4a24`
+
+First level of the twenty band, and the first level outside the farm. Counting
+returns one last time, over the widest set in the game.
+
+**Cover** — `l16-cover.webp`
+
+> Three small round squirrels in an open woodland clearing, front-facing and
+> three-quarter, large round heads, bodies `#c4703a`, big curled tail plumes
+> `#a85a28`, chest fur `#f2e6cf`, `#33291f` features with buck teeth, overlapping so
+> they form no countable row. Acorns with a pale `#e8c9a0` nut and a deep textured
+> `#6b4a24` cap, in a loose scatter on the ground. One broad `#8a6a5a` trunk rising
+> out of frame at one side with `#3f9e6b` canopy in the top corner only, the winding
+> cream path, open sky `#eaf4f7` to `#d9ecf2`. Light from the upper left. No text,
+> numerals or letters.
+
+**Clear video** — `l16-clear.mp4`, 8s, **first frame is `l16-cover.webp`**
+
+Twist: *the things being gathered have manners.* The squirrels cannot hold more than
+one acorn at a time — pick up the second, drop the first — and then every acorn in
+the clearing **lifts its cap** like a hat being raised, bows, and rolls into the
+squirrels' curled-up tails.
+
+The raised cap is doing real work. It is a gesture rather than a transformation, so
+it costs nothing against the counting rule, and a cap that comes back down is
+readable as politeness to a child who has never been told what politeness is.
+
+Burying was the obvious squirrel joke and it is unusable: a buried acorn is a hidden
+acorn, which is the one thing the rule forbids outright. Every cap stays on its own
+nut.
+
+## Level 17 — counting and addition within 20 · elephant and peanut · accent `#e07a52`
+
+Addition in the twenty band. The largest actor in the set paired with the smallest
+target, which is the entire reason this row sits here.
+
+**Cover** — `l17-cover.webp`
+
+> Three round baby elephants in a wide clearing, front-facing and three-quarter,
+> large round heads, bodies `#9aa8b4`, big round ears with `#c9b2b8` inner ear, short
+> curled trunks, toenails `#f2e6cf`, `#33291f` features with long lashes, overlapping
+> so they form no countable row. Peanuts in the shell `#d9a86b`, each a double-lobed
+> pod pinched in the middle with a fine `#b8813f` seam, in a loose scatter on the
+> ground. The winding cream path, open sky `#eaf4f7` to `#d9ecf2`. Light from the
+> upper left. No text, numerals or letters.
+
+**Clear video** — `l17-clear.mp4`, 8s, **first frame is `l17-cover.webp`**
+
+Twist: *the biggest animal turns out to be capable of enormous gentleness.* Trunks
+swat, squeeze and blow peanuts skidding across the grass; then the last inch of each
+trunk opens, closes on exactly one peanut, and lifts it high, balanced on the tip.
+The payoff is three elephants gone cross-eyed at their own trunks.
+
+This is the one clip where the actor changes and the objects do not, which is why it
+belongs in the second half — after nine clips of objects taking initiative, an actor
+solving it by *being careful* is the surprise.
+
+Balanced, not held: one peanut on each trunk tip, the rest in the grass, no shell
+cracked. A shelled peanut is one object becoming two.
+
+## Level 18 — addition and subtraction within 20 · panda and bamboo · accent `#b5c94a`
+
+Arithmetic only at the full width, the last of the three levels that drop counting
+as a fallback.
+
+Bamboo takes a pale yellow-green rather than a leaf green, which is mature cane and
+is what a panda actually eats. It is also the only value that separates from level
+ten's clover and level twenty's leaf on the map: three greens in twenty accents is
+already one more than the palette comfortably holds.
+
+**Cover** — `l18-cover.webp`
+
+> Three round baby pandas in a low grassy clearing, front-facing and three-quarter,
+> large round heads, fur `#fbf9f4` with `#33291f` ear patches, eye patches, arms and
+> legs, muzzles `#f2e6cf`, overlapping so they form no countable row. Short lengths
+> of bamboo cane `#b5c94a`, each a straight segmented pole with darker `#8a9a2f`
+> joint rings and a paler `#d4e07a` cut end, lying flat in a loose scatter. The
+> winding cream path, open sky `#eaf4f7` to `#d9ecf2`. Light from the upper left. No
+> text, numerals or letters.
+
+Note for whoever draws `sp-panda`: the fur `#fbf9f4` is **4** from `--panel` and 25
+from `--slot`, the worst case in the whole set — worse than `sp-rabbit` and
+`sp-sheep`. On the cover it sits against grass and is fine. On an answer card only
+the dark outline and the black patches carry it, so both have to be drawn heavy.
+
+**Clear video** — `l18-clear.mp4`, 8s, **first frame is `l18-cover.webp`**
+
+Twist: *the thing they were leaning on catches them.* The pandas keep trying to stand
+on their hind legs and keep toppling; a cane used as a walking stick slides flat and
+drops one straight back down. Then every cane stands up in a ring around them, and
+when the pandas fall the canes **bend inward and hold them**, bowing deeply, and
+bounce them upright.
+
+Resistance-then-release is doing something specific here: the wobble is the *whole
+middle of the clip* rather than a beat near the end, and it is safe because the
+catch is established before the last fall. Nothing may snap, however far it bends —
+a broken cane would be both a loss and a change in the count.
+
+## Level 19 — doubles and near doubles within 20 · frog and lotus pad · accent `#3f9e9d`
+
+Second from the top, and the only structural idea in the ladder that is not just a
+wider band: pairs of the same number. It earns its own level because *two the same*
+is the first thing a child notices without counting.
+
+**Cover** — `l19-cover.webp`
+
+> Three small round frogs at the edge of a calm shallow pond, front-facing and
+> three-quarter, large round heads, bodies `#5aab4a` with paler `#8ecc6b` bellies,
+> wide webbed feet, `#33291f` features with big round eyes set high, overlapping so
+> they form no countable row. Round lotus pads `#3f9e9d` with one deep notch and fine
+> darker `#2f7d7c` veins, floating flat on pale blue `#bfe6f5` water in a loose
+> scatter. Green `#3f9e6b` bank, the winding cream path, open sky `#eaf4f7` to
+> `#d9ecf2`. Light from the upper left. No text, numerals or letters.
+
+The pad takes a blue-green rather than a leaf green because a green frog on a green
+pad is one silhouette. Teal is already in the UI palette as `--ring`, so it costs
+the set nothing.
+
+**Clear video** — `l19-clear.mp4`, 8s, **first frame is `l19-cover.webp`**
+
+Twist: *the thing they sat beside becomes a roof.* The first and only rain in the
+whole game. The frogs try to get out of the wet — hunched shoulders, one foot held
+uselessly overhead, a hop to a spot where it is raining just as hard — and then the
+pads lift off the water and hover above them, one to each frog, with the rain
+running off the notched edges.
+
+Rain is the widest new element in the twenty and it needed a rule of its own: **a
+few large well-separated drops, never a dense curtain.** Level ten's first version
+died on hundreds of identical small glowing dots, and rain is the same failure
+waiting to happen.
+
+The sky does **not** darken for it. That looks like a mistake and is not: a
+rainstorm sky plus the closing amber horizon is two lighting changes in eight
+seconds, and one lighting change per clip is the rule the level ten rebuild bought.
+Rain against a pale sky reads as a shower rather than weather, which is also the
+right register for a reward.
+
+## Level 20 — everything within 20 · giraffe and leaf · accent `#4a8f5a`
+
+The top of the ladder. Every mode, the widest set, and the level a child arrives at
+after the most returning.
+
+**Cover** — `l20-cover.webp`
+
+> Three tall round-headed baby giraffes in a wide open savanna clearing,
+> front-facing and three-quarter, long necks, large round heads, bodies `#e0a84a`
+> with `#b06f28` patches, manes `#8a5a3c`, muzzles `#f2e6cf`, small ossicones, hooves
+> `#4a4a52`, `#33291f` features, overlapping so they form no countable row. Hanging
+> from one broad low `#8a6a5a` branch reaching in from the upper right, large single
+> teardrop leaves `#4a8f5a` with one paler `#7fb069` centre vein, each drawn
+> separately with clear space around it, in a loose scatter along the branch. The
+> canopy above is one solid `#3f9e6b` mass with **no individual leaves drawn in it**.
+> The winding cream path to a very low horizon, the tallest open sky in the set.
+> Light from the upper left. No text, numerals or letters.
+
+The canopy rule is a counting rule, not a style note. Everywhere else the counted
+set sits against something that is not made of the same shape — clover in grass,
+eggs in straw. Leaves against a tree full of leaves is the one pairing where the
+background *is* the target, so the canopy has to be a silhouette and the counted
+leaves have to be large, separate and veined.
+
+**Clear video** — `l20-clear.mp4`, 8s, **first frame is `l20-cover.webp`**
+
+Twist: *what they could not reach comes down to meet them.* Necks at full stretch,
+onto the tips of the front hooves, a hopeful little hop — and still a clear gap
+short. Then the branch creaks, and the whole limb bows down in a long slow arc, the
+canopy leaning after it, until it curves right around the three of them and the
+leaves are at their faces.
+
+**This is deliberately not the biggest trick in the twenty.** Level ten answered its
+ladder with a tower and level nine with something alive; if twenty tries to beat them
+it becomes a fireworks display, which is exactly the failure the level ten rebuild
+was written to avoid. So the widest ending is the quietest one: nothing transforms,
+nothing multiplies, one thing moves and it is the largest thing on screen. A child
+who has climbed twenty levels gets bowed to.
+
+Nothing is eaten, which at the top of the ladder takes some discipline — three
+giraffes at a branch of leaves and not one leaf picked. They press their cheeks
+against them instead, and every leaf is still on the branch at 8.0s. The branch
+carries them down; they never leave it.
+
 ## Continuity across the clips
 
 They are not independent. Read in order they should feel like the same world
 opening up: a quiet pool, then a noisy game, then something built, then a road out,
 then the sky — and past that, dusk and a light answering, a fairground, a house
 with its windows lit, a nest that turns out to be full of life, and three animals
-standing on each other to reach one butterfly.
+standing on each other to reach one butterfly. Then the objects start having
+opinions — a bale that offers itself as a seat, a shoe that dresses a pony, a snail
+that sets the pace, a meadow that turns to watch, a cabbage that would rather be
+held — and then the world itself gets bigger than the pair: woodland, savanna, the
+first rain in the whole game, and a tree that bows.
 
-- The **path** appears in all five and always runs the same direction, lower left
+- The **path** appears in every clip and always runs the same direction, lower left
   to upper right. It is the same path as the map's ribbon.
 - **Light stays upper-left** in every frame of every clip. A generator will drift
   on this; check it on delivery.
-- One clip leaves daylight: level six opens at dusk, keeping the sky pale `#eaf4f7`
-  at the horizon and only deepening to `#9fc4d4` at the top, so it reads as the same
-  sky late rather than a different palette, and ends warmer than it began. Level ten
-  used to fall to dusk as well and no longer does — its sky holds flat daylight for
-  all six seconds. That cost the closing rhyme with level six, deliberately: a sky
-  that changes colour is among the hardest things to ask a generator for, and level
-  ten was already the most crowded brief in the set.
+- **One lighting change per clip, and it is the amber `#e8a33d` horizon at the
+  end.** This is the rule the level ten rebuild bought and every clip from eleven on
+  inherits it. Level six is the one standing exception — it opens at dusk, keeping
+  the sky pale `#eaf4f7` at the horizon and only deepening to `#9fc4d4` at the top,
+  so it reads as the same sky late rather than a different palette. Level ten used
+  to fall to dusk as well and no longer does; that cost the closing rhyme with level
+  six, deliberately, because a sky that changes colour is among the hardest things
+  to ask a generator for. Level nineteen has rain in it and still does not darken,
+  for the same reason.
 - Each clip ends **wider than it started** — one more fish, one merged pile, an
   arch to run through, a long road, open sky — because the reward for finishing a
   level should feel like more, not like a door closing.
-- The **scale of the reversal grows** with the ladder: food that wiggles, then food
-  that flies, then food that builds, then a wall that turns out to be a door, then
-  the ground itself let go of. A child replaying level 1 after level 5 should feel
-  level 1 as small, and that is correct.
-- **Every clip starts from its own cover.** Frame one of each video is the still
-  the child taps on the map, all five of them, measured at 3.0 to 3.9 mean abs
-  diff from the cover file.
+- **The axis of escalation changes at level eleven.** The first ten grow by what the
+  objects *do*: food that wiggles, then flies, then builds, then carries, then turns
+  out to be alive. That line is spent by level ten — a child who has seen an egg
+  hatch is not surprised by a rolling apple. The second ten grow by what the objects
+  *mean toward the actor*, and by how much of the world is on stage. A child
+  replaying level 1 after level 20 should feel level 1 as small, and that is correct.
+- **The top is quiet on purpose.** Level twenty is not a bigger trick than level ten
+  or nine; it is a smaller one done to the largest thing on screen. Trying to beat a
+  tower of sheep and a nest full of chicks is how a clip becomes a fireworks
+  display, which is the specific failure the level ten rebuild was written to avoid.
+- **Every clip starts from its own cover.** Frame one of each video is the still the
+  child taps on the map. The ten that exist measure **2.8 to 4.5** mean abs diff
+  from their cover file; anything much above that band is a clip that drifted off
+  its first frame and is worth looking at. Measure frame zero with `-vframes 1`, not
+  with an `fps=` filter — `fps=4` resamples the timeline and hands back a frame from
+  about t=0.125 instead, which reads 1.7 higher on level ten and would look like
+  drift that is not there.
+- **Clip length grows with the ladder**: 5s for levels one to five, 6s for six to
+  ten, 7s for eleven to fifteen, 8s for sixteen to twenty. The resistance beat is
+  what the extra time buys — by level eleven a child knows the objects are going to
+  do something, so the trying and failing has to last long enough to stop being a
+  formality. The closing hold grows too, because `playClear` now pauses on the last
+  frame for two seconds waiting for a tap: the final pose is looked at, not
+  glimpsed.
 
 ## How the code uses these files
 

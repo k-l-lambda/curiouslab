@@ -39,18 +39,18 @@ Rows 0–8 are drawn. Rows 9–49 are the work.
 | 6 | `pig-apple` | pig | apple | sphere + stem and leaf | **drawn** |
 | 7 | `mouse-cheese` | mouse | cheese | wedge with holes | **drawn** |
 | 8 | `hen-egg` | hen | egg | ovoid | **drawn** |
-| 9 | `sheep-clover` | sheep | clover | three-lobe |
-| 10 | `cow-haybale` | cow | hay bale | bound cylinder |
-| 11 | `horse-horseshoe` | horse | horseshoe | U |
-| 12 | `duck-snail` | duck | snail | spiral |
-| 13 | `bee-flower` | bee | flower | rosette |
-| 14 | `goat-cabbage` | goat | cabbage | layered sphere |
+| 9 | `sheep-clover` | sheep | clover | three-lobe | level 10 |
+| 10 | `cow-haybale` | cow | hay bale | bound cylinder | level 11 |
+| 11 | `horse-horseshoe` | horse | horseshoe | U | level 12 |
+| 12 | `duck-snail` | duck | snail | spiral | level 13 |
+| 13 | `bee-flower` | bee | flower | rosette | level 14 |
+| 14 | `goat-cabbage` | goat | cabbage | layered sphere | level 15 |
 | 15 | `hamster-corn` | hamster | corn cob | segmented spindle |
-| 16 | `squirrel-acorn` | squirrel | acorn | cap + nut |
-| 17 | `elephant-peanut` | elephant | peanut | double lobe |
-| 18 | `panda-bamboo` | panda | bamboo | vertical segmented |
-| 19 | `frog-lotus` | frog | lotus pad | notched disc |
-| 20 | `giraffe-leaf` | giraffe | leaf | teardrop with vein |
+| 16 | `squirrel-acorn` | squirrel | acorn | cap + nut | level 16 |
+| 17 | `elephant-peanut` | elephant | peanut | double lobe | level 17 |
+| 18 | `panda-bamboo` | panda | bamboo | vertical segmented | level 18 |
+| 19 | `frog-lotus` | frog | lotus pad | notched disc | level 19 |
+| 20 | `giraffe-leaf` | giraffe | leaf | teardrop with vein | level 20 |
 | 21 | `hedgehog-mushroom` | hedgehog | mushroom | dome on stalk |
 | 22 | `fox-plum` | fox | plum | ovoid with seam |
 | 23 | `bear-honeypot` | bear | honey pot | pot |
@@ -84,6 +84,53 @@ Rows 0–8 are drawn. Rows 9–49 are the work.
 41 new actors and 41 new targets still to draw. Row 13 reuses `sp-flower`,
 already drawn as garden decoration, which makes `bee-flower` the cheapest row
 on the list.
+
+## Ten of these rows are now level faces
+
+`../levels/prompts.md` gained briefs for levels eleven to twenty, and each one is
+built on a row from this table. Those ten rows change status: they are no longer
+"draw it to the contract in prompts.md", they are **draw it to match a generated
+cover that already exists**, which is a stricter job — the cover is the picture the
+child looks at on the map and the sprite is the one that has to move.
+
+| level | row | pairing |
+|---|---|---|
+| 11 | 10 | `cow-haybale` |
+| 12 | 11 | `horse-horseshoe` |
+| 13 | 12 | `duck-snail` |
+| 14 | 13 | `bee-flower` |
+| 15 | 14 | `goat-cabbage` |
+| 16 | 16 | `squirrel-acorn` |
+| 17 | 17 | `elephant-peanut` |
+| 18 | 18 | `panda-bamboo` |
+| 19 | 19 | `frog-lotus` |
+| 20 | 20 | `giraffe-leaf` |
+
+Row 9 `sheep-clover` was already one of these, as level ten, and is marked the same
+way in the table.
+
+Row 15 `hamster-corn` is skipped, not dropped: it stays in the pool. The ten were
+picked for the story each one could carry, not by order, which is what the plan
+above already says will happen — most of the fifty are pool and never a level's
+face.
+
+Two of them arrive with their colours already spent elsewhere and both are worth
+reading before drawing:
+
+- **Row 13 `bee-flower` is now the cheapest row in the table by a distance.**
+  `sp-flower` exists and the brief was written to its actual colours — petals
+  `#f27a9b`, centre `#ffd44d`, stem `#54a84b`, leaf `#63bd57` — so the target needs
+  no work at all. One new actor and the row is done.
+- **Row 18 `panda-bamboo` has the worst contrast case in the set.** Panda fur
+  `#fbf9f4` is **4** RGB units from `--panel` and 25 from `--slot`, worse than
+  `sp-rabbit` at 16.3 and worse than `sp-sheep`. It is legal only because the black
+  patches and a heavy outline are most of the silhouette. Draw both heavy.
+
+Two colours are deliberately not the obvious choice, so a sprite drawn from taste
+would come out wrong: bamboo is pale yellow-green `#b5c94a`, not leaf green,
+because three greens among twenty map accents is already one too many; and the lotus
+pad is blue-green `#3f9e9d`, not leaf green, because a green frog on a green pad is
+one silhouette.
 
 ## Shapes that need a deliberate difference
 

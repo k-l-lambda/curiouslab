@@ -9,8 +9,19 @@ Regenerate with the tools in `tools/`:
 
 ```bash
 tools/genimage.py assets/levels/prompts/l1-cover.txt assets/levels/l1-cover.webp --quality high
-tools/genvideo.py assets/levels/prompts/l2-clear.txt assets/levels/l2-clear.mp4 --ratio 1:1 --resolution 720p
+tools/genvideo.py assets/levels/prompts/l2-clear.txt assets/levels/l2-clear.mp4 \
+	--first-frame assets/levels/l2-cover.webp --duration 5 --resolution 720p
 ```
+
+**`--ratio` must be left out when `--first-frame` is given** — the service takes the
+output ratio from the image and rejects a request that also states one. `--duration`
+has to match what the prompt's own beats add up to: 5s for levels one to five, 6s for
+six to ten, 7s for eleven to fifteen, 8s for sixteen to twenty.
+
+Generation bills per call and cannot be cancelled. If the poller dies but the task
+was created, resume it with `--task <id>` — the id is printed when the job starts —
+rather than re-running the prompt, which creates and bills a second task. Absence
+from the process table is not evidence the job died; check for the output file.
 
 Both are non-deterministic, so a regeneration will not reproduce the current file
 byte for byte, and colour accuracy varies between runs. Verify what comes back
