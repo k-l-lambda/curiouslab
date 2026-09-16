@@ -1,0 +1,8 @@
+Flat vector children's picture-book animation, square, 5 seconds, camera completely still, no pans and no zooms. An orange tabby cat (body #f7b264, face #ffc478, inner ears #f8d6ae, dark #33291f dot eyes) sits upright beside a shallow round pool of pale blue water #bfe6f5 holding exactly three small blue fish (bodies #5cc3e8, fins #2f96c4). Thick rounded dark outlines, flat fills, minimal shading, soft blue sky #eaf4f7, winding cream path, closed flower buds along the path edge, light from the upper left.
+
+0.0 to 1.5 seconds: the three fish swim up to the near edge of the pool; the cat's ears tip forward and it leans out over the water, tail lifting, one front paw reaching toward the surface.
+1.5 to 3.0 seconds: all three fish flick their tails at the same moment and throw an arc of pale blue droplets into the cat's face. The cat rocks back on its haunches, eyes wide, a few droplets sitting on its head and whiskers.
+3.0 to 4.5 seconds: the cat's eyes become two happy closed upward arcs and its mouth curves up, laughing rather than upset; its tail swishes and it pats the water back once. The three fish bob up and down. The closed flower buds open into simple round flowers one after another, left to right.
+4.5 to 5.0 seconds: hold on the cat laughing and dripping, the three fish bobbing, the flowers open.
+
+Exactly three fish are visible in every frame from start to finish; no fish enters, leaves or hides, and the fish are never taken out of the water or fed to the cat. Gentle and playful, never startling; the splash is soft and slow, not a shock. No text, no numerals, no letters anywhere.
