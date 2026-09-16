@@ -1,0 +1,8 @@
+Flat vector children's picture-book animation, square, 5 seconds, camera completely still, no pans and no zooms. Two small monkeys (limbs and ears #a9723f, bodies #c98a58, muzzles #efd0a9, dark #33291f dot eyes) sit on either side of a low round-canopied tree, green canopy #3f9e6b. Under each monkey a small loose pile of yellow bananas #f7d84a with #e0b92c creases, with a clear empty patch of bare ground between the two piles. Thick rounded dark outlines, flat fills, soft blue sky #eaf4f7, winding cream path behind the tree, light from the upper left.
+
+0.0 to 1.5 seconds: both monkeys lean toward their own banana pile and reach out an arm.
+1.5 to 3.0 seconds: before either can pick anything up, all the bananas hop up off the ground by themselves, arc through the air toward the empty patch between the monkeys, and land stacked into one single pile in the middle, with small dust puffs where they land. Both monkeys freeze mid-reach with their arms still out.
+3.0 to 4.5 seconds: the two monkeys sit back, turn their heads to look at each other, then throw both arms up over their heads and curl their tails up; their eyes become two happy closed upward arcs. The merged pile gives one small bounce in place.
+4.5 to 5.0 seconds: hold on both monkeys with arms raised and the single merged pile between them.
+
+The bananas move but none is ever added or removed: every banana from the two piles ends up in the merged pile, and both monkeys stay in frame the whole time. Keep the piles loosely heaped, never a countable row. Playful and bouncy. No text, no numerals, no letters anywhere.

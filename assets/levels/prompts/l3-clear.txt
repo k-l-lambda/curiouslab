@@ -1,0 +1,8 @@
+Flat vector children's picture-book animation, square, 5 seconds, camera completely still, no pans and no zooms. A white rabbit (body #f3f0ea, head #fbf9f4, ear linings #f2b8c0, dark #33291f dot eyes, #e88a9a nose) stands in front of a closed wooden gate #a5702f, with a carrot patch of dark brown soil #8b5e3c and green tops #54a84b behind it. Thick rounded dark outlines, flat fills, soft blue sky #eaf4f7, winding cream path, light from the upper left.
+
+0.0 to 1.5 seconds: the wooden gate swings open toward the viewer, pivoting on its left edge; the rabbit's ears go up and it hops through into the carrot patch.
+1.5 to 3.0 seconds: the rabbit pulls up carrots and gathers a loose bundled armful of them, orange roots #f0862f with green tops sticking out at angles and overlapping so no clear number can be counted, then turns to face the viewer with its ears straight up and eyes as two happy closed upward arcs. It looks like the ending.
+3.0 to 4.5 seconds: the gate keeps swinging further open and reveals that the path does not stop here; it winds far away into the distance past two more small wooden gates, getting smaller toward the horizon. The rabbit turns its head to look down the long path, ears tipping forward with interest.
+4.5 to 5.0 seconds: hold on the rabbit holding its carrots, looking down the open path.
+
+The armful of carrots must stay deliberately uncountable, overlapping and bundled, never a neat row. Warm and expansive at the end rather than triumphant. No text, no numerals, no letters anywhere.

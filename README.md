@@ -18,7 +18,9 @@ Live site: <https://k-l-lambda.github.io/curiouslab/>
 | `assets/js/levels.js` | The level ladder: item sets, mastery grades, stars, runs |
 | `assets/js/scheduler.js` | Adaptive selection, difficulty and timeout bands |
 | `assets/js/storage.js` | Local progress in IndexedDB, skill mastery, item history |
-| `assets/levels/prompts.md` | Art briefs for the level covers and clear frames |
+| `assets/levels/prompts.md` | Art briefs for the level covers and clear videos |
+| `assets/levels/*.png`, `*.mp4` | Generated level covers and five-second clear videos (Git LFS) |
+| `assets/levels/prompts/` | The exact prompts each asset was generated from |
 | `tools/genimage.py` | Generates images through the gpt-image-2 endpoint |
 | `tools/genvideo.py` | Generates video clips through the Dreamina Seedance endpoint |
 
@@ -31,6 +33,18 @@ server does:
 python3 -m http.server 8000
 # then open http://localhost:8000/
 ```
+
+The level covers and clear videos are stored with [Git LFS](https://git-lfs.com).
+A clone without it gets small pointer text files where the images and videos
+should be, and the level map will show broken art:
+
+```bash
+git lfs install
+git lfs pull
+```
+
+The Pages workflow passes `lfs: true` to `actions/checkout`, which is what keeps
+the deployed site serving real files rather than pointers.
 
 ## Counting Pairs, phase one
 
