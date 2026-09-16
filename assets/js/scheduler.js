@@ -408,7 +408,10 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 			fRec.bestMs = Math.round(answerMs);
 	}
 
-	if (outcome === OUTCOME.TIMEOUT)
+	// Both ways of never reaching the answer. `OUTCOME.ERROR` is what a level run
+	// records when the question's error budget runs out, and for this record it
+	// means the same thing a timeout does: the child left without it.
+	if (outcome === OUTCOME.TIMEOUT || outcome === OUTCOME.ERROR)
 		fRec.misses += 1;
 
 	// A question solved only after help counts against the recent window, so it

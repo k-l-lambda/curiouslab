@@ -72,7 +72,8 @@ no voice and no sound effects in this phase.
 - **Timeout is its own dimension.** Bands are 25s / 16s / 10s. The clock starts
   only after the entrance animation. Tightening requires a run of comfortable
   first-try answers; a timeout gives time back immediately and is recorded
-  separately from a wrong answer.
+  separately from a wrong answer. A spent error budget does not give time back:
+  time was not what ran out.
 - **Wrong answers are never punished.** The card wobbles back, the things that
   need counting are highlighted one at a time (the empty plates in subtraction,
   the source objects otherwise), and after a second miss two distractors dim and
@@ -118,16 +119,32 @@ is how a level is finished.
   through to a result: sets overlap, so level 2 would otherwise open already
   wearing a star earned by the counting it shares with level 1, and tapping into a
   level and leaving again would light it up just the same.
-- **Clearing** — which plays the celebration — needs no timeout in the run *and*
-  at least one question ending up better known than it had ever been. A wrong
-  answer the child then corrects is not a miss.
+- **A question can be lost two ways**: the clock runs out, or the level's error
+  budget does — `maxErrors`, three for all three levels, counted per question
+  rather than per run. Both mean the same thing, that the child never reached the
+  answer, and both raise the same encouragement screen before the run carries on.
+  A wrong answer the child then corrects is not a miss; that is what the whole
+  feedback sequence is for.
+- **Clearing** — which plays the celebration — needs a run with nothing lost *and*
+  at least one question ending up better known than it had ever been.
 - **The next level opens** once every question in the current one has been
   answered correctly at least once, accumulated across runs.
-- **Cover and celebration art** is briefed in `assets/levels/prompts.md`: one still
-  cover per level, and one five-second clear video with a small story in it — a
-  surprise the child can read without words or sound. No clip may change how many
-  of anything is on screen, because the count the child just made is still fresh.
-  Neither the images nor the videos exist yet; nodes wear the sprites meanwhile.
+- **Cover and celebration art** is briefed in `assets/levels/prompts.md` and
+  generated into `assets/levels/`: one still cover per level, and one five-second
+  clear video with a small story in it — a surprise the child can read without
+  words or sound. No clip may change how many of anything is on screen, because the
+  count the child just made is still fresh.
+- **The cover opens the level and the clip closes it.** Tapping a level shows its
+  cover full-screen before the first question; clearing it plays that level's clip
+  over the result. The clip starts from the cover frame, so the two read as one
+  place. A cover or clip that will not load degrades rather than breaks — sprites
+  for the cover, the star burst for the clip — and under
+  `prefers-reduced-motion` the cover is held as a still instead of the clip
+  playing, since that query does not reach a `<video>` on its own.
+- **A lost question gets its own screen**: the level's character, a pulse and three
+  arrows running the way the map's path runs. Vector art from the existing sprite
+  sheet, wordless, gone in a second and a half or on a tap. It is encouragement,
+  not a verdict — the run continues either way.
 - **`?unlock`** opens every level. Debug only: it is never written to the save, so
   it cannot corrupt real progress, and the map shows a flag while it is on.
 

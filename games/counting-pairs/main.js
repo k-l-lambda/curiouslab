@@ -527,6 +527,67 @@ async function resolveCorrect (btn) {
 		nextRound();
 }
 
+/**
+ * The encouragement screen, then whatever comes next.
+ *
+ * Both misses end here, and both end the question rather than the run: a level
+ * asks a fixed number of questions, and losing one does not change how many are
+ * left. What it costs is the clear — `isClear` wants a run with nothing lost —
+ * and the screen exists so that cost is not the only thing the child notices.
+ *
+ * @param {string} cause `'timeout'` or `'error'`
+ */
+async function afterMiss (gen, cause) {
+	if (ui.run)
+		await map.playMiss(dom.miss, ui.run.level, cause);
+
+	// The check is after the screen, not before: it holds for over a second, and
+	// the child can leave for the map inside that time.
+	if (gen !== ui.generation)
+		return;
+
+	if (ui.run && levels.runComplete(ui.run))
+		endRun();
+	else
+		nextRound();
+}
+
+/**
+ * The question is over, with the answer never produced: the error budget is spent.
+ *
+ * The correct card is shown before moving on. That is the whole reason this is a
+ * separate path from a wrong answer that still has tries left — the child has
+ * stopped being asked, so leaving the question unanswered on screen would teach
+ * nothing and end on a blank.
+ */
+async function giveUp (q, gen) {
+	ui.resolving = true;
+	ui.feedback = false;
+	clearTimers();
+	clockStop();
+
+	// `OUTCOME.ERROR` rather than a timeout: the clock was not what ran out, and
+	// the band must not be handed time back over a question the child had plenty
+	// of time for.
+	const report = sched.recordAnswer(q, OUTCOME.ERROR,
+		{answerMs: null, roundMs: Math.round(clockRead())}, ui.errors);
+	if (ui.run)
+		levels.recordRunAnswer(ui.run, q, OUTCOME.ERROR, report, !q.reinforcement);
+	paintStreak();
+	paintRun();
+
+	// Same as the timeout walkthrough: show which card it was, count it out, and
+	// leave the picture rather than the mistake as the last thing on screen.
+	board.scaffold(ui.handles, q);
+	await board.correspondenceHint(ui.handles, ui.handles.buttons.find(
+		b => Number(b.dataset.value) === q.answer));
+	if (gen !== ui.generation)
+		return;
+
+	board.lockChoices(ui.handles);
+	await afterMiss(gen, OUTCOME.ERROR);
+}
+
 async function resolveWrong (btn) {
 	const q = ui.question;
 	const gen = ui.generation;
@@ -560,6 +621,17 @@ async function resolveWrong (btn) {
 	await board.countingHint(ui.handles);
 	if (!current(gen))
 		return;
+
+	// Out of tries. The level says how many one question gets, and this is the
+	// second way a question can be lost — the companion of the clock running out.
+	// Checked after the counting hint so the child still gets the walkthrough for
+	// the try they just spent, and only in a run: free practice has no budget to
+	// spend, and nothing there would be gained by closing a question early.
+	if (ui.run && ui.errors >= levels.maxErrorsOf(ui.run.level)) {
+		await giveUp(q, gen);
+
+		return;
+	}
 
 	if (ui.errors >= HINT_AFTER_ERRORS) {
 		// Still stuck: show part of the reasoning, leave the last step to the child.
@@ -614,17 +686,15 @@ async function onTimeout () {
 	// before a counting walkthrough can walk over anything.
 	board.revealObjects(ui.handles, q);
 
-	// A gentle counting walkthrough, then a fresh question with more time.
+	// A gentle counting walkthrough, then the encouragement screen, then a fresh
+	// question with more time.
 	await board.countingHint(ui.handles);
 	board.lockChoices(ui.handles);
 	await new Promise(resolve => setTimeout(resolve, 500));
 	if (gen !== ui.generation)
 		return;
 
-	if (ui.run && levels.runComplete(ui.run))
-		endRun();
-	else
-		nextRound();
+	await afterMiss(gen, OUTCOME.TIMEOUT);
 }
 
 async function onHint () {
@@ -655,10 +725,13 @@ function showView (name) {
 	clockStop();
 	ui.paused = false;
 	dom.pause.hidden = true;
-	// Both overlays belong to a round, so neither may outlive the view. The result
+	// Every overlay belongs to a round, so none may outlive the view. The result
 	// sheet is the one that matters: Escape out of it goes to the map, and without
 	// this it would sit over the map with its own buttons still the only way out.
 	dom.result.hidden = true;
+	// The encouragement screen is mid-run by definition, so leaving takes it with
+	// us. Its own timer resolves into a generation check and finds nothing to do.
+	dom.miss.hidden = true;
 	dom.mapView.hidden = name !== 'map';
 	dom.playView.hidden = name !== 'play';
 }
@@ -692,11 +765,34 @@ function showMap () {
 	paintRun();
 }
 
+/**
+ * Tapping a level: its cover first, the first question only once the child asks.
+ *
+ * The cover is a door rather than a delay. It shows where they are about to be,
+ * and it is the reason the clear video afterwards reads as the same place — the
+ * clip starts from this exact frame. Backing out here costs nothing: no run has
+ * started, so nothing is recorded and no star is at stake.
+ */
 function startLevel (levelId) {
 	const level = levels.levelById(levelId);
 	if (!level)
 		return;
 
+	map.renderCover(dom.cover, level, {
+		onStart: () => {
+			dom.cover.hidden = true;
+			beginRun(level);
+		},
+		onBack: () => {
+			dom.cover.hidden = true;
+			// Straight back to the map, which is still drawn underneath.
+			showMap();
+		},
+	});
+	dom.cover.hidden = false;
+}
+
+function beginRun (level) {
 	const rec = store.level(level.id);
 	// Snapshot before the run, so the result can tell a star won just now from
 	// one the child already had.
@@ -745,6 +841,8 @@ async function endRun () {
 	map.renderResult(dom.result, result, {
 		onReplay: () => {
 			dom.result.hidden = true;
+			// Through the cover again, not straight into a question. The same door
+			// every time is what makes it a door.
 			startLevel(result.levelId);
 		},
 		onMap: () => {
@@ -754,8 +852,10 @@ async function endRun () {
 	});
 	dom.result.hidden = false;
 
+	// The level's own clip, and `endRun` waits for it — which is what keeps an
+	// unlock from cutting the story off part-way through.
 	if (result.cleared)
-		await map.playClear(dom.result);
+		await map.playClear(dom.result, run.level);
 
 	// The unlock is shown on the map, where the newly open level actually is.
 	// Only when this run is what completed the coverage, and only if the child has
@@ -1012,7 +1112,20 @@ function buildOverlays () {
 	dom.result.className = 'overlay result';
 	dom.result.hidden = true;
 
-	document.body.append(dom.pause, dom.parent, dom.result);
+	// The level cover, shown between tapping a level and its first question.
+	dom.cover = document.createElement('div');
+	dom.cover.className = 'overlay cover';
+	dom.cover.hidden = true;
+
+	// The encouragement screen after a lost question. No dismiss control of its
+	// own: it holds for a moment and goes, and a tap anywhere shortens that — a
+	// button here would be one more thing to understand at the least good moment
+	// to be asking a child to understand something.
+	dom.miss = document.createElement('div');
+	dom.miss.className = 'overlay miss';
+	dom.miss.hidden = true;
+
+	document.body.append(dom.pause, dom.parent, dom.result, dom.cover, dom.miss);
 }
 
 function closeParent () {
@@ -1055,8 +1168,20 @@ async function boot () {
 		if (event.key !== 'Escape')
 			return;
 
+		// The encouragement screen dismisses itself, and it owns the continuation of
+		// the run. Escape must not fall through to the pause toggle underneath it,
+		// which would leave a round waiting behind a screen nobody can see.
+		if (!dom.miss.hidden)
+			return;
+
 		if (!dom.parent.hidden)
 			closeParent();
+		else if (!dom.cover.hidden) {
+			// Escape out of the cover is backing out of the level, which no run has
+			// started for yet, so there is nothing to abandon.
+			dom.cover.hidden = true;
+			showMap();
+		}
 		else if (!dom.result.hidden)
 			// Escape out of the result goes back to the map, which is the only
 			// other thing that screen can do.

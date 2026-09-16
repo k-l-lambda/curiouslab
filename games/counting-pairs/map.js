@@ -20,6 +20,45 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
+ * Where the generated level art lives, relative to this module's page.
+ *
+ * The level table stores bare file names, so the directory is stated once, here.
+ * `levels.js` deliberately knows nothing about paths — it is loadable outside a
+ * browser, and a URL is the one thing in it that could not be checked there.
+ */
+const ART = '../../assets/levels/';
+
+/**
+ * A cover still, revealed only once it has actually loaded.
+ *
+ * The fallback matters more than the image. These files are Git LFS objects, so a
+ * clone without LFS gets a few lines of pointer text where the PNG should be, and
+ * the browser reports that as a broken image — silently, in the one place a child
+ * would have seen the level's face. Hiding the <img> until `load` fires means the
+ * sprites underneath simply stay visible, which is the same picture the map wore
+ * before the art existed.
+ *
+ * @returns {HTMLImageElement}
+ */
+function coverImage (level, cls) {
+	const img = document.createElement('img');
+	img.className = cls;
+	img.alt = '';
+	img.decoding = 'async';
+	img.hidden = true;
+	img.addEventListener('load', () => {
+		img.hidden = false;
+		img.parentElement?.classList.add('has-cover');
+	});
+	// No error handler on purpose: `hidden` is already the failure state, so there
+	// is nothing to undo. An onerror that removed the element would be the same
+	// outcome reached less obviously.
+	img.src = ART + level.cover;
+
+	return img;
+}
+
+/**
  * The path, in its own coordinates.
  *
  * One curve is the single source of truth for where the stops are: the nodes are
@@ -141,13 +180,15 @@ function buildNode (level, view) {
 		+ (open ? `, ${stars} of 3 stars` : ', locked'));
 
 	const art = el('div', 'node-art', btn);
-	// Until the generated cover art exists, the level wears its own pair of
-	// figures — the same two the brief for `level.cover` is written around, so
-	// the map does not change character when the art lands.
+	// The generated cover, with the level's own pair of figures underneath it. The
+	// brief for `level.cover` is written around those two figures, so the map does
+	// not change character depending on which of the two is showing.
 	const pairing = pairingById(level.pairing);
 	art.append(sprite(level.sprite, 'node-figure'));
 	if (pairing)
 		art.append(sprite(pairing.target, 'node-token'));
+	if (level.cover)
+		art.append(coverImage(level, 'node-cover'));
 
 	btn.append(starRow(stars));
 
@@ -375,19 +416,66 @@ export function renderResult (host, result, actions) {
 	return sheet;
 }
 
-/* --------------------------------------------------------- celebrations */
+/* ------------------------------------------------------------- the cover */
 
 /**
- * The clear animation: a burst of stars over the result sheet.
+ * The level's cover, shown before its first question.
  *
- * Held deliberately short. It marks getting better, and it plays on every run
- * that does — so it has to be the kind of thing a child is glad to see again
- * rather than something they start waiting out.
+ * A beat between tapping a level and being asked something. The child gets to
+ * look at where they are going, and the picture they have been seeing as a small
+ * circle on the map opens up into the whole screen — which is what makes the
+ * clear video afterwards read as the same place rather than a cut to somewhere
+ * new.
+ *
+ * The whole sheet is the start button, not just the play badge. A three-year-old
+ * aiming at a 3.6rem target on a phone misses it; the badge is there to say what
+ * happens, and anywhere on the picture does it.
+ *
+ * @param {HTMLElement} host the overlay to fill
+ * @param {object} level
+ * @param {{onStart: Function, onBack: Function}} actions
  */
-export async function playClear (host) {
-	if (REDUCED)
-		return;
+export function renderCover (host, level, actions) {
+	host.textContent = '';
+	const sheet = el('div', 'sheet cover-sheet', host);
 
+	const start = document.createElement('button');
+	start.type = 'button';
+	start.className = 'cover-start';
+	start.setAttribute('aria-label',
+		`start level ${levels.levelIndex(level.id) + 1}, up to ${level.max}`);
+
+	const art = el('div', 'cover-art', start);
+	// Same fallback as the map node, for the same reason: without LFS the PNG is
+	// pointer text. Here the stand-in is the pair of figures at cover size.
+	const pairing = pairingById(level.pairing);
+	art.append(sprite(level.sprite, 'cover-figure'));
+	if (pairing)
+		art.append(sprite(pairing.target, 'cover-token'));
+	if (level.cover)
+		art.append(coverImage(level, 'cover-still'));
+
+	const badge = el('div', 'cover-play', start);
+	badge.append(sprite('ic-play'));
+	start.addEventListener('click', actions.onStart);
+	sheet.append(start);
+
+	const actionRow = el('div', 'cover-actions', sheet);
+	const back = document.createElement('button');
+	back.type = 'button';
+	back.className = 'icon-btn';
+	back.setAttribute('aria-label', 'back to the map');
+	back.append(sprite('ic-close'));
+	back.addEventListener('click', actions.onBack);
+	actionRow.append(back);
+
+	return sheet;
+}
+
+/* --------------------------------------------------------- celebrations */
+
+/** Stars thrown outward: the fallback celebration, and the reduced-motion one. */
+function starBurst (host) {
 	const burst = el('div', 'clear-burst', host);
 	const count = 9;
 	for (let i = 0; i < count; ++i) {
@@ -397,8 +485,190 @@ export async function playClear (host) {
 		burst.append(star);
 	}
 
-	await wait(900);
-	burst.remove();
+	return burst;
+}
+
+/**
+ * How long to wait for a clip that has stopped telling us anything.
+ *
+ * A video that neither plays nor errors is a real state — a codec the browser
+ * lists but will not decode, a file still arriving over a slow link — and without
+ * a ceiling the result screen would sit behind it forever. Comfortably longer
+ * than the five-second clips, so a clip that is merely slow to start still gets
+ * to finish.
+ */
+const CLIP_LIMIT_MS = 9000;
+
+/**
+ * The clear celebration: the level's own video, or stars if it cannot play.
+ *
+ * The video is what carries the story — a beat, a turn, a landing — and it only
+ * plays on a run that got better, so it stays something a child is glad to see
+ * again. Tapping skips it: the same clip on a replayed level is the one thing
+ * here that could become a wait.
+ *
+ * Every path out resolves. That is load-bearing rather than tidy: `main.js` awaits
+ * this before showing an unlock on the map, so a promise that never settled would
+ * strand a child who had just opened a new level on the result screen.
+ *
+ * @param {HTMLElement} host the overlay to play over
+ * @param {object} [level] the level just cleared; without it, stars
+ */
+export async function playClear (host, level) {
+	// Reduced motion covers CSS animation, not a <video>, so the clip has to be
+	// declined here by hand. The cover still is the celebration instead: same
+	// scene, no motion. The star burst is skipped for the same reason it always
+	// was, and `starBurst` is left unreachable on this path deliberately.
+	if (REDUCED) {
+		if (!level?.cover)
+			return;
+
+		const hold = el('div', 'clear-still', host);
+		hold.append(coverImage(level, 'clear-frame'));
+		await wait(1200);
+		hold.remove();
+
+		return;
+	}
+
+	if (!level?.clear) {
+		const burst = starBurst(host);
+		await wait(900);
+		burst.remove();
+
+		return;
+	}
+
+	const stage = el('div', 'clear-stage', host);
+	const video = document.createElement('video');
+	video.className = 'clear-video';
+	video.muted = true;
+	video.autoplay = true;
+	video.playsInline = true;
+	video.setAttribute('playsinline', '');
+	video.preload = 'auto';
+	// The cover is the clip's first frame by construction — every brief in
+	// `assets/levels/prompts.md` is written to start from it — so as a poster it is
+	// the one image that cannot flash as a different picture.
+	if (level.cover)
+		video.poster = ART + level.cover;
+	video.src = ART + level.clear;
+	stage.append(video);
+
+	await new Promise(resolve => {
+		let done = false;
+		const finish = () => {
+			if (done)
+				return;
+
+			done = true;
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(finish, CLIP_LIMIT_MS);
+
+		video.addEventListener('ended', finish);
+		// An LFS pointer file, a missing asset and an undecodable clip all arrive
+		// here. Stars instead, so the run that earned a celebration still gets one.
+		video.addEventListener('error', () => {
+			if (done)
+				return;
+
+			video.remove();
+			const burst = starBurst(stage);
+			setTimeout(() => {
+				burst.remove();
+				finish();
+			}, 900);
+		});
+		stage.addEventListener('click', finish);
+		// `autoplay` is refused often enough to be worth asking twice; muted
+		// playback is allowed everywhere, so a rejection here means something else
+		// went wrong and the timeout will collect it.
+		video.play?.().catch(() => {});
+	});
+
+	stage.remove();
+}
+
+/* ------------------------------------------------------- keeping going */
+
+/**
+ * The encouragement screen, after a question the child never reached the end of.
+ *
+ * Shown for a miss — the clock ran out, or the tries did — and drawn rather than
+ * written, because the child cannot read and the one thing this screen must not
+ * be is ambiguous. It says: that one got away, the road still goes on, here comes
+ * the next.
+ *
+ * Vector art, and all of it already in the sprite sheet. The figure is the
+ * level's own character, so the screen belongs to the level the child is in; it
+ * hops rather than droops, and the arrows run lower-left to upper-right, the same
+ * direction as the map's path. Nothing here is sad and nothing is a reprimand:
+ * the run continues either way, and this is the half-second that says so.
+ *
+ * @param {HTMLElement} host the overlay to fill
+ * @param {object} level
+ * @param {string} cause `'timeout'` or `'error'`, for the accessible name only
+ */
+export function renderMiss (host, level, cause) {
+	host.textContent = '';
+	const sheet = el('div', 'sheet miss-sheet', host);
+
+	const scene = el('div', 'miss-scene', sheet);
+	scene.append(sprite('sp-glow', 'miss-glow'));
+	scene.append(sprite(level.sprite, 'miss-figure'));
+
+	const trail = el('div', 'miss-trail', scene);
+	for (let i = 0; i < 3; ++i) {
+		const arrow = sprite('ic-arrow', 'miss-arrow');
+		arrow.style.animationDelay = `${i * 120}ms`;
+		trail.append(arrow);
+	}
+
+	// The overlay is wordless, so this is the only place the two causes can be
+	// told apart at all — and a screen reader is the one audience that can read it.
+	sheet.setAttribute('aria-label', cause === 'timeout'
+		? 'out of time, keep going'
+		: 'that one was tricky, keep going');
+	sheet.setAttribute('role', 'status');
+
+	return sheet;
+}
+
+/** How long the encouragement screen holds before the run moves on. */
+export const MISS_MS = 1500;
+
+/**
+ * Show it, and resolve when it is done.
+ *
+ * Tappable, like the clear clip: a child who is ready to carry on should not be
+ * made to watch a screen about carrying on.
+ */
+export async function playMiss (host, level, cause) {
+	renderMiss(host, level, cause);
+	host.hidden = false;
+
+	await new Promise(resolve => {
+		let done = false;
+		const finish = () => {
+			if (done)
+				return;
+
+			done = true;
+			clearTimeout(timer);
+			// Removed rather than left to be garbage: the overlay element outlives
+			// every screen shown in it, so a listener added and forgotten here would
+			// still be attached on the next miss, and the one after that.
+			host.removeEventListener('click', finish);
+			resolve();
+		};
+		const timer = setTimeout(finish, REDUCED ? 700 : MISS_MS);
+		host.addEventListener('click', finish);
+	});
+
+	host.hidden = true;
+	host.textContent = '';
 }
 
 /**

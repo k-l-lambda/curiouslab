@@ -87,7 +87,12 @@ export const showsPreviews = form => form === FORMS.FULL;
  * purpose: `cover` is a still, and `clear` is a five-second video, because the
  * celebration is where a small story with a surprise in it belongs and a held
  * frame cannot carry one. The briefs for both are in `assets/levels/prompts.md`,
- * and neither file exists yet.
+ * and the generated files sit beside them in `assets/levels/`.
+ *
+ * `maxErrors` is how many wrong taps one question may take before it is given
+ * up as a miss. Per question, not per run, because that is what makes it the
+ * companion of the timeout: both end the question the child is on, and both are
+ * a way of running out on it rather than getting it wrong.
  *
  * `pairing` is the level's face on the map, not a constraint on its questions:
  * the cover art is drawn around these two figures, so the map needs to know
@@ -102,6 +107,7 @@ export const LEVELS = [
 		min: 1,
 		max: 3,
 		questions: 3,
+		maxErrors: 3,
 		forms: [FORMS.FULL],
 		sprite: 'sp-cat',
 		pairing: 'cat-fish',
@@ -115,6 +121,7 @@ export const LEVELS = [
 		min: 1,
 		max: 3,
 		questions: 5,
+		maxErrors: 3,
 		forms: [FORMS.FULL],
 		sprite: 'sp-monkey',
 		pairing: 'monkey-banana',
@@ -131,6 +138,7 @@ export const LEVELS = [
 		min: 1,
 		max: 5,
 		questions: 6,
+		maxErrors: 3,
 		forms: [FORMS.FULL, FORMS.PROMPT],
 		sprite: 'sp-rabbit',
 		pairing: 'rabbit-carrot',
@@ -377,11 +385,40 @@ export function unlockedLevels (records, {unlockAll = false} = {}) {
 
 /* ------------------------------------------------------------------- runs */
 
+/** A level that does not say otherwise gets this many tries at one question. */
+export const DEFAULT_MAX_ERRORS = 3;
+
+/**
+ * How many wrong taps one question of this level may take.
+ *
+ * Read through a function rather than off the level, so a level table written
+ * before this rule existed still behaves rather than handing `undefined` to a
+ * comparison — where `errors >= undefined` is false and the budget silently
+ * becomes infinite.
+ */
+export const maxErrorsOf = level => level?.maxErrors ?? DEFAULT_MAX_ERRORS;
+
+/**
+ * The two ways a question can be lost.
+ *
+ * A wrong answer is not one of them. The whole feedback sequence exists to let a
+ * child correct themselves, and it would be strange to run it and then hold the
+ * mistake against them. What ends a question is running out: out of time, or out
+ * of tries. `error` is the outcome recorded when the last try is spent, so it
+ * names the second kind — the child never produced the answer.
+ */
+export const MISS_OUTCOMES = new Set(['timeout', 'error']);
+export const isMiss = outcome => MISS_OUTCOMES.has(outcome);
+
 /**
  * One bounded attempt at a level.
  *
- * `misses` counts timeouts only. A wrong answer the child then corrects is not
- * a miss: they got there, and the whole feedback sequence exists to let them.
+ * `misses` counts questions the child never got to the answer of — see
+ * `MISS_OUTCOMES`. `timeouts` and `exhausted` split that total by cause. Only the
+ * total decides anything; the split is carried out through `finishRun` so that a
+ * run lost to the clock can be told from one lost to wrong answers without
+ * replaying it, which is the difference a grown-up would want and the two numbers
+ * are the only record of.
  */
 export function startRun (level) {
 	return {
@@ -389,6 +426,8 @@ export function startRun (level) {
 		asked: [],
 		answered: 0,
 		misses: 0,
+		timeouts: 0,
+		exhausted: 0,
 		improvements: [],
 		startedAt: Date.now(),
 	};
@@ -400,9 +439,10 @@ export const runComplete = run => run.answered >= run.level.questions;
 /**
  * Did this run clear the level?
  *
- * Nothing timed out, and at least one question ended up better known than it
- * had ever been. Getting everything right is not on its own enough — the
- * animation marks moving forward, not marking time.
+ * Nothing was lost — neither to the clock nor to the error budget — and at least
+ * one question ended up better known than it had ever been. Getting everything
+ * right is not on its own enough: the animation marks moving forward, not
+ * marking time.
  */
 export const isClear = run => run.misses === 0 && run.improvements.length > 0;
 
@@ -570,8 +610,13 @@ export function recordRunAnswer (run, q, outcome, report, counts = true) {
 		return run;
 
 	run.answered += 1;
-	if (outcome === 'timeout')
+	if (isMiss(outcome)) {
 		run.misses += 1;
+		if (outcome === 'timeout')
+			run.timeouts += 1;
+		else
+			run.exhausted += 1;
+	}
 
 	return run;
 }
@@ -597,6 +642,8 @@ export function finishRun (run, records, {starsSeen = 0} = {}) {
 		total: score.total,
 		cleared: isClear(run),
 		misses: run.misses,
+		timeouts: run.timeouts,
+		exhausted: run.exhausted,
 		answered: run.answered,
 		improvements: run.improvements.slice(),
 		// Named only when this run is what completed the coverage: the map shows

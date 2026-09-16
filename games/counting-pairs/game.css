@@ -757,6 +757,20 @@ body {
 
 .node-art { display: grid; place-items: center; width: 100%; height: 100%; position: relative; }
 .node-art .node-figure { width: 68%; height: auto; }
+/* The generated cover, filling the round node. It covers the fallback sprites
+   rather than replacing them, so a file that never loads leaves them showing —
+   see `coverImage` in map.js, which reveals this only on `load`. */
+.node-cover {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 50%;
+}
+/* With the cover up, the corner token would sit on top of a full scene that
+   already says what the level is about. */
+.node-art.has-cover .node-token { display: none; }
 /* The counted object, tucked into the corner: it says what the level is about
    without competing with the figure for the middle. */
 .node-art .node-token {
@@ -914,6 +928,170 @@ body {
 
 .result-actions { display: flex; gap: .8rem; }
 .result-actions .icon-btn { width: 3.6rem; height: 3.6rem; }
+
+/* ---------- The level cover, before the first question ---------- */
+
+/* Transparent, like the pause sheet: the picture is the screen, and a white card
+   around it would read as a dialog about the level rather than the level. */
+.cover-sheet {
+	display: grid;
+	justify-items: center;
+	gap: .9rem;
+	background: transparent;
+	max-width: min(88vw, 34rem);
+	padding: 0;
+	overflow: visible;
+}
+
+/* The whole picture is the start control. A badge-sized target is not something
+   a three-year-old hits on a phone; the badge says what happens, the picture is
+   what they tap. */
+.cover-start {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: min(78vmin, 30rem);
+	aspect-ratio: 1;
+	padding: 0;
+	border: 5px solid var(--panel);
+	border-radius: 28px;
+	background: var(--sky-2);
+	box-shadow: 0 6px 0 #a8c6d0, 0 14px 30px #23303a3d;
+	cursor: pointer;
+	overflow: hidden;
+	transition: transform .18s ease;
+}
+.cover-start:hover { transform: scale(1.02); }
+.cover-start:active { transform: scale(.98); }
+.cover-start:focus-visible { outline: 3px solid var(--ring); outline-offset: 5px; }
+
+.cover-art { position: relative; display: grid; place-items: center; width: 100%; height: 100%; }
+.cover-art .cover-figure { width: 54%; height: auto; }
+.cover-art .cover-token { position: absolute; right: 12%; bottom: 12%; width: 22%; height: auto; }
+.cover-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover-art.has-cover .cover-token { display: none; }
+
+/* Over the lower edge of the picture, where it cannot hide the subject: the
+   briefs centre every cover and leave the margins to scenery. */
+.cover-play {
+	position: absolute;
+	bottom: .9rem;
+	display: grid;
+	place-items: center;
+	width: 4.6rem;
+	height: 4.6rem;
+	border-radius: 50%;
+	background: #fffdf8e8;
+	box-shadow: 0 3px 0 #a8c6d0, 0 6px 16px #23303a33;
+	color: var(--ink);
+	animation: cover-beckon 2.4s ease-in-out infinite;
+}
+.cover-play svg { width: 55%; height: auto; }
+
+@keyframes cover-beckon {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.08); }
+}
+
+.cover-actions { display: flex; gap: .8rem; }
+.cover-actions .icon-btn { width: 3.4rem; height: 3.4rem; }
+
+/* ---------- The clear clip ---------- */
+
+/* Fills the overlay rather than sitting in the result sheet: the clip is the
+   celebration for a moment, and the sheet with its stars and buttons is what the
+   child comes back to when it ends. */
+.clear-stage, .clear-still {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	background: #23303ae8;
+	z-index: 1;
+	cursor: pointer;
+}
+.clear-video, .clear-frame {
+	width: min(88vmin, 34rem);
+	max-height: 88vh;
+	aspect-ratio: 1;
+	object-fit: contain;
+	border-radius: 24px;
+	box-shadow: 0 12px 34px #00000059;
+}
+
+/* ---------- After a lost question ---------- */
+
+/* Warm rather than cold: the screen behind it is a question that got away, and
+   this is the half-second that says the road goes on. */
+.miss {
+	background: #fffdf8e6;
+}
+.miss-sheet {
+	display: grid;
+	justify-items: center;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+	overflow: visible;
+}
+
+.miss-scene {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: min(60vmin, 18rem);
+	aspect-ratio: 1;
+}
+/* The level's own character, hopping. Not drooping: the run continues either way,
+   and a sad figure here would make a lost question the thing that happened rather
+   than one of six. */
+.miss-figure {
+	width: 62%;
+	height: auto;
+	animation: miss-hop 1.05s cubic-bezier(.3,1.4,.4,1) 2 both;
+}
+.miss-glow {
+	position: absolute;
+	width: 100%;
+	height: auto;
+	opacity: .5;
+	animation: miss-pulse 1.5s ease-out both;
+}
+
+@keyframes miss-hop {
+	0% { transform: translateY(0) scale(1); }
+	35% { transform: translateY(-16%) scale(1.04); }
+	60% { transform: translateY(0) scale(.98); }
+	100% { transform: translateY(0) scale(1); }
+}
+@keyframes miss-pulse {
+	0% { transform: scale(.7) rotate(0); opacity: 0; }
+	40% { opacity: .55; }
+	100% { transform: scale(1.12) rotate(28deg); opacity: 0; }
+}
+
+/* Lower left to upper right — the direction the map's path runs, and the map is
+   where this run is heading. */
+.miss-trail {
+	position: absolute;
+	right: -6%;
+	top: 12%;
+	display: flex;
+	flex-direction: column;
+	gap: .2rem;
+}
+.miss-arrow {
+	width: clamp(1.5rem, 4.5vh, 2.3rem);
+	height: auto;
+	color: var(--ok);
+	transform: rotate(-38deg);
+	animation: miss-onward 1.5s ease-out both;
+}
+@keyframes miss-onward {
+	0% { opacity: 0; transform: rotate(-38deg) translate(-40%, 40%); }
+	40% { opacity: 1; }
+	100% { opacity: 0; transform: rotate(-38deg) translate(60%, -60%); }
+}
 
 /* The clear burst: stars thrown outward from the middle of the sheet. */
 .clear-burst {

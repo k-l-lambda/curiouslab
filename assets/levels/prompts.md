@@ -256,27 +256,31 @@ opening up: a quiet pool, then a noisy game, then a road out.
   long road — because the reward for finishing a level should feel like more, not
   like a door closing.
 
-## What is still owed in code when the files land
+## How the code uses these files
 
-Dropping the files into this directory is not on its own enough.
+All of it is wired up. Recorded here because every one of these was a way the art
+could have landed in the repository and still not reached a child.
 
-- `map.js` `buildNode` reads `level.sprite` and ignores `level.cover`. It should
-  prefer `cover` and keep the sprite as the fallback for a file that has not
-  arrived, so a missing image degrades to the current art instead of a blank node.
-- `playClear` is a generic CSS star burst. It should play `clear` for the level just
-  finished. That means a `<video>` element rather than a sprite burst: autoplay,
-  muted, `playsinline`, no controls, and the star burst kept as the fallback for a
-  file that has not arrived or a browser that will not play it.
-- `levels.js` currently names `clear: 'l1-clear.png'` and so on. Those become
-  `.mp4` when the videos exist.
-- `@media (prefers-reduced-motion: reduce)` already flattens the CSS animations,
-  but a video is not covered by it. Under that query the clip should be skipped in
-  favour of a still — the cover, or a poster frame — rather than played anyway.
-- The result screen holds for as long as the child leaves it, so a 5s clip needs no
-  timing work, but `endRun` dismisses the result immediately when a level unlocks,
-  to run the map's unlock animation. That path would cut the clip off part-way and
-  needs to wait for it, or the child who just unlocked something never sees the
-  story.
+- `map.js` `buildNode` puts the cover over the level node, with the level's own
+  sprites underneath it. `coverImage` reveals the `<img>` only on `load`, so a
+  file that is not really there leaves the sprites showing rather than a broken
+  image. That is the Git LFS case, not a hypothetical one: a clone without LFS
+  serves a few lines of pointer text under a `.png` name.
+- The cover is also a screen of its own, shown between tapping a level and its
+  first question — `renderCover`. It is why the clip afterwards reads as the same
+  place: every clip starts from this exact frame, so the cover is also its poster.
+- `playClear` plays the level's own `clear` file: a muted, `playsinline` `<video>`
+  with no controls, awaited by `endRun` so an unlock cannot cut it short. The star
+  burst is still there as the fallback for a clip that will not load.
+- `@media (prefers-reduced-motion: reduce)` does not cover a `<video>`, so
+  `playClear` declines the clip by hand under that query and holds the cover still
+  instead. Same scene, no motion.
+- A lost question gets its own screen — `renderMiss` — drawn from sprites already
+  in the sheet, because it has to say "that one got away, keep going" to a child
+  who cannot read. There are two ways to lose one now: the clock, or the level's
+  `maxErrors` budget.
 
-Until then, level nodes wear the existing sprites — `sp-cat`, `sp-monkey`,
-`sp-rabbit` — rather than an empty frame or a broken link.
+Worth keeping in mind when writing a fourth level: the board dims all but one
+distractor after two errors, so with `maxErrors: 3` the last try is a choice
+between two cards. The budget is reachable, but it is not a likely ending — which
+is the right way round for a game a small child is playing.
