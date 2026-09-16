@@ -224,6 +224,9 @@ function buildHud () {
  * chance at clearing, which is the honest price of not finishing it.
  */
 function leaveRun () {
+	// Walking out part-way abandons this run's chance at the clip, so stop holding
+	// it. Coming back in opens the cover again, which starts a fresh fetch.
+	map.releaseClear();
 	showMap();
 }
 
@@ -654,6 +657,9 @@ async function failRun () {
 
 	ui.run = null;
 	ui.question = null;
+	// A lost attempt plays no clip, so the buffered one is no longer wanted. The
+	// next cover will start its own.
+	map.releaseClear();
 	const gen = ui.generation;
 	showMap();
 
@@ -904,6 +910,12 @@ function startLevel (levelId) {
 	if (!level)
 		return;
 
+	// Start pulling the clear clip down now. The child is looking at the cover and
+	// then answering a whole run, which is the head start that lets the clip play
+	// smoothly instead of buffering in front of them at the one moment the run was
+	// supposed to be rewarded.
+	map.prefetchClear(level);
+
 	map.renderCover(dom.cover, level, {
 		onStart: () => {
 			dom.cover.hidden = true;
@@ -911,6 +923,9 @@ function startLevel (levelId) {
 		},
 		onBack: () => {
 			dom.cover.hidden = true;
+			// Nothing to celebrate on a level that was never entered, so stop
+			// holding its clip.
+			map.releaseClear();
 			// Straight back to the map, which is still drawn underneath.
 			showMap();
 		},
@@ -979,9 +994,14 @@ async function endRun () {
 	dom.result.hidden = false;
 
 	// The level's own clip, and `endRun` waits for it — which is what keeps an
-	// unlock from cutting the story off part-way through.
+	// unlock from cutting the story off part-way through. `playClear` takes over
+	// the clip the cover started fetching; a run that did not earn it hands that
+	// buffer back instead of holding megabytes for a celebration that is not
+	// coming.
 	if (result.cleared)
 		await map.playClear(dom.result, run.level);
+	else
+		map.releaseClear();
 
 	// The unlock is shown on the map, where the newly open level actually is.
 	// Only when this run is what completed the coverage, and only if the child has

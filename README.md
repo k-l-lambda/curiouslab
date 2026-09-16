@@ -201,6 +201,16 @@ time a level pairs the two.
   for the cover, the star burst for the clip — and under
   `prefers-reduced-motion` the cover is held as a still instead of the clip
   playing, since that query does not reach a `<video>` on its own.
+- **The clip is fetched while the level is being played**, starting the moment its
+  cover opens rather than when the celebration begins. These files are three to
+  four megabytes, so on a slow connection a download that starts at the
+  celebration either stutters through the five seconds or is still arriving when
+  the nine-second ceiling gives up on it — a child who answered everything right
+  would get the fallback star burst. One level's clip is held at a time, and it is
+  released when the level is left without earning it: backing out of the cover,
+  walking out part-way, losing the run, or finishing one that did not clear. Under
+  `prefers-reduced-motion` nothing is fetched at all, since the clip will not
+  play.
 - **A lost question gets its own screen**: the level's character, a pulse and three
   arrows running the way the map's path runs. Vector art from the existing sprite
   sheet, wordless, gone in a second and a half or on a tap. It is encouragement,

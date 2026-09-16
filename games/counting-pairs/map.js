@@ -489,6 +489,107 @@ function starBurst (host) {
 }
 
 /**
+ * The clip already on its way, if any: `{id, video}` for one level at a time.
+ *
+ * One entry rather than a map of all five. A child is inside one level when the
+ * clip is wanted, and each of these files is three to four megabytes — holding
+ * every level's would spend fifteen megabytes of a phone's memory to save a
+ * download the child may never reach.
+ */
+let buffered = null;
+
+/**
+ * Start fetching a level's clear clip, so it is ready if the run earns it.
+ *
+ * Called when the cover opens, which is the earliest moment the level is known
+ * and the longest possible head start: the whole run happens between here and
+ * the clip being wanted. Without it the download begins at the celebration
+ * itself, and a three-megabyte file over a slow link either stutters through its
+ * five seconds or is still arriving when `CLIP_LIMIT_MS` gives up on it — the
+ * child answers everything right and the reward is a star burst.
+ *
+ * The element is kept, not just the bytes. A detached <video> is a plausible
+ * candidate for the browser to discard along with whatever it had buffered, and
+ * the HTTP cache is not a promise either; holding the element that did the
+ * fetching is what makes the buffer survive to `playClear`, which then plays
+ * this very element rather than a fresh one pointed at the same URL.
+ *
+ * Never throws and never waits: an unreachable or undecodable clip has to fail
+ * at the celebration, where there is already a star burst to fall back on.
+ *
+ * @param {object} [level] the level whose cover just opened
+ */
+export function prefetchClear (level) {
+	// Reduced motion shows the cover still instead of the clip, so fetching
+	// megabytes of video would be spending a data plan on something this
+	// browser has been told not to play.
+	if (REDUCED || !level?.clear)
+		return;
+
+	if (buffered?.id === level.id)
+		return;
+
+	// Whatever was held is for a level the child is no longer entering.
+	releaseClear();
+
+	const video = document.createElement('video');
+	video.className = 'clear-video';
+	video.muted = true;
+	video.playsInline = true;
+	video.setAttribute('playsinline', '');
+	video.preload = 'auto';
+	if (level.cover)
+		video.poster = ART + level.cover;
+	// Deliberately not autoplay: this element may be played later, and an
+	// element that starts playing while detached would arrive at the
+	// celebration already part-way through its own story.
+	video.src = ART + level.clear;
+	// An error here is not handled and must not be: the celebration path listens
+	// for it and has the star burst. Swallowing it now would only mean the same
+	// failure is discovered later.
+	video.load();
+
+	buffered = {id: level.id, video};
+}
+
+/**
+ * Drop the buffered clip and let the browser reclaim what it held.
+ *
+ * Exported because leaving a level without earning the clip has to say so:
+ * backing out of a cover, losing a run, finishing one that did not clear. Without
+ * that, a few megabytes stay held for a level the child has walked away from and
+ * the next level's prefetch is the only thing that would ever clear it. Safe to
+ * call when nothing is held, which is the common case.
+ */
+export function releaseClear () {
+	if (!buffered)
+		return;
+
+	const {video} = buffered;
+	buffered = null;
+	// Clearing the source is what actually frees the buffer; dropping the last
+	// reference is not enough while a src is still set on it.
+	video.removeAttribute('src');
+	video.load();
+}
+
+/**
+ * The buffered element for this level, handed over for playing, or null.
+ *
+ * Handing it over ends the buffering: whoever takes it owns it, and a second
+ * caller would otherwise get an element already playing somewhere else.
+ */
+function takeBuffer (level) {
+	if (!buffered || buffered.id !== level.id)
+		return null;
+
+	const {video} = buffered;
+	buffered = null;
+
+	return video;
+}
+
+/**
  * How long to wait for a clip that has stopped telling us anything.
  *
  * A video that neither plays nor errors is a real state — a codec the browser
@@ -540,7 +641,11 @@ export async function playClear (host, level) {
 	}
 
 	const stage = el('div', 'clear-stage', host);
-	const video = document.createElement('video');
+	// The clip the cover started fetching, if it is this level's and still held.
+	// Falling back to a fresh element rather than requiring the buffer keeps this
+	// working when the level was reached without a cover, when reduced motion
+	// declined the prefetch, and in the tests that call this directly.
+	const video = takeBuffer(level) ?? document.createElement('video');
 	video.className = 'clear-video';
 	video.muted = true;
 	video.autoplay = true;
@@ -552,7 +657,13 @@ export async function playClear (host, level) {
 	// the one image that cannot flash as a different picture.
 	if (level.cover)
 		video.poster = ART + level.cover;
-	video.src = ART + level.clear;
+	if (video.src !== new URL(ART + level.clear, location.href).href)
+		video.src = ART + level.clear;
+	// A buffered element may have been left part-way through by an earlier
+	// celebration on this same level, and a clip that starts at its end shows
+	// nothing at all.
+	if (video.currentTime)
+		video.currentTime = 0;
 	stage.append(video);
 
 	await new Promise(resolve => {
@@ -566,11 +677,8 @@ export async function playClear (host, level) {
 			resolve();
 		};
 		const timer = setTimeout(finish, CLIP_LIMIT_MS);
-
-		video.addEventListener('ended', finish);
-		// An LFS pointer file, a missing asset and an undecodable clip all arrive
-		// here. Stars instead, so the run that earned a celebration still gets one.
-		video.addEventListener('error', () => {
+		// The star burst, and the only way out for a clip that cannot play.
+		const giveUpOnClip = () => {
 			if (done)
 				return;
 
@@ -580,7 +688,25 @@ export async function playClear (host, level) {
 				burst.remove();
 				finish();
 			}, 900);
-		});
+		};
+
+		// A prefetched clip may have already failed, long before this screen
+		// existed: an `error` event does not replay for a listener added later, so
+		// a buffered element that is already broken has to be recognised by its
+		// state rather than waited on. This is the ordinary case in a clone
+		// without Git LFS, where every clip is a pointer file and the fetch that
+		// began at the cover has failed by the time the run ends. Without this the
+		// celebration would sit through `CLIP_LIMIT_MS` and then show nothing.
+		if (video.error) {
+			giveUpOnClip();
+
+			return;
+		}
+
+		video.addEventListener('ended', finish);
+		// An LFS pointer file, a missing asset and an undecodable clip all arrive
+		// here. Stars instead, so the run that earned a celebration still gets one.
+		video.addEventListener('error', giveUpOnClip);
 		stage.addEventListener('click', finish);
 		// `autoplay` is refused often enough to be worth asking twice; muted
 		// playback is allowed everywhere, so a rejection here means something else
