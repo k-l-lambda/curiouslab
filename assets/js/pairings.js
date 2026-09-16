@@ -88,6 +88,101 @@ export const PAIRINGS = [
 		familiarity: 8,
 		tint: '#d9b48c',
 	},
+	// Rows nine to nineteen. Each `tint` is the accent its level carries in
+	// `../levels/prompts.md` rather than a colour picked here, so the pairing and
+	// the map node the child taps to reach it are the same colour. `hamster-corn`
+	// from the expansion plan is deliberately absent: it stays in the pool and was
+	// not given a level, so drawing it buys no level face.
+	{
+		id: 'sheep-clover',
+		source: 'sp-sheep',
+		target: 'sp-clover',
+		container: null,
+		familiarity: 9,
+		tint: '#4f9a34',
+	},
+	{
+		id: 'cow-haybale',
+		source: 'sp-cow',
+		target: 'sp-haybale',
+		container: null,
+		familiarity: 10,
+		tint: '#c98a1f',
+	},
+	{
+		id: 'horse-horseshoe',
+		source: 'sp-horse',
+		target: 'sp-horseshoe',
+		container: null,
+		familiarity: 11,
+		tint: '#8fa3b2',
+	},
+	{
+		id: 'duck-snail',
+		source: 'sp-duck',
+		target: 'sp-snail',
+		container: null,
+		familiarity: 12,
+		tint: '#8a63c0',
+	},
+	// The cheapest row in the table: `sp-flower` was already drawn as garden
+	// decoration, so only the actor was new.
+	{
+		id: 'bee-flower',
+		source: 'sp-bee',
+		target: 'sp-flower',
+		container: null,
+		familiarity: 13,
+		tint: '#f27a9b',
+	},
+	{
+		id: 'goat-cabbage',
+		source: 'sp-goat',
+		target: 'sp-cabbage',
+		container: null,
+		familiarity: 14,
+		tint: '#7fb069',
+	},
+	{
+		id: 'squirrel-acorn',
+		source: 'sp-squirrel',
+		target: 'sp-acorn',
+		container: null,
+		familiarity: 15,
+		tint: '#6b4a24',
+	},
+	{
+		id: 'elephant-peanut',
+		source: 'sp-elephant',
+		target: 'sp-peanut',
+		container: null,
+		familiarity: 16,
+		tint: '#e07a52',
+	},
+	{
+		id: 'panda-bamboo',
+		source: 'sp-panda',
+		target: 'sp-bamboo',
+		container: null,
+		familiarity: 17,
+		tint: '#b5c94a',
+	},
+	{
+		id: 'frog-lotus',
+		source: 'sp-frog',
+		target: 'sp-lotus',
+		container: null,
+		familiarity: 18,
+		tint: '#3f9e9d',
+	},
+	{
+		id: 'giraffe-leaf',
+		source: 'sp-giraffe',
+		target: 'sp-leaf',
+		container: null,
+		familiarity: 19,
+		tint: '#4a8f5a',
+	},
 ];
 
 export const pairingById = id => PAIRINGS.find(p => p.id === id);

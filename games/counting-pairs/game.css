@@ -437,6 +437,13 @@ body {
 @property --beak { syntax: '<number>'; inherits: true; initial-value: 0; }
 @property --glow { syntax: '<number>'; inherits: true; initial-value: 0; }
 @property --dim { syntax: '<number>'; inherits: true; initial-value: 0; }
+/* Two parts the vocabulary above could not describe, added when the figures that
+   have them were drawn. A trunk curls rather than swinging, so --tail is the wrong
+   shape of motion for it; a throat balloons, which is neither a jaw opening
+   (--beak) nor the sign of a curve (--mouth). Both follow the same convention as
+   the rest: positive is the animated, raised state and 0 is rest. */
+@property --trunk { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --throat { syntax: '<number>'; inherits: true; initial-value: 0; }
 
 /* A gesture can carry a tail or an ear past the edge of the box the sprite was
    cropped to. The crop is measured at rest, so without this the raised end of
@@ -542,6 +549,137 @@ body {
 	100% { --wing: 20deg; --tail: 16deg; --joy: 1; --beak: .45; }
 }
 
+/* A sheep has almost nothing that moves: the wool hides the body and the tail is
+   a stub. So the gesture is the ears flicking and the small tail puff lifting,
+   twice, which is as much as this silhouette can honestly do. */
+.s-sheep.rejoice { animation-name: sheepJoy; }
+@keyframes sheepJoy {
+	0% { --ear: 0deg; --tail: 0deg; --joy: 0; --mouth: 1; }
+	26% { --ear: 30deg; --tail: 26deg; --joy: 1; --mouth: 2; }
+	52% { --ear: 8deg; --tail: 8deg; --joy: 1; --mouth: 2; }
+	78% { --ear: 28deg; --tail: 24deg; --joy: 1; --mouth: 2; }
+	100% { --ear: 20deg; --tail: 18deg; --joy: 1; --mouth: 1.7; }
+}
+
+/* A cow is slow and heavy, so its delight is slower than everything above it:
+   two wide swings of the rope tail and a chew, not a flurry. The ears go out
+   rather than up, which is what --ear means on this drawing. */
+.s-cow.rejoice { animation-name: cowJoy; }
+@keyframes cowJoy {
+	0% { --ear: 0deg; --tail: 0deg; --joy: 0; --mouth: 1; }
+	34% { --ear: 22deg; --tail: 40deg; --joy: 1; --mouth: 2.1; }
+	64% { --ear: 12deg; --tail: -14deg; --joy: 1; --mouth: 1.4; }
+	100% { --ear: 18deg; --tail: 26deg; --joy: 1; --mouth: 1.9; }
+}
+
+/* The mane toss is the pony's whole tell, and the mane rides the head, so this
+   is the one figure whose gesture is mostly --ear pinning back while the tail
+   plume comes up. */
+.s-horse.rejoice { animation-name: horseJoy; }
+@keyframes horseJoy {
+	0% { --ear: 0deg; --tail: 0deg; --joy: 0; --mouth: 1; }
+	22% { --ear: 26deg; --tail: 36deg; --joy: 1; --mouth: 2.2; }
+	48% { --ear: 6deg; --tail: 14deg; --joy: 1; --mouth: 2.2; }
+	74% { --ear: 24deg; --tail: 34deg; --joy: 1; --mouth: 2.2; }
+	100% { --ear: 16deg; --tail: 24deg; --joy: 1; --mouth: 1.8; }
+}
+
+/* A duck flaps fast and quacks with it: --wing beats four times in the same
+   window the hen uses for two, and the bill opens on every beat. */
+.s-duck.rejoice { animation-name: duckJoy; }
+@keyframes duckJoy {
+	0% { --wing: 0deg; --tail: 0deg; --joy: 0; --beak: 0; }
+	14% { --wing: 40deg; --tail: 22deg; --joy: 1; --beak: .8; }
+	28% { --wing: -8deg; --tail: 10deg; --joy: 1; --beak: .2; }
+	42% { --wing: 40deg; --tail: 22deg; --joy: 1; --beak: .8; }
+	56% { --wing: -8deg; --tail: 10deg; --joy: 1; --beak: .2; }
+	70% { --wing: 36deg; --tail: 20deg; --joy: 1; --beak: .7; }
+	100% { --wing: 22deg; --tail: 16deg; --joy: 1; --beak: .4; }
+}
+
+/* The bee is the one figure whose wings never stop, so its joy is a faster blur
+   rather than a bigger one -- five beats, small amplitude. Making them wide
+   turned the bee into a flapping bird in the first attempt. */
+.s-bee.rejoice { animation-name: beeJoy; }
+@keyframes beeJoy {
+	0% { --wing: 0deg; --joy: 0; --mouth: 1; }
+	20% { --wing: 22deg; --joy: 1; --mouth: 2.2; }
+	40% { --wing: -10deg; --joy: 1; --mouth: 2.2; }
+	60% { --wing: 22deg; --joy: 1; --mouth: 2.2; }
+	80% { --wing: -8deg; --joy: 1; --mouth: 2.2; }
+	100% { --wing: 14deg; --joy: 1; --mouth: 1.9; }
+}
+
+/* A goat's is a rear-and-settle: the ears go up hard, the tail flicks, and the
+   beard follows the head because it is drawn on it. */
+.s-goat.rejoice { animation-name: goatJoy; }
+@keyframes goatJoy {
+	0% { --ear: 0deg; --tail: 0deg; --joy: 0; --mouth: 1; }
+	24% { --ear: 34deg; --tail: 34deg; --joy: 1; --mouth: 2.1; }
+	50% { --ear: 12deg; --tail: 6deg; --joy: 1; --mouth: 2.1; }
+	76% { --ear: 30deg; --tail: 30deg; --joy: 1; --mouth: 2.1; }
+	100% { --ear: 22deg; --tail: 20deg; --joy: 1; --mouth: 1.8; }
+}
+
+/* The tail is two thirds of a squirrel, so it gets the largest swing in the set:
+   it sweeps up over the back and flourishes twice. The ear tufts follow it. */
+.s-squirrel.rejoice { animation-name: squirrelJoy; }
+@keyframes squirrelJoy {
+	0% { --tail: 0deg; --ear: 0deg; --joy: 0; --mouth: 1; }
+	26% { --tail: 46deg; --ear: 16deg; --joy: 1; --mouth: 2.2; }
+	52% { --tail: 14deg; --ear: 6deg; --joy: 1; --mouth: 2.2; }
+	78% { --tail: 42deg; --ear: 14deg; --joy: 1; --mouth: 2.2; }
+	100% { --tail: 32deg; --ear: 10deg; --joy: 1; --mouth: 1.9; }
+}
+
+/* The trunk raises and curls -- the one gesture in the set that is a salute. The
+   ears fan with it, slower, because big ears drawn beating fast read as wings. */
+.s-elephant.rejoice { animation-name: elephantJoy; }
+@keyframes elephantJoy {
+	0% { --trunk: 0deg; --ear: 0deg; --joy: 0; }
+	30% { --trunk: 54deg; --ear: 18deg; --joy: 1; }
+	58% { --trunk: 30deg; --ear: 6deg; --joy: 1; }
+	84% { --trunk: 50deg; --ear: 16deg; --joy: 1; }
+	100% { --trunk: 42deg; --ear: 12deg; --joy: 1; }
+}
+
+/* A panda has no tail worth animating and its ears are small dark circles, so
+   the gesture lives in the face: the eye patches close to arcs and the grin
+   widens, twice, with a small ear wiggle carrying it. */
+.s-panda.rejoice { animation-name: pandaJoy; }
+@keyframes pandaJoy {
+	0% { --ear: 0deg; --joy: 0; --mouth: 1; }
+	28% { --ear: 16deg; --joy: 1; --mouth: 2.3; }
+	56% { --ear: 4deg; --joy: 1; --mouth: 1.9; }
+	82% { --ear: 14deg; --joy: 1; --mouth: 2.3; }
+	100% { --ear: 10deg; --joy: 1; --mouth: 2; }
+}
+
+/* The throat is the frog's gesture and it pulses rather than holding: three
+   swells, because a single held balloon reads as a shape and not as a call. */
+.s-frog.rejoice { animation-name: frogJoy; }
+@keyframes frogJoy {
+	0% { --throat: 0; --joy: 0; --mouth: 1; }
+	20% { --throat: 1; --joy: 1; --mouth: 2.2; }
+	40% { --throat: .25; --joy: 1; --mouth: 2.2; }
+	60% { --throat: .95; --joy: 1; --mouth: 2.2; }
+	80% { --throat: .3; --joy: 1; --mouth: 2.2; }
+	100% { --throat: .7; --joy: 1; --mouth: 1.9; }
+}
+
+/* The neck sways, which is a gesture no other actor makes: --tilt carries the
+   whole upper body from the shoulders, so the head travels a long way while the
+   legs stay put. Kept small in degrees for that reason -- 14deg at the shoulder
+   is already most of the box at the head. */
+.s-giraffe.rejoice { animation-name: giraffeJoy; }
+@keyframes giraffeJoy {
+	0% { --tilt: 0deg; --ear: 0deg; --tail: 0deg; --joy: 0; --mouth: 1; }
+	28% { --tilt: 12deg; --ear: 24deg; --tail: 30deg; --joy: 1; --mouth: 2.1; }
+	56% { --tilt: -8deg; --ear: 8deg; --tail: 10deg; --joy: 1; --mouth: 2.1; }
+	82% { --tilt: 10deg; --ear: 22deg; --tail: 28deg; --joy: 1; --mouth: 2.1; }
+	100% { --tilt: 4deg; --ear: 16deg; --tail: 20deg; --joy: 1; --mouth: 1.8; }
+}
+
 /* Disappointment, per figure. The shared turn-away above carries the body and
    the grey; these carry the parts, so a row still reads as one group reacting
    the same way while each figure does it in its own manner. Both animations
@@ -556,6 +694,17 @@ body {
 .obj.let-down.s-pig { animation: letDown .72s ease both, pigDown .72s ease both; }
 .obj.let-down.s-mouse { animation: letDown .72s ease both, mouseDown .72s ease both; }
 .obj.let-down.s-hen { animation: letDown .72s ease both, henDown .72s ease both; }
+.obj.let-down.s-sheep { animation: letDown .72s ease both, sheepDown .72s ease both; }
+.obj.let-down.s-cow { animation: letDown .72s ease both, cowDown .72s ease both; }
+.obj.let-down.s-horse { animation: letDown .72s ease both, horseDown .72s ease both; }
+.obj.let-down.s-duck { animation: letDown .72s ease both, duckDown .72s ease both; }
+.obj.let-down.s-bee { animation: letDown .72s ease both, beeDown .72s ease both; }
+.obj.let-down.s-goat { animation: letDown .72s ease both, goatDown .72s ease both; }
+.obj.let-down.s-squirrel { animation: letDown .72s ease both, squirrelDown .72s ease both; }
+.obj.let-down.s-elephant { animation: letDown .72s ease both, elephantDown .72s ease both; }
+.obj.let-down.s-panda { animation: letDown .72s ease both, pandaDown .72s ease both; }
+.obj.let-down.s-frog { animation: letDown .72s ease both, frogDown .72s ease both; }
+.obj.let-down.s-giraffe { animation: letDown .72s ease both, giraffeDown .72s ease both; }
 
 /* Ears flat, tail down: the pose a cat takes when it has had enough. */
 @keyframes catDown {
@@ -614,6 +763,83 @@ body {
 	30% { --wing: -14deg; --tail: -16deg; --beak: 0; }
 	78% { --wing: -14deg; --tail: -16deg; --beak: 0; }
 	100% { --wing: 0deg; --tail: 0deg; }
+}
+
+/* Ears out flat and the tail puff dropped. */
+@keyframes sheepDown {
+	30% { --ear: -34deg; --tail: -22deg; --mouth: -1.1; }
+	78% { --ear: -34deg; --tail: -22deg; --mouth: -1.1; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* The head drops and the rope tail hangs straight. */
+@keyframes cowDown {
+	30% { --ear: -28deg; --tail: -30deg; --mouth: -1.1; }
+	78% { --ear: -28deg; --tail: -30deg; --mouth: -1.1; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* Ears pinned back is exactly what a pony does when it has had enough, so this
+   is the one figure whose disappointment is its most recognisable pose. */
+@keyframes horseDown {
+	30% { --ear: -40deg; --tail: -24deg; --mouth: -1.1; }
+	78% { --ear: -40deg; --tail: -24deg; --mouth: -1.1; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* Wing folded, tail down, bill shut. */
+@keyframes duckDown {
+	30% { --wing: -18deg; --tail: -20deg; --beak: 0; }
+	78% { --wing: -18deg; --tail: -20deg; --beak: 0; }
+	100% { --wing: 0deg; --tail: 0deg; }
+}
+/* The wings stop, which for this figure is the whole of it -- a bee holding
+   still is a bee that has given up. Small negative angle so they droop rather
+   than sitting at rest, or the pose is indistinguishable from idle. */
+@keyframes beeDown {
+	30% { --wing: -14deg; --mouth: -1.1; }
+	78% { --wing: -14deg; --mouth: -1.1; }
+	100% { --wing: 0deg; --mouth: 1; }
+}
+/* Ears sideways and the tail down; the beard keeps its shape either way. */
+@keyframes goatDown {
+	30% { --ear: -32deg; --tail: -26deg; --mouth: -1.1; }
+	78% { --ear: -32deg; --tail: -26deg; --mouth: -1.1; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* The plume comes down off the back, which is the largest change any figure in
+   the set makes -- it stops at -40deg because further tucks the tail through the
+   body rather than behind it. */
+@keyframes squirrelDown {
+	30% { --tail: -40deg; --ear: -22deg; --mouth: -1.1; }
+	78% { --tail: -40deg; --ear: -22deg; --mouth: -1.1; }
+	100% { --tail: 0deg; --ear: 0deg; --mouth: 1; }
+}
+/* The trunk hangs slack and the ears fold in. Negative --trunk pushes the curl
+   below its resting droop, which is the readable version of a sigh here. */
+@keyframes elephantDown {
+	30% { --trunk: -22deg; --ear: -20deg; }
+	78% { --trunk: -22deg; --ear: -20deg; }
+	100% { --trunk: 0deg; --ear: 0deg; }
+}
+/* The grin turns over behind the mask. The eye patches do not move, because they
+   are the figure's outline as much as its face. */
+@keyframes pandaDown {
+	30% { --ear: -18deg; --mouth: -1.2; }
+	78% { --ear: -18deg; --mouth: -1.2; }
+	100% { --ear: 0deg; --mouth: 1; }
+}
+/* The throat empties completely and the wide mouth turns down: a frog that is
+   not calling. --throat cannot go below 0 without inverting the balloon through
+   the chin, so 0 is the floor here rather than a negative. */
+@keyframes frogDown {
+	30% { --throat: 0; --mouth: -1.1; }
+	78% { --throat: 0; --mouth: -1.1; }
+	100% { --throat: 0; --mouth: 1; }
+}
+/* The neck droops forward. Kept to -10deg for the same reason the joy is kept
+   to 12: at the shoulder a small angle is a long way at the head. */
+@keyframes giraffeDown {
+	30% { --tilt: -10deg; --ear: -24deg; --tail: -20deg; --mouth: -1.1; }
+	78% { --tilt: -10deg; --ear: -24deg; --tail: -20deg; --mouth: -1.1; }
+	100% { --tilt: 0deg; --ear: 0deg; --tail: 0deg; --mouth: 1; }
 }
 
 /* Equation, numbers and symbols only, shown after a correct answer. */

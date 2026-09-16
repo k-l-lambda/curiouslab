@@ -366,6 +366,632 @@ const SPRITES = `
   <ellipse cx="42" cy="40" rx="5" ry="8" fill="#c19a6b" opacity=".8" transform="rotate(-16 42 40)"/>
 </symbol>
 
+<symbol id="sp-sheep" viewBox="0 0 100 100">
+  <!-- The wool is a ring of circles rather than one outline, because the bumpy
+       edge is the whole silhouette: at card size a smooth oval reads as a cloud
+       and ten of them smear together. -->
+  <path d="M76 78 q12 -4 8 -12" fill="none" stroke="#f2e6cf" stroke-width="9"
+    stroke-linecap="round"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 76px 78px"/>
+  <g fill="#4a4a52">
+    <rect x="33" y="84" width="8" height="14" rx="4"/>
+    <rect x="55" y="84" width="8" height="14" rx="4"/>
+  </g>
+  <!-- The same wool shapes, 2.5 units larger and dark, sitting behind: this is the
+       sheep's outline. It has to exist. The wool #f2e6cf is 12.5 RGB units from
+       --slot, so on an answer card an unoutlined sheep is a sheep-shaped piece of
+       card -- which is exactly what sp-rabbit does at 16.3 and what the expansion
+       plan names as the case not to repeat. Drawn as an offset layer rather than a
+       stroke on each circle, because stroking them individually draws seams
+       everywhere the bumps overlap. -->
+  <g fill="#4a4a52">
+    <circle cx="26" cy="62" r="13.5"/><circle cx="29" cy="80" r="12.5"/>
+    <circle cx="48" cy="86" r="13.5"/><circle cx="67" cy="80" r="12.5"/>
+    <circle cx="70" cy="62" r="13.5"/><circle cx="60" cy="50" r="12.5"/>
+    <circle cx="36" cy="50" r="12.5"/>
+    <ellipse cx="48" cy="68" rx="27.5" ry="23.5"/>
+  </g>
+  <g fill="#f2e6cf">
+    <circle cx="26" cy="62" r="11"/><circle cx="29" cy="80" r="10"/>
+    <circle cx="48" cy="86" r="11"/><circle cx="67" cy="80" r="10"/>
+    <circle cx="70" cy="62" r="11"/><circle cx="60" cy="50" r="10"/>
+    <circle cx="36" cy="50" r="10"/>
+    <ellipse cx="48" cy="68" rx="25" ry="21"/>
+  </g>
+  <g fill="#dcc9a8">
+    <circle cx="70" cy="62" r="11"/><circle cx="67" cy="80" r="10"/>
+  </g>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 34px 34px">
+    <ellipse cx="28" cy="33" rx="9" ry="5" fill="#3d3d44" transform="rotate(-18 28 33)"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 62px 34px">
+    <ellipse cx="68" cy="33" rx="9" ry="5" fill="#3d3d44" transform="rotate(18 68 33)"/>
+  </g>
+  <ellipse cx="48" cy="38" rx="14" ry="15" fill="#4a4a52"/>
+  <!-- Features in paper, not ink: the face is #4a4a52 and an ink eye on it is
+       one dark shape with no eye in it. Every other figure in the set has a pale
+       face and takes the ink; this one inverts for the same reason. -->
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="42" cy="35" r="3.4" fill="#fffdf8"/>
+    <circle cx="54" cy="35" r="3.4" fill="#fffdf8"/>
+    <circle cx="42" cy="35" r="1.6" fill="#23303a"/>
+    <circle cx="54" cy="35" r="1.6" fill="#23303a"/>
+  </g>
+  <g fill="none" stroke="#fffdf8" stroke-width="2.6" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M38 36 q4 -5 8 0"/>
+    <path d="M50 36 q4 -5 8 0"/>
+  </g>
+  <path d="M42 46 q6 5 12 0" fill="none" stroke="#fffdf8" stroke-width="2.4"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 46px"/>
+</symbol>
+
+<symbol id="sp-clover" viewBox="0 0 100 100">
+  <!-- Three lobes around one point, each a rounded wedge pointing at the centre.
+       One lobe is the pale #63bd57 so the three read as three at card size --
+       a single flat green three-lobe collapses into one blob. -->
+  <path d="M50 46 q-12 -30 -22 -44" fill="none" stroke="#4f9a34" stroke-width="5"
+    stroke-linecap="round" transform="rotate(180 50 46)"/>
+  <g>
+    <path d="M50 46 q-15 -5 -13 -17 q2 -11 13 -9 q11 -2 13 9 q2 12 -13 17 Z" fill="#63bd57"/>
+    <path d="M50 46 q-15 -5 -13 -17 q2 -11 13 -9 q11 -2 13 9 q2 12 -13 17 Z" fill="#4f9a34"
+      transform="rotate(120 50 46)"/>
+    <path d="M50 46 q-15 -5 -13 -17 q2 -11 13 -9 q11 -2 13 9 q2 12 -13 17 Z" fill="#4f9a34"
+      transform="rotate(240 50 46)"/>
+  </g>
+</symbol>
+
+<symbol id="sp-haybale" viewBox="0 0 100 100">
+  <!-- A round bale end-on: the pale flat face is the straw ends, and the two
+       cords crossing it are what separate this from every other sphere in the
+       set. Without them it is a ball. -->
+  <circle cx="50" cy="52" r="31" fill="#e0b455"/>
+  <circle cx="50" cy="52" r="22" fill="#f0cf90"/>
+  <g fill="none" stroke="#c98a1f" stroke-width="4" stroke-linecap="round">
+    <path d="M36 24 q-4 28 2 56"/>
+    <path d="M64 24 q4 28 -2 56"/>
+  </g>
+  <g fill="none" stroke="#c98a1f" stroke-width="2.4" stroke-linecap="round" opacity=".8">
+    <path d="M42 36 q8 -4 16 0"/>
+    <path d="M42 68 q8 4 16 0"/>
+  </g>
+</symbol>
+
+<symbol id="sp-cow" viewBox="0 0 100 100">
+  <!-- The tail is a rope with a tuft, so --tail swings the whole line from the
+       rump rather than scaling it the way the pig's corkscrew does. -->
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 73px 70px">
+    <path d="M73 70 q11 6 9 18" fill="none" stroke="#8a5a3c" stroke-width="4"
+      stroke-linecap="round"/>
+    <ellipse cx="82" cy="91" rx="5" ry="7" fill="#f2e6cf"/>
+  </g>
+  <g fill="#4a4a52">
+    <rect x="32" y="86" width="9" height="12" rx="4"/>
+    <rect x="55" y="86" width="9" height="12" rx="4"/>
+  </g>
+  <ellipse cx="48" cy="74" rx="26" ry="18" fill="#8a5a3c"/>
+  <ellipse cx="36" cy="76" rx="10" ry="8" fill="#f2e6cf"/>
+  <ellipse cx="62" cy="70" rx="8" ry="6" fill="#f2e6cf"/>
+  <!-- Blunt and short: a cow horn drawn long reads as a goat's. -->
+  <g fill="#e0c9a0">
+    <path d="M36 24 q-6 -8 0 -11 q6 2 5 11 Z"/>
+    <path d="M60 24 q6 -8 0 -11 q-6 2 -5 11 Z"/>
+  </g>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 32px 36px">
+    <ellipse cx="26" cy="35" rx="8" ry="5.5" fill="#8a5a3c" transform="rotate(-20 26 35)"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 64px 36px">
+    <ellipse cx="70" cy="35" rx="8" ry="5.5" fill="#8a5a3c" transform="rotate(20 70 35)"/>
+  </g>
+  <ellipse cx="48" cy="38" rx="18" ry="17" fill="#8a5a3c"/>
+  <path d="M48 21 q9 4 8 14 q-8 4 -8 -14 Z" fill="#f2e6cf"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="34" r="3.6" fill="#33291f"/>
+    <circle cx="56" cy="34" r="3.6" fill="#33291f"/>
+    <circle cx="41.2" cy="33" r="1.2" fill="#fff"/>
+    <circle cx="57.2" cy="33" r="1.2" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M36 35 q4 -5 8 0"/>
+    <path d="M52 35 q4 -5 8 0"/>
+  </g>
+  <ellipse cx="48" cy="52" rx="13" ry="10" fill="#f2b8c0"/>
+  <ellipse cx="43" cy="51" rx="2.4" ry="3.2" fill="#33291f"/>
+  <ellipse cx="53" cy="51" rx="2.4" ry="3.2" fill="#33291f"/>
+  <path d="M41 59 q7 5 14 0" fill="none" stroke="#33291f" stroke-width="2.4"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 59px"/>
+</symbol>
+
+<symbol id="sp-horse" viewBox="0 0 100 100">
+  <!-- A pony, not a horse: the head is large against the body and the legs are
+       short, which is the proportion every other figure in the set is drawn to. -->
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 72px 68px">
+    <path d="M72 68 q14 8 10 26 q-8 -2 -14 -8 Z" fill="#7a4a2a"/>
+  </g>
+  <g fill="#4a4a52">
+    <rect x="33" y="86" width="9" height="12" rx="4"/>
+    <rect x="55" y="86" width="9" height="12" rx="4"/>
+  </g>
+  <ellipse cx="48" cy="74" rx="24" ry="18" fill="#b4663a"/>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 36px 26px">
+    <path d="M36 28 q-4 -14 2 -16 q6 4 4 16 Z" fill="#b4663a"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 60px 26px">
+    <path d="M60 28 q4 -14 -2 -16 q-6 4 -4 16 Z" fill="#b4663a"/>
+  </g>
+  <ellipse cx="48" cy="40" rx="17" ry="18" fill="#b4663a"/>
+  <!-- The mane is a scalloped band over the crown, which is the one part that
+       says pony at a glance once the ears are shared with every other animal. -->
+  <path d="M33 32 q4 -12 15 -13 q11 1 15 13 q-6 -5 -15 -5 q-9 0 -15 5 Z" fill="#7a4a2a"/>
+  <path d="M44 22 q4 -12 10 -10 q-2 6 -4 11 Z" fill="#7a4a2a"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="37" r="3.4" fill="#33291f"/>
+    <circle cx="56" cy="37" r="3.4" fill="#33291f"/>
+    <circle cx="41.1" cy="36" r="1.1" fill="#fff"/>
+    <circle cx="57.1" cy="36" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M36 38 q4 -5 8 0"/>
+    <path d="M52 38 q4 -5 8 0"/>
+  </g>
+  <ellipse cx="48" cy="54" rx="11" ry="9" fill="#e8c9a8"/>
+  <ellipse cx="44" cy="53" rx="2.2" ry="3" fill="#33291f"/>
+  <ellipse cx="52" cy="53" rx="2.2" ry="3" fill="#33291f"/>
+  <path d="M42 60 q6 5 12 0" fill="none" stroke="#33291f" stroke-width="2.2"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 60px"/>
+</symbol>
+
+<symbol id="sp-horseshoe" viewBox="0 0 100 100">
+  <!-- Opening downward, with the nail holes drawn through: a plain U is a magnet
+       and the holes are what make it a shoe. -->
+  <path d="M22 58 a28 28 0 0 1 56 0 L78 76 q0 8 -7 8 q-7 0 -7 -8 L64 58
+           a14 14 0 0 0 -28 0 L36 76 q0 8 -7 8 q-7 0 -7 -8 Z" fill="#8fa3b2"/>
+  <path d="M36 58 a14 14 0 0 1 28 0" fill="none" stroke="#6b7d8a" stroke-width="3"/>
+  <g fill="#566672">
+    <circle cx="27" cy="60" r="2.6"/><circle cx="30" cy="72" r="2.6"/>
+    <circle cx="73" cy="60" r="2.6"/><circle cx="70" cy="72" r="2.6"/>
+    <circle cx="34" cy="44" r="2.6"/><circle cx="66" cy="44" r="2.6"/>
+  </g>
+</symbol>
+
+<symbol id="sp-duck" viewBox="0 0 100 100">
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 72px 66px">
+    <path d="M72 66 q14 -2 16 8 q-10 6 -16 -8 Z" fill="#e0bd4a"/>
+  </g>
+  <g fill="#f0862f">
+    <path d="M34 88 q-8 6 0 8 q10 0 12 -8 Z"/>
+    <path d="M62 88 q8 6 0 8 q-10 0 -12 -8 Z"/>
+  </g>
+  <ellipse cx="48" cy="70" rx="26" ry="21" fill="#f5d76e"/>
+  <!-- The wing is one flat paddle, hinged at the shoulder, so --wing reads as a
+       flap and not as a whole side of the bird moving. -->
+  <path d="M28 62 q20 -8 26 14 q-18 10 -26 -14 Z" fill="#e0bd4a"
+    style="rotate: var(--wing, 0deg); transform-origin: 28px 62px"/>
+  <circle cx="48" cy="34" r="17" fill="#f5d76e"/>
+  <!-- The bill opens by scaling down from its hinge, which is the same trick the
+       hen's beak uses -- one shape, no second drawing for the open state. -->
+  <g style="scale: 1 calc(1 + var(--beak, 0)); transform-origin: 48px 44px">
+    <ellipse cx="48" cy="48" rx="13" ry="6" fill="#f0862f"/>
+    <path d="M35 48 q13 5 26 0" fill="none" stroke="#c96a20" stroke-width="1.8"/>
+  </g>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="41" cy="31" r="3.4" fill="#33291f"/>
+    <circle cx="55" cy="31" r="3.4" fill="#33291f"/>
+    <circle cx="42.1" cy="30" r="1.1" fill="#fff"/>
+    <circle cx="56.1" cy="30" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M37 32 q4 -5 8 0"/>
+    <path d="M51 32 q4 -5 8 0"/>
+  </g>
+</symbol>
+
+<symbol id="sp-snail" viewBox="0 0 100 100">
+  <!-- The spiral is drawn as a stroke over the shell disc rather than as nested
+       shapes: at card size a filled spiral fills in, and the line is what
+       survives. -->
+  <path d="M14 76 q-6 6 2 8 q14 2 26 -2 l30 0 q10 0 10 -6 q0 -6 -10 -6 l-44 0 Z"
+    fill="#c9c0cc"/>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 20px 72px">
+    <g fill="none" stroke="#c9c0cc" stroke-width="3.4" stroke-linecap="round">
+      <path d="M20 72 q-4 -14 -10 -20"/>
+      <path d="M26 72 q0 -16 4 -22"/>
+    </g>
+    <circle cx="10" cy="50" r="3.4" fill="#33291f"/>
+    <circle cx="30" cy="48" r="3.4" fill="#33291f"/>
+  </g>
+  <circle cx="58" cy="52" r="26" fill="#8a63c0"/>
+  <path d="M58 30 a22 22 0 1 1 -15.6 37.6 a16 16 0 1 1 21.6 -23.6 a10 10 0 1 1 -12 15"
+    fill="none" stroke="#6b4a99" stroke-width="4.4" stroke-linecap="round"/>
+</symbol>
+
+<symbol id="sp-bee" viewBox="0 0 100 100">
+  <!-- Wings behind the body, both driven by one --wing: a bee's tell is that they
+       blur together rather than beating in opposition like a bird's. -->
+  <g style="rotate: var(--wing, 0deg); transform-origin: 34px 40px">
+    <ellipse cx="24" cy="32" rx="15" ry="9" fill="#dff0f7" transform="rotate(-26 24 32)"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--wing, 0deg)); transform-origin: 66px 40px">
+    <ellipse cx="76" cy="32" rx="15" ry="9" fill="#dff0f7" transform="rotate(26 76 32)"/>
+  </g>
+  <ellipse cx="50" cy="62" rx="23" ry="21" fill="#f0b429"/>
+  <g fill="#3a2f28">
+    <path d="M31 52 q19 -6 38 0 q1 4 1 6 q-20 -6 -40 0 q0 -2 1 -6 Z"/>
+    <path d="M29 68 q21 6 42 0 q-1 5 -3 9 q-18 5 -36 0 q-2 -4 -3 -9 Z"/>
+  </g>
+  <g fill="none" stroke="#3a2f28" stroke-width="2.6" stroke-linecap="round">
+    <path d="M42 22 q-4 -8 -8 -10"/>
+    <path d="M58 22 q4 -8 8 -10"/>
+  </g>
+  <circle cx="50" cy="32" r="15" fill="#f0b429"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="44" cy="30" r="3.4" fill="#33291f"/>
+    <circle cx="56" cy="30" r="3.4" fill="#33291f"/>
+    <circle cx="45.1" cy="29" r="1.1" fill="#fff"/>
+    <circle cx="57.1" cy="29" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M40 31 q4 -5 8 0"/>
+    <path d="M52 31 q4 -5 8 0"/>
+  </g>
+  <path d="M44 39 q6 5 12 0" fill="none" stroke="#33291f" stroke-width="2.4"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 50px 39px"/>
+</symbol>
+
+<symbol id="sp-goat" viewBox="0 0 100 100">
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 71px 70px">
+    <path d="M71 70 q10 -2 10 -10" fill="none" stroke="#c9bfae" stroke-width="6"
+      stroke-linecap="round"/>
+  </g>
+  <g fill="#4a4a52">
+    <rect x="33" y="86" width="9" height="12" rx="4"/>
+    <rect x="55" y="86" width="9" height="12" rx="4"/>
+  </g>
+  <ellipse cx="48" cy="74" rx="23" ry="17" fill="#c9bfae"/>
+  <!-- Horns sweep back over the crown. A goat drawn with the cow's blunt stubs
+       reads as a cow, and these two figures sit four levels apart. -->
+  <g fill="none" stroke="#f2e6cf" stroke-width="6" stroke-linecap="round">
+    <path d="M38 24 q-8 -10 -2 -16"/>
+    <path d="M58 24 q8 -10 2 -16"/>
+  </g>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 33px 36px">
+    <ellipse cx="27" cy="37" rx="9" ry="5" fill="#c9bfae" transform="rotate(-24 27 37)"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 63px 36px">
+    <ellipse cx="69" cy="37" rx="9" ry="5" fill="#c9bfae" transform="rotate(24 69 37)"/>
+  </g>
+  <ellipse cx="48" cy="40" rx="16" ry="17" fill="#c9bfae"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="41" cy="36" r="3.4" fill="#33291f"/>
+    <circle cx="55" cy="36" r="3.4" fill="#33291f"/>
+    <circle cx="42.1" cy="35" r="1.1" fill="#fff"/>
+    <circle cx="56.1" cy="35" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M37 37 q4 -5 8 0"/>
+    <path d="M51 37 q4 -5 8 0"/>
+  </g>
+  <ellipse cx="48" cy="51" rx="10" ry="8" fill="#e8dcc9"/>
+  <ellipse cx="44" cy="50" rx="2.2" ry="2.8" fill="#33291f"/>
+  <ellipse cx="52" cy="50" rx="2.2" ry="2.8" fill="#33291f"/>
+  <path d="M43 57 q5 4 10 0" fill="none" stroke="#33291f" stroke-width="2.2"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 57px"/>
+  <!-- The beard hangs from the chin and is the second thing that says goat. -->
+  <path d="M43 58 q5 16 10 0 q-2 12 -5 14 q-3 -2 -5 -14 Z" fill="#4a4a52"/>
+</symbol>
+
+<symbol id="sp-cabbage" viewBox="0 0 100 100">
+  <!-- Layers, not a ball: the two arcs and the pale heart are what keep this from
+       reading as the same sphere as an apple or a bale. -->
+  <circle cx="50" cy="52" r="30" fill="#7fb069"/>
+  <path d="M22 46 q14 -12 28 -10 q14 -2 28 10" fill="none" stroke="#5c8f4a" stroke-width="3.4"/>
+  <path d="M24 62 q13 10 26 10 q13 0 26 -10" fill="none" stroke="#5c8f4a" stroke-width="3.4"/>
+  <path d="M50 34 q14 4 12 18 q-12 8 -24 0 q-2 -14 12 -18 Z" fill="#a8cc8a"/>
+  <path d="M50 40 q6 6 0 12" fill="none" stroke="#7fb069" stroke-width="3" stroke-linecap="round"/>
+</symbol>
+
+<symbol id="sp-squirrel" viewBox="0 0 100 100">
+  <!-- The tail is most of the animal and it stands over the back, so --tail
+       sweeps it about the rump: raising it fills the top right of the box, which
+       is why this drawing is the widest of the actors. -->
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 62px 76px">
+    <path d="M62 76 q26 -4 24 -30 q-2 -22 -20 -22 q14 8 12 24 q-2 18 -16 20 Z"
+      fill="#a85a28"/>
+  </g>
+  <g fill="#c4703a">
+    <rect x="30" y="84" width="8" height="12" rx="4"/>
+    <rect x="48" y="84" width="8" height="12" rx="4"/>
+  </g>
+  <ellipse cx="42" cy="72" rx="20" ry="19" fill="#c4703a"/>
+  <ellipse cx="42" cy="76" rx="12" ry="13" fill="#f2e6cf"/>
+  <!-- Tufted, not round: the tuft is what separates a squirrel from a mouse at
+       this size, and both are in the set. -->
+  <g style="rotate: var(--ear, 0deg); transform-origin: 32px 30px">
+    <path d="M32 32 q-5 -14 1 -15 q6 3 5 15 Z" fill="#c4703a"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 52px 30px">
+    <path d="M52 32 q5 -14 -1 -15 q-6 3 -5 15 Z" fill="#c4703a"/>
+  </g>
+  <circle cx="42" cy="40" r="16" fill="#c4703a"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="36" cy="37" r="3.4" fill="#33291f"/>
+    <circle cx="49" cy="37" r="3.4" fill="#33291f"/>
+    <circle cx="37.1" cy="36" r="1.1" fill="#fff"/>
+    <circle cx="50.1" cy="36" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M32 38 q4 -5 8 0"/>
+    <path d="M45 38 q4 -5 8 0"/>
+  </g>
+  <ellipse cx="42" cy="48" rx="7" ry="5" fill="#f2e6cf"/>
+  <circle cx="42" cy="46" r="2" fill="#33291f"/>
+  <path d="M37 51 q5 4 10 0" fill="none" stroke="#33291f" stroke-width="2.2"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 42px 51px"/>
+</symbol>
+
+<symbol id="sp-acorn" viewBox="0 0 100 100">
+  <!-- Cap and nut in two clearly different colours: the cap is the whole
+       silhouette cue, and a tonal cap turns this into a plain ovoid -- which the
+       egg already is. -->
+  <path d="M28 44 q22 -5 44 0 q-2 32 -22 40 q-20 -8 -22 -40 Z" fill="#e8c9a0"/>
+  <path d="M50 44 q22 -3 22 0 q-2 32 -22 40 q10 -18 0 -40 Z" fill="#d9b48c"/>
+  <path d="M24 44 q26 -24 52 0 q-26 9 -52 0 Z" fill="#6b4a24"/>
+  <path d="M50 22 q1 -8 5 -10" fill="none" stroke="#6b4a24" stroke-width="4.4"
+    stroke-linecap="round"/>
+</symbol>
+
+<symbol id="sp-elephant" viewBox="0 0 100 100">
+  <!-- The trunk is this figure's own moving part and no existing shared property
+       fits it: --tail is behind, --ear is the ears, and a trunk curls rather than
+       swinging. So it reads --trunk, registered beside the others. -->
+  <g fill="#9aa8b4">
+    <rect x="30" y="84" width="11" height="13" rx="4"/>
+    <rect x="55" y="84" width="11" height="13" rx="4"/>
+  </g>
+  <g fill="#f2e6cf">
+    <circle cx="33" cy="95" r="1.8"/><circle cx="38" cy="95" r="1.8"/>
+    <circle cx="58" cy="95" r="1.8"/><circle cx="63" cy="95" r="1.8"/>
+  </g>
+  <ellipse cx="48" cy="72" rx="25" ry="17" fill="#9aa8b4"/>
+  <!-- Big flat ears, hinged where they meet the head. -->
+  <g style="rotate: var(--ear, 0deg); transform-origin: 32px 40px">
+    <ellipse cx="21" cy="42" rx="14" ry="16" fill="#9aa8b4"/>
+    <ellipse cx="22" cy="42" rx="8" ry="10" fill="#c9b2b8"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 64px 40px">
+    <ellipse cx="75" cy="42" rx="14" ry="16" fill="#9aa8b4"/>
+    <ellipse cx="74" cy="42" rx="8" ry="10" fill="#c9b2b8"/>
+  </g>
+  <ellipse cx="48" cy="40" rx="19" ry="18" fill="#9aa8b4"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="36" r="3.2" fill="#33291f"/>
+    <circle cx="56" cy="36" r="3.2" fill="#33291f"/>
+    <circle cx="41" cy="35" r="1.1" fill="#fff"/>
+    <circle cx="57" cy="35" r="1.1" fill="#fff"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="2.6" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M36 37 q4 -5 8 0"/>
+    <path d="M52 37 q4 -5 8 0"/>
+  </g>
+  <!-- At rest it hangs; --trunk rolls the tip up. The curl is drawn into the
+       path and the property rotates it about the brow, so one drawing covers
+       both the droop and the raised salute. -->
+  <path d="M48 48 q-3 16 3 24 q6 8 12 2" fill="none" stroke="#9aa8b4" stroke-width="9"
+    stroke-linecap="round"
+    style="rotate: calc(-1 * var(--trunk, 0deg)); transform-origin: 48px 48px"/>
+</symbol>
+
+<symbol id="sp-peanut" viewBox="0 0 100 100">
+  <!-- Two lobes with a real waist. The waist has to cut in far enough to survive
+       ten copies at card size, where a gentle one reads as one long bean. -->
+  <path d="M50 12 q19 0 19 19 q0 9 -6 13 q6 4 6 13 q0 19 -19 19 q-19 0 -19 -19
+           q0 -9 6 -13 q-6 -4 -6 -13 q0 -19 19 -19 Z" fill="#d9a86b"/>
+  <g fill="none" stroke="#b8813f" stroke-width="2.4" stroke-linecap="round">
+    <path d="M38 24 q4 6 0 12"/>
+    <path d="M62 24 q-4 6 0 12"/>
+    <path d="M38 52 q4 8 0 16"/>
+    <path d="M62 52 q-4 8 0 16"/>
+    <path d="M37 44 q13 4 26 0"/>
+  </g>
+</symbol>
+
+<symbol id="sp-panda" viewBox="0 0 100 100">
+  <!-- The worst contrast case in the set: the fur #fbf9f4 is 4 RGB units from
+       --panel, so nothing about the shape can be left to the fill. Every white
+       part carries an ink outline, and the black patches, arms and legs are most
+       of the silhouette. Drawn any lighter this figure disappears on its own
+       answer card. -->
+  <g fill="#33291f">
+    <circle cx="30" cy="26" r="10"/><circle cx="66" cy="26" r="10"/>
+    <rect x="26" y="76" width="14" height="20" rx="7"/>
+    <rect x="56" y="76" width="14" height="20" rx="7"/>
+  </g>
+  <ellipse cx="48" cy="72" rx="25" ry="21" fill="#fbf9f4" stroke="#33291f" stroke-width="3"/>
+  <!-- Arms as one dark band across the body: it reads as two arms holding
+       something and keeps a third of the figure dark. -->
+  <path d="M24 66 q10 12 24 12 q14 0 24 -12 q2 10 -6 16 q-18 8 -36 0 q-8 -6 -6 -16 Z"
+    fill="#33291f"/>
+  <circle cx="48" cy="40" r="21" fill="#fbf9f4" stroke="#33291f" stroke-width="3"/>
+  <g fill="#33291f" style="opacity: calc(1 - var(--joy, 0))">
+    <ellipse cx="39" cy="37" rx="6.5" ry="7.5" transform="rotate(-12 39 37)"/>
+    <ellipse cx="57" cy="37" rx="6.5" ry="7.5" transform="rotate(12 57 37)"/>
+  </g>
+  <g fill="#fff" style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="40" cy="35" r="1.6"/><circle cx="58" cy="35" r="1.6"/>
+  </g>
+  <!-- The patches stay when the eyes turn to arcs, or the face loses the mask
+       that makes it a panda at exactly the happiest moment. -->
+  <g style="opacity: var(--joy, 0)">
+    <ellipse cx="39" cy="37" rx="6.5" ry="7.5" fill="#33291f" transform="rotate(-12 39 37)"/>
+    <ellipse cx="57" cy="37" rx="6.5" ry="7.5" fill="#33291f" transform="rotate(12 57 37)"/>
+    <g fill="none" stroke="#fbf9f4" stroke-width="2.2" stroke-linecap="round">
+      <path d="M35 38 q4 -4 8 0"/>
+      <path d="M53 38 q4 -4 8 0"/>
+    </g>
+  </g>
+  <ellipse cx="48" cy="50" rx="11" ry="8" fill="#f2e6cf"/>
+  <ellipse cx="48" cy="47" rx="4" ry="2.8" fill="#33291f"/>
+  <path d="M42 54 q6 5 12 0" fill="none" stroke="#33291f" stroke-width="2.4"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 54px"/>
+</symbol>
+
+<symbol id="sp-bamboo" viewBox="0 0 100 100">
+  <!-- Pale yellow-green on purpose, not leaf green: three greens among the level
+       accents was already one too many, and the cane has to separate from the
+       lotus pad and the clover, which are both green and both in this stretch. -->
+  <rect x="38" y="14" width="24" height="76" rx="6" fill="#b5c94a"/>
+  <g fill="none" stroke="#8a9a2f" stroke-width="3.4">
+    <path d="M38 36 q12 4 24 0"/>
+    <path d="M38 58 q12 4 24 0"/>
+    <path d="M38 78 q12 4 24 0"/>
+  </g>
+  <ellipse cx="50" cy="14" rx="12" ry="5" fill="#d4e07a"/>
+  <path d="M62 44 q16 -8 22 -2 q-8 10 -22 6 Z" fill="#8a9a2f"/>
+</symbol>
+
+<symbol id="sp-frog" viewBox="0 0 100 100">
+  <!-- The eyes sit on top of the head rather than in the face, which is the whole
+       frog silhouette. --joy closes them to arcs the way every other figure does,
+       but the domes stay so the outline does not change shape. -->
+  <g fill="#5aab4a">
+    <path d="M18 78 q-10 4 -4 10 q10 4 18 -4 Z"/>
+    <path d="M78 78 q10 4 4 10 q-10 4 -18 -4 Z"/>
+  </g>
+  <ellipse cx="50" cy="64" rx="30" ry="24" fill="#5aab4a"/>
+  <ellipse cx="50" cy="72" rx="20" ry="14" fill="#8ecc6b"/>
+  <!-- The throat balloons when it calls, and no shared property describes that:
+       --beak is an opening jaw, --mouth is a curve's sign. So --throat, its own,
+       registered beside the rest. -->
+  <ellipse cx="50" cy="78" rx="13" ry="7" fill="#8ecc6b"
+    style="scale: calc(1 + var(--throat, 0) * .5) calc(1 + var(--throat, 0));
+      transform-origin: 50px 74px"/>
+  <path d="M28 58 q22 16 44 0" fill="none" stroke="#33291f" stroke-width="2.8"
+    stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 50px 58px"/>
+  <g fill="#5aab4a">
+    <circle cx="32" cy="36" r="14"/><circle cx="68" cy="36" r="14"/>
+  </g>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="32" cy="36" r="8" fill="#fffdf8"/>
+    <circle cx="68" cy="36" r="8" fill="#fffdf8"/>
+    <circle cx="33" cy="37" r="4.4" fill="#33291f"/>
+    <circle cx="67" cy="37" r="4.4" fill="#33291f"/>
+  </g>
+  <g fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M26 37 q6 -7 12 0"/>
+    <path d="M62 37 q6 -7 12 0"/>
+  </g>
+</symbol>
+
+<symbol id="sp-lotus" viewBox="0 0 100 100">
+  <!-- Blue-green, not leaf green: a green frog on a green pad is one silhouette,
+       and the frog is the actor this target is always drawn beside. The notch is
+       cut from the disc rather than drawn on it, so it survives at card size. -->
+  <path d="M50 50 L78.2 60.3 A30 30 0 1 1 78.2 39.7 Z" fill="#3f9e9d"/>
+  <g fill="none" stroke="#2f7d7c" stroke-width="2.6" stroke-linecap="round">
+    <path d="M50 50 L50 20"/>
+    <path d="M50 50 L28 29"/>
+    <path d="M50 50 L20 50"/>
+    <path d="M50 50 L28 71"/>
+    <path d="M50 50 L50 80"/>
+    <path d="M50 50 L70 74"/>
+    <path d="M50 50 L70 26"/>
+  </g>
+</symbol>
+
+<symbol id="sp-giraffe" viewBox="0 0 100 100">
+  <!-- The only tall figure in the set. The neck sways on --tilt about the
+       shoulders, which is a rotation the shared vocabulary already has and which
+       no other actor uses for its whole upper body. -->
+  <g style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 66px 78px">
+    <path d="M66 78 q10 4 9 14" fill="none" stroke="#8a5a3c" stroke-width="3.4"
+      stroke-linecap="round"/>
+    <ellipse cx="76" cy="94" rx="4" ry="5.5" fill="#8a5a3c"/>
+  </g>
+  <g fill="#4a4a52">
+    <rect x="36" y="86" width="8" height="12" rx="4"/>
+    <rect x="54" y="86" width="8" height="12" rx="4"/>
+  </g>
+  <ellipse cx="49" cy="76" rx="22" ry="16" fill="#e0a84a"/>
+  <g fill="#b06f28">
+    <ellipse cx="38" cy="72" rx="6" ry="5"/>
+    <ellipse cx="52" cy="80" rx="6.5" ry="5"/>
+    <ellipse cx="61" cy="70" rx="5" ry="4.5"/>
+  </g>
+  <g style="rotate: var(--tilt, 0deg); transform-origin: 49px 66px">
+    <path d="M42 66 q-2 -30 4 -42 q10 0 12 42 Z" fill="#e0a84a"/>
+    <g fill="#b06f28">
+      <ellipse cx="47" cy="54" rx="4.4" ry="4"/>
+      <ellipse cx="52" cy="40" rx="4" ry="3.6"/>
+      <ellipse cx="46" cy="32" rx="3.6" ry="3.2"/>
+    </g>
+    <path d="M45 28 q-3 14 -1 22" fill="none" stroke="#8a5a3c" stroke-width="4"
+      stroke-linecap="round"/>
+    <!-- Ossicones: short, blunt and always two, which is the giraffe tell that
+         survives being shrunk to a card. -->
+    <g fill="#8a5a3c">
+      <path d="M44 14 q-2 -8 1 -9 q3 1 2 9 Z"/>
+      <path d="M56 14 q2 -8 -1 -9 q-3 1 -2 9 Z"/>
+    </g>
+    <g style="rotate: var(--ear, 0deg); transform-origin: 40px 18px">
+      <ellipse cx="35" cy="18" rx="7" ry="4" fill="#e0a84a" transform="rotate(-22 35 18)"/>
+    </g>
+    <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 60px 18px">
+      <ellipse cx="65" cy="18" rx="7" ry="4" fill="#e0a84a" transform="rotate(22 65 18)"/>
+    </g>
+    <ellipse cx="50" cy="20" rx="13" ry="12" fill="#e0a84a"/>
+    <g style="opacity: calc(1 - var(--joy, 0))">
+      <circle cx="44" cy="17" r="3" fill="#33291f"/>
+      <circle cx="56" cy="17" r="3" fill="#33291f"/>
+      <circle cx="44.9" cy="16.2" r="1" fill="#fff"/>
+      <circle cx="56.9" cy="16.2" r="1" fill="#fff"/>
+    </g>
+    <g fill="none" stroke="#33291f" stroke-width="2.4" stroke-linecap="round"
+      style="opacity: var(--joy, 0)">
+      <path d="M41 18 q3 -4 6 0"/>
+      <path d="M53 18 q3 -4 6 0"/>
+    </g>
+    <ellipse cx="50" cy="28" rx="8.5" ry="6.5" fill="#f2e6cf"/>
+    <ellipse cx="47" cy="27" rx="1.8" ry="2.4" fill="#33291f"/>
+    <ellipse cx="53" cy="27" rx="1.8" ry="2.4" fill="#33291f"/>
+    <path d="M46 32 q4 4 8 0" fill="none" stroke="#33291f" stroke-width="2"
+      stroke-linecap="round"
+      style="scale: 1 var(--mouth, 1); transform-origin: 50px 32px"/>
+  </g>
+</symbol>
+
+<symbol id="sp-leaf" viewBox="0 0 100 100">
+  <!-- A teardrop with one strong centre vein and side veins off it. The vein is
+       load-bearing: without it this is the same rounded wedge as a clover lobe. -->
+  <path d="M50 12 q28 20 26 46 q-2 26 -26 30 q-24 -4 -26 -30 q-2 -26 26 -46 Z"
+    fill="#4a8f5a"/>
+  <path d="M50 16 L50 86" fill="none" stroke="#7fb069" stroke-width="3.4"
+    stroke-linecap="round"/>
+  <g fill="none" stroke="#7fb069" stroke-width="2.2" stroke-linecap="round">
+    <path d="M50 32 q-12 4 -16 14"/>
+    <path d="M50 32 q12 4 16 14"/>
+    <path d="M50 52 q-12 4 -15 14"/>
+    <path d="M50 52 q12 4 15 14"/>
+    <path d="M50 70 q-9 3 -11 10"/>
+    <path d="M50 70 q9 3 11 10"/>
+  </g>
+</symbol>
+
 <symbol id="sp-bowl" viewBox="0 0 100 100">
   <ellipse cx="50" cy="40" rx="44" ry="11" fill="#bfe6f5"/>
   <path d="M6 40 q6 46 44 46 q38 0 44 -46 Z" fill="#7fc8e8"/>

@@ -165,28 +165,28 @@ finishing is risky.
 | Hen | `sp-hen` | body `#c9563f`, breast `#e8a882`, comb and wattle `#e0574f`, beak and legs `#f5a24a`, features `#33291f` |
 | Egg | `sp-egg` | shell `#d9b48c`, shading `#c19a6b` |
 | Chick | *clip only, no sprite* | body `#ffd96b`, beak and feet `#f5a24a`, eyes `#33291f` |
-| Sheep | *`sp-sheep`, to draw* | wool `#f2e6cf`, wool shading `#dcc9a8`, face and legs `#4a4a52`, ears `#3d3d44` |
-| Clover | *`sp-clover`, to draw* | leaf `#4f9a34`, pale lobe `#63bd57` |
-| Cow | *`sp-cow`, to draw* | body `#8a5a3c`, patches `#f2e6cf`, muzzle `#f2b8c0`, horns `#e0c9a0`, hooves `#4a4a52`, features `#33291f` |
-| Hay bale | *`sp-haybale`, to draw* | bale `#e0b455`, straw ends `#f0cf90`, cords `#c98a1f` |
-| Pony | *`sp-horse`, to draw* | body `#b4663a`, mane and tail `#7a4a2a`, muzzle `#e8c9a8`, hooves `#4a4a52`, features `#33291f` |
-| Horseshoe | *`sp-horseshoe`, to draw* | shoe `#8fa3b2`, inner edge `#6b7d8a`, nail holes `#566672` |
-| Duck | *`sp-duck`, to draw* | body `#f5d76e`, wing `#e0bd4a`, bill and feet `#f0862f`, features `#33291f` |
-| Snail | *`sp-snail`, to draw* | shell `#8a63c0`, spiral `#6b4a99`, body `#c9c0cc` |
-| Bee | *`sp-bee`, to draw* | body `#f0b429`, stripes `#3a2f28`, wings `#dff0f7`, features `#33291f` |
+| Sheep | `sp-sheep` | wool `#f2e6cf`, wool shading `#dcc9a8`, face and legs `#4a4a52`, ears `#3d3d44` |
+| Clover | `sp-clover` | leaf `#4f9a34`, pale lobe `#63bd57` |
+| Cow | `sp-cow` | body `#8a5a3c`, patches `#f2e6cf`, muzzle `#f2b8c0`, horns `#e0c9a0`, hooves `#4a4a52`, features `#33291f` |
+| Hay bale | `sp-haybale` | bale `#e0b455`, straw ends `#f0cf90`, cords `#c98a1f` |
+| Pony | `sp-horse` | body `#b4663a`, mane and tail `#7a4a2a`, muzzle `#e8c9a8`, hooves `#4a4a52`, features `#33291f` |
+| Horseshoe | `sp-horseshoe` | shoe `#8fa3b2`, inner edge `#6b7d8a`, nail holes `#566672` |
+| Duck | `sp-duck` | body `#f5d76e`, wing `#e0bd4a`, bill and feet `#f0862f`, features `#33291f` |
+| Snail | `sp-snail` | shell `#8a63c0`, spiral `#6b4a99`, body `#c9c0cc` |
+| Bee | `sp-bee` | body `#f0b429`, stripes `#3a2f28`, wings `#dff0f7`, features `#33291f` |
 | Flower | `sp-flower` | petals `#f27a9b`, centre `#ffd44d`, stem `#54a84b`, leaf `#63bd57` |
-| Goat | *`sp-goat`, to draw* | body `#c9bfae`, horns `#f2e6cf`, beard and hooves `#4a4a52`, muzzle `#e8dcc9`, features `#33291f` |
-| Cabbage | *`sp-cabbage`, to draw* | body `#7fb069`, outer edges `#5c8f4a`, heart `#a8cc8a` |
-| Squirrel | *`sp-squirrel`, to draw* | body `#c4703a`, tail plume `#a85a28`, chest `#f2e6cf`, features `#33291f` |
-| Acorn | *`sp-acorn`, to draw* | nut `#e8c9a0`, cap `#6b4a24` |
-| Elephant | *`sp-elephant`, to draw* | body `#9aa8b4`, inner ear `#c9b2b8`, toenails `#f2e6cf`, features `#33291f` |
-| Peanut | *`sp-peanut`, to draw* | shell `#d9a86b`, seam `#b8813f` |
-| Panda | *`sp-panda`, to draw* | fur `#fbf9f4`, patches, arms and legs `#33291f`, muzzle `#f2e6cf` |
-| Bamboo | *`sp-bamboo`, to draw* | cane `#b5c94a`, joint rings `#8a9a2f`, cut end `#d4e07a` |
-| Frog | *`sp-frog`, to draw* | body `#5aab4a`, belly `#8ecc6b`, features `#33291f` |
-| Lotus pad | *`sp-lotus`, to draw* | pad `#3f9e9d`, veins `#2f7d7c` |
-| Giraffe | *`sp-giraffe`, to draw* | body `#e0a84a`, patches `#b06f28`, mane `#8a5a3c`, muzzle `#f2e6cf`, hooves `#4a4a52`, features `#33291f` |
-| Leaf | *`sp-leaf`, to draw* | blade `#4a8f5a`, centre vein `#7fb069` |
+| Goat | `sp-goat` | body `#c9bfae`, horns `#f2e6cf`, beard and hooves `#4a4a52`, muzzle `#e8dcc9`, features `#33291f` |
+| Cabbage | `sp-cabbage` | body `#7fb069`, outer edges `#5c8f4a`, heart `#a8cc8a` |
+| Squirrel | `sp-squirrel` | body `#c4703a`, tail plume `#a85a28`, chest `#f2e6cf`, features `#33291f` |
+| Acorn | `sp-acorn` | nut `#e8c9a0`, cap `#6b4a24` |
+| Elephant | `sp-elephant` | body `#9aa8b4`, inner ear `#c9b2b8`, toenails `#f2e6cf`, features `#33291f` |
+| Peanut | `sp-peanut` | shell `#d9a86b`, seam `#b8813f` |
+| Panda | `sp-panda` | fur `#fbf9f4`, patches, arms and legs `#33291f`, muzzle `#f2e6cf` |
+| Bamboo | `sp-bamboo` | cane `#b5c94a`, joint rings `#8a9a2f`, cut end `#d4e07a` |
+| Frog | `sp-frog` | body `#5aab4a`, belly `#8ecc6b`, features `#33291f` |
+| Lotus pad | `sp-lotus` | pad `#3f9e9d`, veins `#2f7d7c` |
+| Giraffe | `sp-giraffe` | body `#e0a84a`, patches `#b06f28`, mane `#8a5a3c`, muzzle `#f2e6cf`, hooves `#4a4a52`, features `#33291f` |
+| Leaf | `sp-leaf` | blade `#4a8f5a`, centre vein `#7fb069` |
 | Butterfly | *clip only, no sprite* | wings `#7d5bb8` |
 
 Containers, if a brief needs one: bowl `#7fc8e8` / `#a8ddf2` with `#bfe6f5`
@@ -195,17 +195,24 @@ garden bed `#8b5e3c` / `#6f4a2e` soil with `#54a84b` growth, nest `#7d5528` /
 `#8c6231` / `#a9773f`, glow `#ffd44d` / `#ffe796`. Pairings from `pig-apple`
 onward carry no container at all — see `../sprites/expansion-plan.md`.
 
-**Rows marked *to draw* invert the usual direction.** Everywhere else the brief
-copies a colour out of `assets/js/art.js`; for these the brief is written first
-and `art.js` is drawn to match it, because the cover has to exist before the level
-does. The hex values in those rows are therefore a commitment, not a description:
-whoever draws `sp-sheep` reads them off this table.
+**Every row above now describes `assets/js/art.js`.** Nothing here is a
+commitment waiting to be drawn any more, so a colour that disagrees with the
+sprite is a defect in one of the two, not a brief the sprite has yet to meet.
 
-Pig, apple, mouse, cheese, hen and egg were drawn that way and are now drawn:
-their rows describe `art.js` again, and the values are the ones the level six to
-ten art was generated from. They were reconciled once, in that direction — the
-covers and clips are generated files that already carry these colours, so where a
-sprite disagreed with its own brief the sprite was corrected.
+Some of these rows got there by the opposite route, and it is worth saying which,
+because it decides what to correct when they disagree. Normally the brief copies a
+colour out of `art.js`. But a level's cover has to exist before the level does, so
+for pig, apple, mouse, cheese, hen, egg and everything from sheep to leaf the hex
+was written here first and `art.js` was drawn to match. Pig through egg have since
+been reconciled in that direction: their covers and clips are generated files that
+already carry these colours, so where a sprite disagreed with its own brief the
+sprite was corrected.
+
+Sheep through leaf are drawn but not yet reconciled that way, because no generated
+art carries their colours yet — the covers and clips for levels eleven to twenty
+have not been produced. Until they are, the brief and the sprite agree only because
+the sprite was drawn from the brief; once the covers exist they become the third
+party, and any disagreement is settled the same way it was for pig through egg.
 
 Every figure is drawn **facing the viewer or three-quarter**, upright, with a large
 head relative to the body — the sprite proportions. Not naturalistic animals.
@@ -499,8 +506,9 @@ clips may not say. The seeds stay on the ground, untouched and uncounted.
 
 The art here was made before the rules that use it, on purpose: a cover is the
 slowest thing in a level's chain and the only one that cannot be written in an
-afternoon, so it is the thing worth having ready first. Level 6 now has its entry in
-`assets/js/levels.js`; levels 7 to 10 still do not, and their sprites are not drawn.
+afternoon, so it is the thing worth having ready first. Levels 6 and 7 now have their
+entries in `assets/js/levels.js`; levels 8 to 10 still do not, though every sprite all
+four of them name is now drawn.
 
 The band plan below — six to eight in a seven band, nine and ten in a ten band — is
 **not** what the code does. There is no seven band: level 6 counts 5 to 10 in the ten
@@ -852,9 +860,9 @@ scenery, and a counted object floating away is a counted object leaving.
 
 ## Level 14 — counting and addition within 15 · bee and flower · accent `#f27a9b`
 
-First level of the fifteen band. The cheapest level in the set to draw: `sp-flower`
-already exists in `art.js` as garden decoration, at exactly these colours, so this
-row needs one new actor and no new target.
+First level of the fifteen band, and the cheapest in the set to draw: `sp-flower`
+already existed in `art.js` as garden decoration, at exactly these colours, so this
+row needed one new actor and no new target.
 
 **Cover** — `l14-cover.webp`
 

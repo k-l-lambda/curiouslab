@@ -1,9 +1,9 @@
 # Sprite pair expansion — 9 to 50
 
 The item list for growing `assets/js/pairings.js` to fifty pairings.
-Rows 0-8 are drawn; rows 9-49 are the work left. `../levels/prompts.md` is
-the sibling brief for level covers and clips, and carries the palette contract
-every figure here is listed in.
+Rows 0-20 are drawn, less row 15; rows 21-49 are the work left.
+`../levels/prompts.md` is the sibling brief for level covers and clips, and
+carries the palette contract every figure here is listed in.
 
 ## Why
 
@@ -26,7 +26,7 @@ at. Most of these fifty will never be a level's face. They are the pool.
 
 ## The fifty
 
-Rows 0–8 are drawn. Rows 9–49 are the work.
+Rows 0–20 are drawn, except row 15. Rows 21–49 are the work.
 
 | # | pairing | actor | target | silhouette | state |
 |---|---|---|---|---|---|
@@ -39,18 +39,18 @@ Rows 0–8 are drawn. Rows 9–49 are the work.
 | 6 | `pig-apple` | pig | apple | sphere + stem and leaf | **drawn** |
 | 7 | `mouse-cheese` | mouse | cheese | wedge with holes | **drawn** |
 | 8 | `hen-egg` | hen | egg | ovoid | **drawn** |
-| 9 | `sheep-clover` | sheep | clover | three-lobe | level 10 |
-| 10 | `cow-haybale` | cow | hay bale | bound cylinder | level 11 |
-| 11 | `horse-horseshoe` | horse | horseshoe | U | level 12 |
-| 12 | `duck-snail` | duck | snail | spiral | level 13 |
-| 13 | `bee-flower` | bee | flower | rosette | level 14 |
-| 14 | `goat-cabbage` | goat | cabbage | layered sphere | level 15 |
+| 9 | `sheep-clover` | sheep | clover | three-lobe | **drawn**, level 10 |
+| 10 | `cow-haybale` | cow | hay bale | bound cylinder | **drawn**, level 11 |
+| 11 | `horse-horseshoe` | horse | horseshoe | U | **drawn**, level 12 |
+| 12 | `duck-snail` | duck | snail | spiral | **drawn**, level 13 |
+| 13 | `bee-flower` | bee | flower | rosette | **drawn**, level 14 |
+| 14 | `goat-cabbage` | goat | cabbage | layered sphere | **drawn**, level 15 |
 | 15 | `hamster-corn` | hamster | corn cob | segmented spindle |
-| 16 | `squirrel-acorn` | squirrel | acorn | cap + nut | level 16 |
-| 17 | `elephant-peanut` | elephant | peanut | double lobe | level 17 |
-| 18 | `panda-bamboo` | panda | bamboo | vertical segmented | level 18 |
-| 19 | `frog-lotus` | frog | lotus pad | notched disc | level 19 |
-| 20 | `giraffe-leaf` | giraffe | leaf | teardrop with vein | level 20 |
+| 16 | `squirrel-acorn` | squirrel | acorn | cap + nut | **drawn**, level 16 |
+| 17 | `elephant-peanut` | elephant | peanut | double lobe | **drawn**, level 17 |
+| 18 | `panda-bamboo` | panda | bamboo | vertical segmented | **drawn**, level 18 |
+| 19 | `frog-lotus` | frog | lotus pad | notched disc | **drawn**, level 19 |
+| 20 | `giraffe-leaf` | giraffe | leaf | teardrop with vein | **drawn**, level 20 |
 | 21 | `hedgehog-mushroom` | hedgehog | mushroom | dome on stalk |
 | 22 | `fox-plum` | fox | plum | ovoid with seam |
 | 23 | `bear-honeypot` | bear | honey pot | pot |
@@ -81,9 +81,9 @@ Rows 0–8 are drawn. Rows 9–49 are the work.
 | 48 | `plane-suitcase` | plane | suitcase | rounded rect + handle |
 | 49 | `robot-bolt` | robot | bolt | hex head |
 
-41 new actors and 41 new targets still to draw. Row 13 reuses `sp-flower`,
-already drawn as garden decoration, which makes `bee-flower` the cheapest row
-on the list.
+30 new actors and 30 new targets still to draw: rows 21-49, plus row 15, which
+sits inside the drawn block but was skipped. Row 13 reused `sp-flower`, already
+drawn as garden decoration, which made `bee-flower` the cheapest row on the list.
 
 ## Ten of these rows are now level faces
 
