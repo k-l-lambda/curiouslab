@@ -279,6 +279,10 @@ could have landed in the repository and still not reached a child.
   in the sheet, because it has to say "that one got away, keep going" to a child
   who cannot read. There are two ways to lose one now: the clock, or the level's
   `maxErrors` budget.
+- The clip needs a run that lost nothing *and* improved something — except at three
+  stars, where improving is no longer asked for. Worth knowing when judging how
+  often a clip will be seen: early on, nearly every run plays it; on a level being
+  mastered it becomes rare; on a mastered one it returns for every clean run.
 
 Worth keeping in mind when writing a fourth level: the board dims all but one
 distractor after two errors, so with `maxErrors: 3` the last try is a choice

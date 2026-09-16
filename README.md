@@ -126,7 +126,12 @@ is how a level is finished.
   A wrong answer the child then corrects is not a miss; that is what the whole
   feedback sequence is for.
 - **Clearing** — which plays the celebration — needs a run with nothing lost *and*
-  at least one question ending up better known than it had ever been.
+  at least one question ending up better known than it had ever been. **At three
+  stars the second half is dropped**: most of the set is already fluent, so the only
+  way left to improve is beating a personal best already near the floor a child can
+  physically produce, and without this the celebration would become permanently
+  unreachable on exactly the levels a child knows best. Mastery buys the story back,
+  and losing nothing is enough. A miss still ends it at any star count.
 - **The next level opens** once every question in the current one has been
   answered correctly at least once, accumulated across runs.
 - **Cover and celebration art** is briefed in `assets/levels/prompts.md` and

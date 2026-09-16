@@ -436,6 +436,9 @@ export function startRun (level) {
 export const runRemaining = run => Math.max(0, run.level.questions - run.answered);
 export const runComplete = run => run.answered >= run.level.questions;
 
+/** The most stars a level can be worth. */
+export const STARS_MAX = STAR_THRESHOLDS.length;
+
 /**
  * Did this run clear the level?
  *
@@ -443,8 +446,21 @@ export const runComplete = run => run.answered >= run.level.questions;
  * one question ended up better known than it had ever been. Getting everything
  * right is not on its own enough: the animation marks moving forward, not
  * marking time.
+ *
+ * Except at three stars, where the improvement is no longer asked for. This is not
+ * a softening of the rule but the end of it: three stars means most of the item
+ * set is already fluent, so the only way left to improve is to beat a personal
+ * best that is already near the floor a child can physically produce. Without this
+ * the celebration would become permanently unreachable on exactly the levels a
+ * child has learned best — the harder they had worked, the less they would be
+ * shown — and a clean run would end in silence. So mastery buys the story back: on
+ * a fully-starred level, losing nothing is enough.
+ *
+ * @param {object} run
+ * @param {number} [stars] the level's star count; 3 relaxes the rule
  */
-export const isClear = run => run.misses === 0 && run.improvements.length > 0;
+export const isClear = (run, stars = 0) => run.misses === 0
+	&& (run.improvements.length > 0 || stars >= STARS_MAX);
 
 /* ---------------------------------------------------------------- picking */
 
@@ -640,7 +656,7 @@ export function finishRun (run, records, {starsSeen = 0} = {}) {
 		fluency: score.fluency,
 		covered: score.covered,
 		total: score.total,
-		cleared: isClear(run),
+		cleared: isClear(run, score.stars),
 		misses: run.misses,
 		timeouts: run.timeouts,
 		exhausted: run.exhausted,
