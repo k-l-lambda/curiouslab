@@ -52,8 +52,11 @@ A text-free game for children who may not read yet. The task is carried by
 object arrangement, counts, numerals, arithmetic symbols and motion. There is
 no voice and no sound effects in this phase.
 
-- **Six pairings** — cat/fish, monkey/banana, dog/bone, rabbit/carrot,
-  bird/seed, lamp/star, each with its own container art and success interaction.
+- **Nine pairings** — cat/fish, monkey/banana, dog/bone, rabbit/carrot,
+  bird/seed, lamp/star, pig/apple, mouse/cheese, hen/egg, each with its own
+  container art and success interaction. Which of them a level may draw from is
+  the level's own `cast` ceiling, so a pairing added for a late level cannot
+  appear in an early one — see the ladder below.
 - **Three modes that alternate**, all sharing one visual grammar: the source
   group (cats, monkeys...) is always the actor on the left, the target group
   (fish, bananas...) is always what the child supplies.
@@ -105,15 +108,24 @@ questions drawn from that level's own item set — which ends in a result screen
 | 3 | 👌 up to 3 | addition, subtraction | 6 | 8 | addition: numeral cards · subtraction: cartoon |
 | 4 | 🖐 up to 5 | counting, addition | 15 | 10 | counting: cartoon · addition: numeral cards |
 | 5 | 🖐 up to 5 | counting, addition, subtraction | 25 | 10 | counting and subtraction: cartoon · addition: numeral cards |
+| 6 | ☝️✊ up to 10 | counting | 6 | 12 | counting: cartoon |
 
-The hand sign marks the number range a stretch of the path covers. An item set is
-enumerated, not a random range: level 5's twenty-five are `count 1..5`, every
-`a + b ≤ 5`, and every take-away under five. Because a run usually asks fewer
-questions than the set holds, coming back is how a level is finished.
+The hand sign marks the number range a stretch of the path covers. Ten is spelled
+with two signs because no single hand shape says it: a raised finger and a fist read
+as the digits 1 and 0, which keeps the whole set hands rather than mixing in a
+numeral the child may not read yet.
 
-Level 3 is the exception and asks *more* questions than it has items — eight over
-six — because there is no way to ask eight distinct sums and take-aways under
-three. It repeats two, deliberately: a small set is what makes repetition useful.
+An item set is enumerated, not a random range: level 5's twenty-five are
+`count 1..5`, every `a + b ≤ 5`, and every take-away under five. Because a run
+usually asks fewer questions than the set holds, coming back is how a level is
+finished.
+
+Levels 3 and 6 go the other way and ask *more* questions than they have items.
+Level 3 asks eight of six, because there is no way to ask eight distinct sums and
+take-aways under three; it repeats two, deliberately, since a small set is what
+makes repetition useful. Level 6 asks twelve of six because its six items each have
+two presentation forms, and twelve is exactly the number of item-forms — a clean run
+can meet every one of them once before anything repeats.
 
 **Presentation is declared per mode, not per level**, which is the level table's
 difficulty knob. A mode's forms are a ladder — cartoon objects with previews,
@@ -225,6 +237,15 @@ time a level pairs the two.
   still frame with no motion on it reads as finished rather than as waiting, and
   there is no text here to say which it is. Escape counts as the tap, so a keyboard
   is not stranded behind it.
+- **The map scrolls once there are more levels than fit.** Its height is a
+  per-level allowance rather than the height of the window, so beyond a certain
+  count the path grows downward and the map is dragged or wheeled instead of being
+  squeezed — squeezing it would put the nodes on top of each other. A map that
+  scrolls always draws the climbing portrait curve, whatever shape its box measures,
+  because the scroller only runs vertically. It opens centred on the furthest level
+  the child has open rather than at the top: the path climbs, so the top is the
+  locked far end, and a beginner would otherwise arrive at a screen of locks with
+  the one playable level below the fold.
 - **`?unlock`** opens every level. Debug only: it is never written to the save, so
   it cannot corrupt real progress, and the map shows a flag while it is on.
 

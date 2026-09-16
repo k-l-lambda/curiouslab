@@ -32,6 +32,12 @@ import {buildOptions, itemId, skillKey, TIERS, TIMEOUT_BANDS} from './questions.
 export const BANDS = [
 	{id: 'b3', sign: '\u{1F44C}\u{FE0F}', max: 3},
 	{id: 'b5', sign: '\u{1F590}\u{FE0F}', max: 5},
+	// Ten is two signs, not one: a raised finger and a fist read as the digits
+	// 1 and 0. No single hand shape says ten -- two open palms come closest but
+	// shrink to an unreadable smudge at marker size, and a fist alone says zero
+	// or nothing. Spelling it keeps the whole set hands, which is what makes the
+	// signs legible to a child who cannot read the numerals.
+	{id: 'b10', sign: '\u{261D}\u{FE0F}\u{270A}', max: 10},
 ];
 
 export const bandById = id => BANDS.find(b => b.id === id);
@@ -171,6 +177,14 @@ export const showsPreviews = form => form === FORMS.FULL;
  * which they are. Inside a run the figures still vary question to question —
  * `nextInRun` picks those, and variety there is the point.
  *
+ * `cast` is the constraint on that variety: the highest `familiarity` a pairing
+ * may have to appear in this level at all. Without it the cast is gated only by
+ * how many questions the child has answered in total, so a new pair added for a
+ * late level would walk into level one as soon as the count went high enough —
+ * and the early levels are where a small, repeated cast is the point. Raising it
+ * is how new figures are introduced, and the level that raises it is the level
+ * they debut in.
+ *
  * `forms` is keyed by mode, and the modes it names are the modes the level asks:
  * the list is not declared separately. Each mode's array is a ladder, easiest
  * first, and where a mode starts on it is the level's difficulty knob — see
@@ -183,6 +197,7 @@ export const showsPreviews = form => form === FORMS.FULL;
 export const LEVELS = [
 	{
 		id: 'l1',
+		cast: 5,
 		band: 'b3',
 		min: 1,
 		max: 3,
@@ -196,6 +211,7 @@ export const LEVELS = [
 	},
 	{
 		id: 'l2',
+		cast: 5,
 		band: 'b3',
 		min: 1,
 		max: 3,
@@ -218,6 +234,7 @@ export const LEVELS = [
 		// answering these very sums with the objects shown. Subtraction is new,
 		// so it starts where addition did, with everything visible.
 		id: 'l3',
+		cast: 5,
 		band: 'b3',
 		min: 1,
 		max: 3,
@@ -237,6 +254,7 @@ export const LEVELS = [
 		// revision but because four and five are new quantities, and the child
 		// has never counted them here.
 		id: 'l4',
+		cast: 5,
 		band: 'b5',
 		min: 1,
 		max: 5,
@@ -256,6 +274,7 @@ export const LEVELS = [
 		// one that takes the most returning to finish. Everything the ladder has
 		// taught is in play at once.
 		id: 'l5',
+		cast: 5,
 		band: 'b5',
 		min: 1,
 		max: 5,
@@ -270,6 +289,37 @@ export const LEVELS = [
 		pairing: 'bird-seed',
 		cover: 'l5-cover.webp',
 		clear: 'l5-clear.mp4',
+	},
+	{
+		// The first level past five, and it asks only one thing: count a group
+		// bigger than a hand. No arithmetic, because the number range is the new
+		// skill here and pairing it with a second new skill would make a failure
+		// unreadable -- neither the child nor the grown-up panel could say which
+		// of the two was the trouble.
+		//
+		// Six items against twelve questions, and six items times its two forms is
+		// exactly twelve item-forms, so a clean run can meet every one of them once.
+		// `chooseTarget` sets aside what the run has already asked, so the repeats
+		// only begin once the set is spent.
+		id: 'l6',
+		// The three new pairings debut here: pig-apple, mouse-cheese and hen-egg sit
+		// at familiarity 6, 7 and 8, so raising the ceiling to 8 is what lets them on
+		// screen -- and leaving every earlier level at 5 is what keeps them off it.
+		cast: 8,
+		band: 'b10',
+		min: 5,
+		max: 10,
+		questions: 12,
+		// Two, as in the five band. The rule there was that a familiar sum needs no
+		// third try; here it is that counting eight objects wrongly is a miscount to
+		// be tried again from the top, not a fact to be recalled -- and a third try
+		// on four cards is enough to guess through.
+		maxErrors: 2,
+		forms: {count: [FORMS.FULL, FORMS.PROMPT]},
+		sprite: 'sp-lamp',
+		pairing: 'lamp-star',
+		cover: 'l6-cover.webp',
+		clear: 'l6-clear.mp4',
 	},
 ];
 

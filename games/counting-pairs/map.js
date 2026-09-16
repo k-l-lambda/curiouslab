@@ -86,6 +86,17 @@ const PATHS = {
 };
 
 /**
+ * Vertical room per level, in rem.
+ *
+ * A node is at most 6.4rem across (`.level-node`), and the path weaves side to
+ * side between them, so a little over one node of height each is enough to keep
+ * consecutive nodes from touching at the tightest turn. Small enough that the
+ * first five levels still fit an ordinary screen without scrolling — the map only
+ * grows past the window once there are more levels than it can hold.
+ */
+const PER_LEVEL_REM = 7.5;
+
+/**
  * Where along the path each stop sits, as a fraction of its length.
  *
  * Spread with a margin at each end so the first and last node are not half off
@@ -231,12 +242,26 @@ export function render (host, view) {
 
 	const map = el('div', 'level-map', host);
 
+	// The map is given a height per level rather than the height of the screen. Six
+	// levels on a phone-height box put the nodes close enough to touch, and past
+	// that they would overlap — so beyond what fits, the map grows and `.map-host`
+	// scrolls it. That scroller already existed for the case of a short window; this
+	// is what finally gives it something to scroll.
+	//
+	// Set before measuring, because the measurement below reads the box this line
+	// decides.
+	map.style.minHeight = `${levels.LEVELS.length * PER_LEVEL_REM}rem`;
+
+	const host_box = host.getBoundingClientRect();
+	const box = map.getBoundingClientRect();
 	// Shape chosen from the box the map actually got, not from a media query about
-	// the window. The map fills its host, so the curve is stretched to that box
-	// either way — measuring it means the stretch lands on the path drawn closer to
-	// that shape, instead of a tablet getting the tall path squashed sideways.
-	const box = host.getBoundingClientRect();
-	const shape = box.height >= box.width ? PATHS.portrait : PATHS.landscape;
+	// the window — except that a map which has to scroll gets the portrait curve
+	// whatever its box measures. `.map-host` scrolls vertically and only vertically,
+	// so growing the map means growing it downward; a landscape curve stretched into
+	// a tall box puts its far end near the top and leaves the path running sideways
+	// across a column, which reads as a mistake rather than as a road.
+	const scrolls = box.height > host_box.height + 1;
+	const shape = scrolls || box.height >= box.width ? PATHS.portrait : PATHS.landscape;
 
 	const {svg, trail} = buildRibbon(shape);
 	map.append(svg);
@@ -280,7 +305,37 @@ export function render (host, view) {
 		flag.textContent = 'unlock';
 	}
 
+	if (scrolls)
+		showFurthest(host, map, view);
+
 	return map;
+}
+
+/**
+ * Scroll a map taller than its window to where the child actually is.
+ *
+ * The path climbs, so level one is at the bottom and the newest level at the top —
+ * which means a scroller left at its origin opens on the locked far end of the
+ * ladder, with the level the child can actually play somewhere off screen below.
+ * That is the wrong first thing to show at either end of the game: a beginner sees
+ * only locks, and a child near the end has to hunt for where they got to.
+ *
+ * Centred rather than merely brought into view, so the nodes on both sides of it
+ * are visible — where they came from and what is next.
+ */
+function showFurthest (host, map, view) {
+	const open = levels.LEVELS.filter(l => view.unlocked.has(l.id));
+	const target = open.length ? open[open.length - 1] : levels.LEVELS[0];
+	const node = map.querySelector(`.level-node[data-level="${target.id}"]`);
+	if (!node)
+		return;
+
+	const box = host.getBoundingClientRect();
+	const seat = node.getBoundingClientRect();
+	// Offsets are in page coordinates, so the current scroll has to be added back
+	// in to turn "where it is now" into "where to scroll to".
+	const centre = seat.top - box.top + host.scrollTop + seat.height / 2;
+	host.scrollTop = Math.max(0, centre - box.height / 2);
 }
 
 /**

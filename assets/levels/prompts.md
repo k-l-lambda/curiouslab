@@ -476,20 +476,31 @@ clips may not say. The seeds stay on the ground, untouched and uncounted.
 
 ## Levels six to ten — the second five
 
-These five have no entries in `assets/js/levels.js` yet and their sprites are not
-drawn. The art is being made first on purpose: a cover is the slowest thing in a
-level's chain and the only one that cannot be written in an afternoon, so it is
-the thing worth having ready before the rules that use it. Band assignment below
-is the intended shape — six to eight in the seven band, nine and ten in the ten
-band — and it is a plan, not something the code agrees to yet.
+The art here was made before the rules that use it, on purpose: a cover is the
+slowest thing in a level's chain and the only one that cannot be written in an
+afternoon, so it is the thing worth having ready first. Level 6 now has its entry in
+`assets/js/levels.js`; levels 7 to 10 still do not, and their sprites are not drawn.
+
+The band plan below — six to eight in a seven band, nine and ten in a ten band — is
+**not** what the code does. There is no seven band: level 6 counts 5 to 10 in the ten
+band, because a band boundary at seven buys a step the child cannot see (nothing about
+counting seven differs from counting eight) while costing a whole extra marker on the
+map. The briefs keep their original wording below; where a heading says "within 7",
+read the level table in `assets/js/levels.js` instead. The art is unaffected either
+way, because none of these covers shows a countable set.
 
 Full prompts as sent are in `prompts/lN-cover.txt` and `prompts/lN-clear.txt`.
 Each clip is **6 seconds** and starts from its own cover.
 
 ## Level 6 — counting within 7 · lamp and star · accent `#ffd44d`
 
-The first level of the seven band, and counting returns the way it did at level
-four: six and seven are new quantities and the child has never counted them.
+> **As built: counting 5 to 10, twelve questions, the ten band.** The range widened
+> from the plan above; the art and the story below are unchanged, and the cover's
+> stars were briefed as uncountable, so they carry the wider range as they were.
+
+The first level past the five band, and counting returns the way it did at level
+four: everything above five is a new quantity and the child has never counted it
+here.
 
 It is also the first pairing in the set with no animal in it, which is why it sits
 here rather than later. A lamp and a star are the two things a small child already
@@ -680,9 +691,11 @@ alight to the horizon.
   that flies, then food that builds, then a wall that turns out to be a door, then
   the ground itself let go of. A child replaying level 1 after level 5 should feel
   level 1 as small, and that is correct.
-- **Every clip starts from its own cover.** Frame one of each video is the still
-  the child taps on the map, all five of them, measured at 3.0 to 3.9 mean abs
-  diff from the cover file.
+- **Every clip starts from its own cover.** Frame one of each video is the still the
+  child taps on the map — all ten of them, measured at 3.4 to 4.9 mean abs diff from
+  the cover file. The measure discriminates: the same comparison against a
+  neighbouring level's cover scores 39 to 65, so these numbers are a match and not
+  just a small number.
 
 ## How the code uses these files
 

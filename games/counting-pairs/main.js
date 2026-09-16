@@ -420,11 +420,21 @@ function drawQuestion () {
  * The level's own pair leads, because that is the one on its map node, but a run
  * of six identical scenes is a run a child stops looking at. Familiarity order
  * still applies to the alternatives, so nothing arrives before its turn.
+ *
+ * Two ceilings, and the lower one wins. The level's `cast` says which figures
+ * belong to it at all; the answered count says how fast the child is met by the
+ * ones that do. Without the first, a pair added for a late level would appear in
+ * level one as soon as the count went high enough — the count knows nothing about
+ * where the child is on the ladder, only how long they have been playing.
  */
 function pickPairing () {
-	const own = pairingById(ui.run?.level?.pairing ?? '');
+	const level = ui.run?.level;
+	const own = pairingById(level?.pairing ?? '');
 	const gate = Math.floor(store.getState().progress.answered / 4) + 1;
-	const pool = PAIRINGS.filter(p => p.familiarity <= gate);
+	// No level means free practice, which has no ladder position to read a cast
+	// from, so the answered count is the only gate there.
+	const ceiling = level?.cast != null ? Math.min(gate, level.cast) : gate;
+	const pool = PAIRINGS.filter(p => p.familiarity <= ceiling);
 	const options = pool.length ? pool : [PAIRINGS[0]];
 
 	if (own && Math.random() < 0.5)
