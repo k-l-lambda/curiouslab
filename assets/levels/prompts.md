@@ -1129,10 +1129,13 @@ first rain in the whole game, and a tree that bows.
   display, which is the specific failure the level ten rebuild was written to avoid.
 - **Every clip starts from its own cover.** Frame one of each video is the still the
   child taps on the map. The ten that exist measure **2.8 to 4.5** mean abs diff
-  from their cover file; anything much above that band is a clip that drifted off
-  its first frame and is worth looking at. The measure discriminates rather than
-  merely returning a small number: the same comparison against a *neighbouring*
-  level's cover scores 39 to 65, which is what makes single digits meaningful.
+  from their cover file read with ffmpeg, and **3.0 to 4.9** read with
+  `cv2.VideoCapture().read()` — the decoder moves the number by a few tenths, so
+  compare against the band for the tool you used rather than treating either as the
+  threshold. Anything well outside both is a clip that drifted off its first frame
+  and is worth looking at. The measure discriminates rather than merely returning a
+  small number: the same comparison against a *neighbouring* level's cover scores
+  39 to 65, which is what makes single digits meaningful.
   Measure frame zero with `-vframes 1`, not with an `fps=` filter — `fps=4`
   resamples the timeline and hands back a frame from about t=0.125 instead, which
   reads 1.7 higher on level ten and would look like drift that is not there.
