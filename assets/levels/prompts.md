@@ -32,7 +32,7 @@ What that changes:
   service takes the output ratio from the first frame and rejects a request that
   also states one. `--resolution` is still needed.
 
-## Story rules for a 5-second clip
+## Story rules for a short clip
 
 Five seconds is roughly **beat / turn / landing** and nothing more. Each brief
 below is written as three beats with a second-count, because a story prompt
@@ -52,6 +52,29 @@ escalate:
 4. **What looked like the end was a door** — the goal opens onto more.
 5. **The thing they never did, they finally do** — a capability held back across
    the whole ladder, spent here.
+
+Levels six to ten continue the escalation, and their clips run **6 seconds rather
+than 5** — the reversals below need a longer resistance beat to land, and by this
+point a child has sat through five of these and will hold still for another
+second. The five beats become roughly 1.5 / 0.5 / 2 / 1.2 / 0.8.
+
+6. **The gift is given back, bigger** — the first twist that reverses the
+   *direction* of the relation instead of the behaviour of the objects. The lamp
+   lights the stars; the stars light the lamp.
+7. **The objects become a ride** — they do not merely move themselves, they carry
+   the characters, which is the first time a counted thing takes charge of an
+   actor.
+8. **The objects become a place** — past building a structure: what gets built is
+   inhabited, and the characters go inside.
+9. **The objects were alive** — the strongest surprise available at this age. It
+   is legal under the counting rule because the transformation is strictly
+   one-for-one and visible: each egg becomes exactly one chick, so the number on
+   screen never changes even though what it is made of does.
+10. **The world answers** — nothing is transformed at all; the whole meadow lights
+    up around what the child counted. It closes the loop with level six, one lamp
+    grown into a field of light, and it is the widest ending of the ten because
+    the top of the ladder should feel like open country rather than a bigger
+    trick.
 
 ### Drama: resistance before release
 
@@ -133,9 +156,28 @@ finishing is risky.
 | Carrot | `sp-carrot` | root `#f0862f`, shadow side `#e0741f`, ridges `#c9611a`, leaves `#54a84b` / `#63bd57` / `#4a9a42` |
 | Bird | `sp-bird` | head `#7cc0ef`, body `#5ba8e0`, wing and tail `#4a8fc9`, beak and legs `#f5a24a`, eye `#28323c` |
 | Seed | `sp-seed` | husk `#f0cf90`, shading `#d9a94f` |
+| Lamp | `sp-lamp` | shade `#e0574f`, rim `#c8443d`, post `#8a6a5a`, base `#7a5b4c`, bulb `#ffe9a8` / `#fff6d0`, rays `#ffd469` |
+| Star | `sp-star` | outer `#ffd44d`, inner `#ffe796` |
+| Pig | *`sp-pig`, to draw* | body `#f0a0ae`, snout and inner ear `#f7bcc6`, features `#33291f` |
+| Apple | *`sp-apple`, to draw* | body `#d6453f`, shadow side `#c5332b`, stem `#7c6420`, leaf `#54a84b` |
+| Mouse | *`sp-mouse`, to draw* | body `#aebbc6`, inner ear and nose `#f2b8c0`, tail `#9aa7b0`, features `#33291f` |
+| Cheese | *`sp-cheese`, to draw* | body `#f2c94c`, rind `#e0a832`, holes `#c98f22` |
+| Hen | *`sp-hen`, to draw* | body `#c9563f`, breast `#e8a882`, comb and wattle `#e0574f`, beak and legs `#f5a24a`, features `#33291f` |
+| Egg | *`sp-egg`, to draw* | shell `#d9b48c`, shading `#c19a6b` |
+| Chick | *clip only, no sprite* | body `#ffd96b`, beak and feet `#f5a24a`, eyes `#33291f` |
+| Sheep | *`sp-sheep`, to draw* | wool `#f2e6cf`, wool shading `#dcc9a8`, face and legs `#4a4a52`, ears `#3d3d44` |
+| Clover | *`sp-clover`, to draw* | leaf `#4f9a34`, pale lobe `#63bd57` |
 
-Containers, if a brief needs one: bowl `#7fc8e8` with `#bfe6f5` water, basket
-`#a5702f` / `#c98d4e`, garden bed `#8b5e3c` soil with `#54a84b` growth.
+Containers, if a brief needs one: bowl `#7fc8e8` with `#bfe6f5` water, dog bowl
+`#f0c9a0`, basket `#a5702f` / `#c98d4e`, garden bed `#8b5e3c` soil with `#54a84b`
+growth, nest `#d9a94f` straw, glow `#ffd44d`. Pairings from `pig-apple` onward
+carry no container at all — see `../sprites/expansion-plan.md`.
+
+**Rows marked *to draw* invert the usual direction.** Everywhere above, the brief
+copies a colour out of `assets/js/art.js`; for these the brief is written first
+and `art.js` is drawn to match it, because the cover has to exist before the level
+does. The hex values in those rows are therefore a commitment, not a description:
+whoever draws `sp-pig` reads them off this table.
 
 Every figure is drawn **facing the viewer or three-quarter**, upright, with a large
 head relative to the body — the sprite proportions. Not naturalistic animals.
@@ -425,16 +467,205 @@ clips may not say. The seeds stay on the ground, untouched and uncounted.
 > Soaring and wide open — the biggest moment of the five. No text, no numbers, no
 > letters.
 
-## Continuity across the five clips
+## Levels six to ten — the second five
 
-The five are not independent. Read in order they should feel like the same world
+These five have no entries in `assets/js/levels.js` yet and their sprites are not
+drawn. The art is being made first on purpose: a cover is the slowest thing in a
+level's chain and the only one that cannot be written in an afternoon, so it is
+the thing worth having ready before the rules that use it. Band assignment below
+is the intended shape — six to eight in the seven band, nine and ten in the ten
+band — and it is a plan, not something the code agrees to yet.
+
+Full prompts as sent are in `prompts/lN-cover.txt` and `prompts/lN-clear.txt`.
+Each clip is **6 seconds** and starts from its own cover.
+
+## Level 6 — counting within 7 · lamp and star · accent `#ffd44d`
+
+The first level of the seven band, and counting returns the way it did at level
+four: six and seven are new quantities and the child has never counted them.
+
+It is also the first pairing in the set with no animal in it, which is why it sits
+here rather than later. A lamp and a star are the two things a small child already
+understands as *the same kind of thing* without being told — both are lights — and
+that shared understanding is what makes the clip's reversal readable with no words.
+
+**Cover** — `l6-cover.webp`
+
+> One small table lamp standing in a low grassy meadow at dusk, seen straight on:
+> trapezoid shade `#e0574f` with `#c8443d` rim, post `#8a6a5a`, oval base
+> `#7a5b4c`, round bulb `#ffe9a8` with a `#fff6d0` centre and four short golden
+> rays `#ffd469`. Small five-pointed stars `#ffd44d` with `#ffe796` inner points
+> scattered loosely and unevenly across the whole upper sky, overlapping in places
+> so they form no countable row. Sky pale `#eaf4f7` at the horizon, up through
+> `#d9ecf2`, deepening to dusk blue `#9fc4d4` at the very top. The winding cream
+> path, a few `#3f9e6b` grass tufts. Light from the upper left. No text, numerals
+> or letters.
+
+The first cover in the set that is not full daylight. It has to be, because stars
+are the counted thing and stars do not read at noon — but the sky stays pale at the
+horizon and only darkens at the top, so on the map it sits beside the other nine as
+the same world in the evening rather than a different palette.
+
+**Clear video** — `l6-clear.mp4`, 6s, **first frame is `l6-cover.webp`**
+
+Twist: *the gift is given back, bigger.* Every reversal so far has been the objects
+changing their behaviour. This one changes the direction of the relation: the lamp
+spends the whole first beat straining its light upward and falling short, and then
+the stars answer, pouring far more light back down than the lamp ever managed. A
+three-year-old reads that as *they said thank you*, and it needs no words at all.
+
+The stars may not move from their places in the sky, because they are the counted
+set — they brighten and throw beams, and that is all.
+
+## Level 7 — counting and addition within 7 · pig and apple · accent `#d6453f`
+
+Addition arrives in the seven band. Sums to seven over a set the child has just
+learned to count, which is the same step level two made inside the three band.
+
+**Cover** — `l7-cover.webp`
+
+> Three round pigs in an orchard clearing, front-facing and three-quarter, large
+> round heads, bodies `#f0a0ae`, snouts and inner ears `#f7bcc6`, `#33291f`
+> features, small curly tails, overlapping so they form no countable row. Round red
+> apples `#d6453f` with `#c5332b` shadow sides, `#7c6420` stems and `#54a84b`
+> leaves, scattered loosely on the grass. Behind them one round-canopied apple tree,
+> `#8a6a5a` trunk and broad `#3f9e6b` canopy, with open sky `#eaf4f7` to `#d9ecf2`
+> around it. The winding cream path. Light from the upper left. No text, numerals
+> or letters.
+
+**Clear video** — `l7-clear.mp4`, 6s, **first frame is `l7-cover.webp`**
+
+Twist: *the objects become a ride.* The apples refuse to be pushed, then lift off
+the grass, whirl into a ring, and scoop the pigs up to ride round in the air. First
+time in the set a counted thing takes charge of an actor rather than the other way
+round, and the funniest of the ten by a distance — a pig with its trotters out is
+worth more to a four-year-old than any amount of elegance.
+
+Every apple that starts on the grass ends on the grass. The three carrying pigs put
+them down; nothing is eaten, which would be the obvious thing for a pig to do and is
+forbidden, because an eaten apple is a smaller count.
+
+## Level 8 — addition and subtraction within 7 · mouse and cheese · accent `#f2c94c`
+
+Arithmetic only, no counting to fall back on: the seven band's answer to level
+three. Subtraction is new at this width.
+
+**Cover** — `l8-cover.webp`
+
+> Three round mice on a warm pale wood floor `#f0e9db`, front-facing and
+> three-quarter, big round ears, bodies `#aebbc6`, inner ears and noses `#f2b8c0`,
+> tails `#9aa7b0`, `#33291f` features, overlapping so they form no countable row.
+> Thick triangular cheese wedges `#f2c94c` with `#e0a832` rinds and round `#c98f22`
+> holes punched through each face, lying at different angles in a loose scatter. A
+> plain soft wall behind in `#eaf4f7` to `#d9ecf2`, empty across the upper two
+> thirds. Light from the upper left. No text, numerals or letters.
+
+The only interior in the set. It is worth the break in setting because the twist
+needs a floor and a wall — a house built out on open grass would have nothing to be
+a house against.
+
+**Clear video** — `l8-clear.mp4`, 6s, **first frame is `l8-cover.webp`**
+
+Twist: *the objects become a place.* Level three had bones build an arch and the
+dogs ran through it; this goes one further — the wedges stack into a crooked house,
+the holes light up into rows of glowing windows, a doorway forms, and the mice go
+**inside**. The structure is not just used, it is inhabited.
+
+Each wedge stays a whole wedge with its own holes all the way through, because the
+wedges are the counted set and a wall of undifferentiated cheese would erase the
+answer the child just gave.
+
+## Level 9 — counting, addition and subtraction within 10 · hen and egg · accent `#d9b48c`
+
+The first level of the ten band, and everything is in play at once. Ten is where
+the item set gets large enough that a run stops being finishable in one sitting.
+
+**Cover** — `l9-cover.webp`
+
+> Three plump round hens in a straw nest hollow, front-facing and three-quarter,
+> large round heads, bodies `#c9563f`, breast and cheek feathers `#e8a882`, combs
+> and wattles `#e0574f`, beaks and legs `#f5a24a`, `#33291f` features, overlapping
+> so they form no countable row. Smooth oval eggs `#d9b48c` with `#c19a6b` shading
+> scattered loosely in the straw, which is `#f0cf90` with `#d9a94f` strands. Open
+> sky `#eaf4f7` to `#d9ecf2` across the upper two thirds, clear of any object. The
+> winding cream path, `#3f9e6b` grass tufts. Light from the upper left. No text,
+> numerals or letters.
+
+**Clear video** — `l9-clear.mp4`, 6s, **first frame is `l9-cover.webp`**
+
+Twist: *the objects were alive.* The strongest surprise available at this age, and
+held until ninth of ten for exactly that reason. The hens fuss over eggs that will
+not budge, everything goes still, a crack appears — and every egg opens and lets out
+one fluffy chick `#ffd96b`.
+
+This is the one twist that needed checking against the counting rule rather than
+just obeying it. It is legal, and narrowly: the transformation is **strictly
+one-for-one and visible**. One chick per egg, no chick added or hidden afterwards,
+and the empty shell halves stay in the straw beside each chick so the child can see
+where each one came from. Three eggs become three chicks and the number on screen
+never changes — only what it is made of. Written any looser (a nest that "fills with
+chicks") it would break the rule outright.
+
+## Level 10 — counting, addition and subtraction within 10 · sheep and clover · accent `#4f9a34`
+
+The top of the ladder. Widest item set, every mode, and the level a child arrives at
+last after the most returning.
+
+**Cover** — `l10-cover.webp`
+
+> Three round woolly sheep in a wide open meadow, front-facing and three-quarter,
+> large round heads, wool `#f2e6cf` as a soft bumpy cloud outline with `#dcc9a8`
+> shading, faces and legs `#4a4a52`, ears `#3d3d44`, `#33291f` features,
+> overlapping so they form no countable row. Small three-lobed clover leaves
+> `#4f9a34` with one paler `#63bd57` lobe each, scattered loosely in the `#3f9e6b`
+> grass. The winding cream path to a very low horizon, tall open sky `#eaf4f7` to
+> `#d9ecf2` across the upper two thirds. Light from the upper left. No text,
+> numerals or letters.
+
+The horizon sits lower here than on any other cover, and the sky is taller. That is
+the whole composition brief: this is the one the child reaches last and it should
+look like the most open place in the game.
+
+Note for whoever draws `sp-sheep`: the wool `#f2e6cf` is only 12.5 from `--slot`
+`#f0e9db`, the same trap `sp-rabbit` sits in. On the cover it is fine because it
+sits against grass and sky, but the sprite needs its dark outline to carry it on the
+answer cards.
+
+**Clear video** — `l10-clear.mp4`, 6s, **first frame is `l10-cover.webp`**
+
+Twist: *the world answers.* Nothing is transformed. The sheep chase the last patch
+of evening sun across the grass, it slips away between them, dusk falls — and then
+the entire meadow lights up with fireflies, from the grass to the top of the sky,
+far more light than the patch of sun ever was.
+
+It closes the loop with level six: one lamp asking the sky for light, and here a
+whole field of it. The fireflies are safe under the counting rule for the reason a
+passing butterfly is — they belong to neither set and were never what the child was
+asked to supply, so there may be hundreds.
+
+Two things this clip must not do. The dusk may not read as dark or frightening: the
+sheep stay pressed calmly together and the sky never goes past `#9fc4d4`. And the
+clover may not bloom, spread or multiply, however tempting a flowering meadow is at
+the top of a ladder — the leaves are the counted set and the same ones must be in
+the grass at 6.0s as at 0.0s. The extra light is the reward; the count is not
+touched.
+
+## Continuity across the clips
+
+They are not independent. Read in order they should feel like the same world
 opening up: a quiet pool, then a noisy game, then something built, then a road out,
-then the sky.
+then the sky — and past that, dusk and a light answering, a fairground, a house
+with its windows lit, a nest that turns out to be full of life, and a whole meadow
+alight to the horizon.
 
 - The **path** appears in all five and always runs the same direction, lower left
   to upper right. It is the same path as the map's ribbon.
 - **Light stays upper-left** in every frame of every clip. A generator will drift
   on this; check it on delivery.
+- Two clips leave daylight: level six opens at dusk and level ten falls to dusk
+  partway through. Both keep the sky pale `#eaf4f7` at the horizon and only deepen
+  to `#9fc4d4` at the top, so they read as the same sky late rather than a
+  different palette, and both end warmer than they began.
 - Each clip ends **wider than it started** — one more fish, one merged pile, an
   arch to run through, a long road, open sky — because the reward for finishing a
   level should feel like more, not like a door closing.
