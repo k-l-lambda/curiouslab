@@ -83,8 +83,11 @@ export const showsPreviews = form => form === FORMS.FULL;
  * replaying a level worth doing.
  *
  * `sprite` is the cover shown until the generated art exists; `cover` and
- * `clear` name the files it will be replaced by. The briefs for those are in
- * `assets/levels/prompts.md`.
+ * `clear` name the files it will be replaced by. They are different media on
+ * purpose: `cover` is a still, and `clear` is a five-second video, because the
+ * celebration is where a small story with a surprise in it belongs and a held
+ * frame cannot carry one. The briefs for both are in `assets/levels/prompts.md`,
+ * and neither file exists yet.
  *
  * `pairing` is the level's face on the map, not a constraint on its questions:
  * the cover art is drawn around these two figures, so the map needs to know
@@ -103,7 +106,7 @@ export const LEVELS = [
 		sprite: 'sp-cat',
 		pairing: 'cat-fish',
 		cover: 'l1-cover.png',
-		clear: 'l1-clear.png',
+		clear: 'l1-clear.mp4',
 	},
 	{
 		id: 'l2',
@@ -116,7 +119,7 @@ export const LEVELS = [
 		sprite: 'sp-monkey',
 		pairing: 'monkey-banana',
 		cover: 'l2-cover.png',
-		clear: 'l2-clear.png',
+		clear: 'l2-clear.mp4',
 	},
 	{
 		// Six questions against fifteen items: coverage needs three clean runs.
@@ -132,7 +135,7 @@ export const LEVELS = [
 		sprite: 'sp-rabbit',
 		pairing: 'rabbit-carrot',
 		cover: 'l3-cover.png',
-		clear: 'l3-clear.png',
+		clear: 'l3-clear.mp4',
 	},
 ];
 

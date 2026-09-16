@@ -107,6 +107,11 @@ is how a level is finished.
   answer the child then corrects is not a miss.
 - **The next level opens** once every question in the current one has been
   answered correctly at least once, accumulated across runs.
+- **Cover and celebration art** is briefed in `assets/levels/prompts.md`: one still
+  cover per level, and one five-second clear video with a small story in it — a
+  surprise the child can read without words or sound. No clip may change how many
+  of anything is on screen, because the count the child just made is still fresh.
+  Neither the images nor the videos exist yet; nodes wear the sprites meanwhile.
 - **`?unlock`** opens every level. Debug only: it is never written to the save, so
   it cannot corrupt real progress, and the map shows a flag while it is on.
 
