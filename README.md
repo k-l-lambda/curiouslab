@@ -164,8 +164,9 @@ time a level pairs the two.
   next rung of the form ladder. The one thing it does record is that it happened, so
   "never answered this form" can be told from "kept needing it made easier". What
   still counts is coverage: the child did produce the right number, and coverage asks
-  only that, so a question answered with help still counts toward opening the next
-  level. Eight seconds is measured on the answer stopwatch rather than the countdown,
+  only that, so a question answered with help is still a question answered — it fills
+  a coverage pip on the result sheet, though the stars that open the next level are
+  unmoved by it, since those read the form records a softened answer never writes. Eight seconds is measured on the answer stopwatch rather than the countdown,
   because the countdown varies with the child's recent pace and restarts at half
   length on a retry.
 
@@ -185,9 +186,10 @@ time a level pairs the two.
   carry on through the remaining questions, which taught the wrong thing: the
   clear was already gone by then and nothing later in the run could earn it back.
   What failure does **not** do is take back what was learned — every answer is
-  written as it lands, so correct answers still count, including toward the
-  coverage that opens the next level. A run can therefore fail and unlock in the
-  same breath, and the unlock still plays on the map.
+  written as it lands, so correct answers still count, including toward the stars
+  that open the next level. A run can therefore fail and unlock in the same breath,
+  and the unlock still plays on the map — once, on the run that earns it, and not
+  again on every later run of a level already finished.
 - **The error budget tightens with the bands**: three tries a question in the
   3-band, two in the 5-band. The 5-band asks about sums the child has already met
   below it, so two tries still leaves room for a slip without leaving room for
@@ -199,8 +201,26 @@ time a level pairs the two.
   physically produce, and without this the celebration would become permanently
   unreachable on exactly the levels a child knows best. Mastery buys the story back,
   and losing nothing is enough. A miss still ends it at any star count.
-- **The next level opens** once every question in the current one has been
-  answered correctly at least once, accumulated across runs.
+- **The next level opens** once the current one has earned a star — the same star
+  the map is showing, not a second quantity computed behind it. The gate used to be
+  coverage, every question in the level answered correctly at least once, and that
+  was a genuinely different measure: stars are a *mean* over the item set while
+  coverage is an *and* over it, so a handful of fluent questions could carry the mean
+  to three stars while two questions had never been answered at all. The level then
+  sat on the map wearing three stars with the next one locked and nothing on screen
+  able to explain the difference. Reading the gate off the number the child can see
+  is what stops the map contradicting itself.
+
+  A level shows no stars until a run of it has been finished, and the gate reads that
+  same played-gated number — which is also what keeps one level's work from opening
+  two. Item sets overlap, so mastering level 1 alone already scores level 2 a star
+  against its own items; if the gate read the raw score, that star would open level 3
+  as well. So the rule in full is: finish a run of a level, earn a star on it, and the
+  next level opens. Because of that overlap some levels are already at one star from
+  the ladder below before any of their own new questions is answered, which makes the
+  gate on those levels effectively "play a run of it" — a low bar on purpose, since
+  being stuck behind a level is worse for a small child than arriving at the next one
+  early.
 - **Cover and celebration art** is briefed in `assets/levels/prompts.md` and
   generated into `assets/levels/`: one still cover per level, and one five- to six-second
   clear video with a small story in it — a surprise the child can read without
@@ -275,8 +295,7 @@ shape is versioned inside the blob and is currently 2, which added per-question
 answer times, per-form records and per-level progress. A v1 save is migrated on
 load: counts and timestamps carry over, best times start empty, and
 "answered correctly at least once" starts false rather than being guessed from
-the old counters — so the unlock gate re-earns itself instead of opening on a
-guess.
+the old counters — so progress re-earns itself instead of resting on a guess.
 
 ## Deployment
 

@@ -70,6 +70,7 @@ const ui = {
 	run: null,
 	/** Stars the child had already been shown for this level before the run. */
 	starsSeen: 0,
+	nextWasOpen: false,
 	/** Debug: `?unlock` opens every level without touching the saved progress. */
 	unlockAll: false,
 };
@@ -219,8 +220,8 @@ function buildHud () {
  *
  * The run is abandoned, not finished: no result screen, no stars ceremony, no
  * clear. Nothing is lost that was earned, though — every answer was already
- * written to storage as it happened, so mastery, best times and the coverage that
- * opens the next level all survive. What the child gives up is only this run's
+ * written to storage as it happened, so mastery, best times, coverage and the stars
+ * that open the next level all survive. What the child gives up is only this run's
  * chance at clearing, which is the honest price of not finishing it.
  */
 function leaveRun () {
@@ -646,7 +647,7 @@ async function afterMiss (gen, cause) {
  *
  * Per-item progress needs no help from here — `recordAnswer` writes every answer
  * as it lands. So the questions answered correctly before the miss still count,
- * including toward the coverage that opens the next level. A run can therefore
+ * including toward the stars that open the next level. A run can therefore
  * fail and unlock in the same breath, and when it does the unlock still plays:
  * the child is being sent to the map anyway, the lock is genuinely off, and
  * holding that back until some later successful run would be hiding a thing they
@@ -660,7 +661,8 @@ async function failRun () {
 	clearTimers();
 	clockStop();
 	const records = store.itemRecords();
-	const result = levels.finishRun(run, records, {starsSeen: ui.starsSeen});
+	const result = levels.finishRun(run, records,
+		{starsSeen: ui.starsSeen, nextWasOpen: ui.nextWasOpen});
 	const rec = store.level(run.level.id);
 	rec.runs += 1;
 	store.save();
@@ -878,9 +880,20 @@ function showView (name) {
 	dom.playView.hidden = name !== 'play';
 }
 
+/**
+ * Has a run of this level been finished?
+ *
+ * The unlock gate reads the star count the map shows, and a level shows none until
+ * it has been played through to a result — so this predicate is what keeps the two
+ * in step. Defined once for exactly that reason: if the map and the gate disagreed
+ * about what counts as played, a level could show a star it was not credited for.
+ */
+const levelPlayed = id => store.level(id).runs > 0;
+
 function levelView () {
 	const records = store.itemRecords();
-	const unlocked = levels.unlockedLevels(records, {unlockAll: ui.unlockAll});
+	const unlocked = levels.unlockedLevels(records,
+		{unlockAll: ui.unlockAll, played: levelPlayed});
 	const stars = new Map();
 	const cleared = new Set();
 
@@ -888,8 +901,10 @@ function levelView () {
 		const rec = store.level(level.id);
 		// A level shows stars only once a run of it has been finished. Sets overlap,
 		// so an untouched level can already score against its own items on the
-		// strength of the level before it; see `starsFor`.
-		stars.set(level.id, levels.starsFor(level, records, {played: rec.runs > 0}));
+		// strength of the level before it; see `starsFor`. This is the same number the
+		// unlock gate reads, which is the point: what opens the next level is what the
+		// child can see on this one.
+		stars.set(level.id, levels.starsFor(level, records, {played: levelPlayed(level.id)}));
 		if (rec.cleared)
 			cleared.add(level.id);
 	}
@@ -948,6 +963,13 @@ function beginRun (level) {
 	// Snapshot before the run, so the result can tell a star won just now from
 	// one the child already had.
 	ui.starsSeen = rec.starsSeen;
+	// The same question for the lock: was the next level already open when this run
+	// started? Without it, every later run of a finished level reports the unlock
+	// again, replaying the animation for a lock that came off long ago.
+	const next = levels.LEVELS[levels.LEVELS.findIndex(l => l.id === level.id) + 1];
+	ui.nextWasOpen = !next
+		|| levels.unlockedLevels(store.itemRecords(),
+			{unlockAll: ui.unlockAll, played: levelPlayed}).has(next.id);
 	rec.lastPlayed = Date.now();
 	ui.run = levels.startRun(level);
 
@@ -965,7 +987,8 @@ async function endRun () {
 	clearTimers();
 	clockStop();
 	const records = store.itemRecords();
-	const result = levels.finishRun(run, records, {starsSeen: ui.starsSeen});
+	const result = levels.finishRun(run, records,
+		{starsSeen: ui.starsSeen, nextWasOpen: ui.nextWasOpen});
 	const rec = store.level(run.level.id);
 
 	// Counted here rather than at the start, so `runs` means runs the child saw

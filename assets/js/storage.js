@@ -94,9 +94,11 @@ const emptyPairing = () => ({seen: 0, errors: 0, lastSeen: 0});
 /**
  * One concrete question — `count:3`, `add:2+3` — across every way of showing it.
  *
- * `everCorrect` is what opens the next level, and it is deliberately recorded
- * here rather than per form: getting `2+3` right once proves the arithmetic,
- * whichever way it was put on screen.
+ * `everCorrect` is the level's coverage — the pips on the result sheet — and it is
+ * deliberately recorded here rather than per form: getting `2+3` right once proves
+ * the arithmetic, whichever way it was put on screen. It no longer opens the next
+ * level; stars do that, and stars read the per-form records below, so a question
+ * answered only with help fills a pip without moving a star.
  */
 const emptyItem = () => ({
 	everCorrect: false,

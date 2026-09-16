@@ -475,8 +475,15 @@ export const isCovered = (item, records) => Boolean(records[item.id]?.everCorrec
  * Calibrated against the rungs so each threshold names a state a child can
  * recognise: every item tried is 1/3 and earns one star, every item answered
  * correctly is 2/3 and earns two, and three asks for most of the set to be
- * fluent. The unlock gate — every item correct at least once — therefore lands
- * at two stars, so there is a star still to win on a level already opened.
+ * fluent.
+ *
+ * Those figures describe an item set graded evenly, and that is the whole reason
+ * the unlock gate no longer reads coverage. It used to, on the calibration that
+ * "every item correct at least once" lands at two stars — true only while the
+ * grades are uniform. They are not: a mean can be carried by the fluent items, so
+ * a level could reach three stars with two of its questions never answered, and
+ * the child saw full stars above a locked level. The gate is `UNLOCK_STARS` now,
+ * read off the same number the map paints.
  */
 export const STAR_THRESHOLDS = [0.3, 0.6, 0.85];
 
@@ -522,8 +529,8 @@ export function scoreLevel (level, records) {
  *
  * The underlying score is left alone. `scoreLevel` still answers for the whole
  * item set, which is what makes a replay able to raise stars, and `complete` —
- * the unlock gate — must keep accumulating across levels regardless of what has
- * been played.
+ * `complete` — the coverage the result sheet shows — must keep accumulating across
+ * levels regardless of what has been played.
  */
 export function starsFor (level, records, {played = true} = {}) {
 	if (!played)
@@ -533,24 +540,55 @@ export function starsFor (level, records, {played = true} = {}) {
 }
 
 /**
+ * Stars needed on a level to open the one after it.
+ *
+ * One. The gate used to be coverage — every question in the level answered
+ * correctly at least once — and that was a different quantity from the one on
+ * screen, which is what made it feel broken: stars are a *mean* over the item
+ * set and coverage is an *and* over it, so a few fluent questions could carry the
+ * mean to three stars while two questions had never been answered at all. The
+ * child saw three stars and a locked level, with nothing on the map able to
+ * explain the difference. Reading the gate off the star count the child is
+ * already looking at means the map cannot lie about what is needed.
+ */
+export const UNLOCK_STARS = 1;
+
+/**
  * Which levels are open.
  *
  * Derived rather than stored, so it cannot drift out of step with the records
  * and so it re-answers itself correctly after a migration. The first level is
- * always open; each later one opens when every question in the level before it
- * has been answered correctly at least once.
+ * always open; each later one opens once the level before it has earned
+ * `UNLOCK_STARS`.
+ *
+ * The star count used is the one the map shows, which is why `played` has to be
+ * supplied rather than assumed. Item sets overlap — level 2's set contains level
+ * 1's — so an untouched level already scores against its own items on the
+ * strength of the level below: mastering level 1 alone puts level 2 at one star
+ * without it ever being opened. Gating on the computed score would therefore open
+ * level 3 as well, two levels for one. `starsFor` returns 0 for a level with no
+ * finished run, and that is what stops the cascade. A level must be played to
+ * open the next one.
  *
  * `unlockAll` is the `?unlock` debug override. It is applied here, at the point
  * of asking, and never written back — a debug switch must not hand out progress
  * the child did not earn.
  *
+ * @param {object} records item records, by item id
+ * @param {object} [opts]
+ * @param {boolean} [opts.unlockAll] the `?unlock` override
+ * @param {(levelId: string) => boolean} [opts.played] has a run of this level been
+ *   finished? Defaults to false for every level, so a caller that omits it gets the
+ *   strict answer rather than a cascade.
  * @returns {Set<string>} level ids
  */
-export function unlockedLevels (records, {unlockAll = false} = {}) {
+export function unlockedLevels (records, {unlockAll = false, played = () => false} = {}) {
 	const open = new Set();
 
 	for (let i = 0; i < LEVELS.length; ++i) {
-		if (unlockAll || i === 0 || scoreLevel(LEVELS[i - 1], records).complete)
+		const prev = LEVELS[i - 1];
+		if (unlockAll || i === 0
+				|| starsFor(prev, records, {played: played(prev.id)}) >= UNLOCK_STARS)
 			open.add(LEVELS[i].id);
 		else
 			break;
@@ -654,12 +692,11 @@ export const isClear = (run, stars = 0) => run.misses === 0
  *
  * What failure does *not* do is take back what was learned. Every answer is
  * already written to the store as it happens, so a failed attempt keeps its
- * correct answers: item grades, best times and coverage all stand. Coverage is
- * what opens the next level, so a run can fail and still unlock — see
- * `finishRun`, which reports both. That is deliberate. Coverage asks whether the
- * child has ever answered each question correctly, which a lost run does not
- * make untrue, and taking it back would mean a child could lose ground by
- * playing.
+ * correct answers: item grades, best times and coverage all stand. Those grades are
+ * what the stars are computed from and stars are what open the next level, so a run
+ * can fail and still unlock — see `finishRun`, which reports both. That is
+ * deliberate: the answers were given, which a lost run does not make untrue, and
+ * taking them back would mean a child could lose ground by playing.
  *
  * @param {object} run
  */
@@ -865,7 +902,7 @@ export function recordRunAnswer (run, q, outcome, report, counts = true) {
  * accumulated during the run, so they say what is true now — including
  * improvements made on a question that came round twice.
  */
-export function finishRun (run, records, {starsSeen = 0} = {}) {
+export function finishRun (run, records, {starsSeen = 0, nextWasOpen = false} = {}) {
 	const level = run.level;
 	const score = scoreLevel(level, records);
 	const next = LEVELS[levelIndex(level.id) + 1] ?? null;
@@ -884,8 +921,16 @@ export function finishRun (run, records, {starsSeen = 0} = {}) {
 		exhausted: run.exhausted,
 		answered: run.answered,
 		improvements: run.improvements.slice(),
-		// Named only when this run is what completed the coverage: the map shows
-		// the lock coming off, and it should do that once.
-		unlocked: score.complete && next ? next.id : null,
+		// Named only when this run is what earned the unlock: the map shows the lock
+		// coming off, and a lock can only come off once. The star count alone is true
+		// of every later run of the same level too, so on its own it made the map
+		// replay the unlock — and worse, it sent the child to the map at the end of
+		// every such run, since `endRun` leaves the result sheet whenever an unlock is
+		// named. `nextWasOpen` is the caller's snapshot from before the run, the same
+		// shape as `starsSeen`: what the child had already been shown.
+		//
+		// No `played` argument needed here: the run being finished is what makes this
+		// level played, so `score.stars` is already the number the map will show.
+		unlocked: score.stars >= UNLOCK_STARS && next && !nextWasOpen ? next.id : null,
 	};
 }

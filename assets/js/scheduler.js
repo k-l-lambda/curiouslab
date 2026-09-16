@@ -416,9 +416,11 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 		fRec.softened = (fRec.softened ?? 0) + 1;
 
 	if (correct) {
-		// What opens the next level, and it is set here for any correct answer:
-		// with help or without, softened or not, the child produced the right
-		// number.
+		// The level's coverage, set here for any correct answer: with help or
+		// without, softened or not, the child produced the right number. Coverage is
+		// what the result sheet's pips count. It is not what opens the next level —
+		// stars do that, and they read `fRec` below, which a softened answer leaves
+		// alone.
 		iRec.everCorrect = true;
 		if (!softened) {
 			fRec.correct += 1;
