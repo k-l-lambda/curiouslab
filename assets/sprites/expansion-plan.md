@@ -1,8 +1,9 @@
-# Sprite pair expansion — 6 to 50
+# Sprite pair expansion — 9 to 50
 
-The item list for growing `assets/js/pairings.js` from six pairings to fifty.
-Nothing here is drawn yet. `../levels/prompts.md` is the sibling brief for level
-covers and clips.
+The item list for growing `assets/js/pairings.js` to fifty pairings.
+Rows 0-8 are drawn; rows 9-49 are the work left. `../levels/prompts.md` is
+the sibling brief for level covers and clips, and carries the palette contract
+every figure here is listed in.
 
 ## Why
 
@@ -25,19 +26,19 @@ at. Most of these fifty will never be a level's face. They are the pool.
 
 ## The fifty
 
-Rows 0–5 are drawn. Rows 6–49 are the work.
+Rows 0–8 are drawn. Rows 9–49 are the work.
 
-| # | pairing | actor | target | silhouette |
-|---|---|---|---|---|
-| 0 | `cat-fish` | cat | fish | oval |
-| 1 | `monkey-banana` | monkey | banana | crescent |
-| 2 | `dog-bone` | dog | bone | dumbbell |
-| 3 | `rabbit-carrot` | rabbit | carrot | tapered |
-| 4 | `bird-seed` | bird | seed | oval, small |
-| 5 | `lamp-star` | lamp | star | star |
-| 6 | `pig-apple` | pig | apple | sphere + stem and leaf |
-| 7 | `mouse-cheese` | mouse | cheese | wedge with holes |
-| 8 | `hen-egg` | hen | egg | ovoid |
+| # | pairing | actor | target | silhouette | state |
+|---|---|---|---|---|---|
+| 0 | `cat-fish` | cat | fish | oval | drawn |
+| 1 | `monkey-banana` | monkey | banana | crescent | drawn |
+| 2 | `dog-bone` | dog | bone | dumbbell | drawn |
+| 3 | `rabbit-carrot` | rabbit | carrot | tapered | drawn |
+| 4 | `bird-seed` | bird | seed | oval, small | drawn |
+| 5 | `lamp-star` | lamp | star | star | drawn |
+| 6 | `pig-apple` | pig | apple | sphere + stem and leaf | **drawn** |
+| 7 | `mouse-cheese` | mouse | cheese | wedge with holes | **drawn** |
+| 8 | `hen-egg` | hen | egg | ovoid | **drawn** |
 | 9 | `sheep-clover` | sheep | clover | three-lobe |
 | 10 | `cow-haybale` | cow | hay bale | bound cylinder |
 | 11 | `horse-horseshoe` | horse | horseshoe | U |
@@ -80,8 +81,9 @@ Rows 0–5 are drawn. Rows 6–49 are the work.
 | 48 | `plane-suitcase` | plane | suitcase | rounded rect + handle |
 | 49 | `robot-bolt` | robot | bolt | hex head |
 
-44 new actors and 44 new targets. Row 13 reuses `sp-flower`, already drawn as
-garden decoration, which makes `bee-flower` the cheapest row on the list.
+41 new actors and 41 new targets still to draw. Row 13 reuses `sp-flower`,
+already drawn as garden decoration, which makes `bee-flower` the cheapest row
+on the list.
 
 ## Shapes that need a deliberate difference
 
@@ -103,13 +105,31 @@ container sprite outside `art.js` is `map.js` reusing `sp-glow` for the miss
 effect. `tint` has no consumer either. Skipping containers takes the job from 132
 sprites to **87**.
 
+## What a row costs, measured on rows 6-8
+
+An actor is not one asset. Each needs, beyond the two `<symbol>`s:
+
+- a `rejoice` keyframe naming its own animation, or the figure celebrates by
+  standing still — `.rejoice` sets duration and timing but no `animation-name`;
+- a `let-down` composite rule pairing `letDown` with the figure's own keyframe.
+  Without it the base rule still greys and shrinks the figure, so the omission
+  is invisible until someone looks for the gesture;
+- moving parts wired to the shared properties (`--ear`, `--tail`, `--wing`,
+  `--joy`, `--mouth`, `--beak`), each absorbing its own geometry's sign so a
+  keyframe reads the same on every animal. The pig is the case worth copying:
+  its tail is a corkscrew, so it scales on `--tail` instead of rotating, and it
+  stops at -40deg because -90deg would collapse the curl to nothing.
+
+No new `@property` registration was needed for three figures, which suggests the
+existing vocabulary covers most animals. A comb or a shell may need one.
+
 ## Draw order
 
 0. **No new art.** `lamp-star` is drawn and unused — a cover brief turns it into
    level six. Fill the two holes in `../levels/prompts.md` while there: the
    Character reference table stops at bird and seed, and the container paragraph
    lists only three. That table is the palette contract every prompt inherits.
-1. **Rows 6–15, farm and house.** Do `pig-apple` completely first as the template.
+1. **Rows 6–15, farm and house.** Rows 6–8 are done; `pig-apple` is the template.
 2. **Rows 16–25, woodland.** Where the interesting silhouettes are; build the
    7-band on it.
 3. **Rows 26–35, water.** Ring, cube, triangle, fan — the corner-heavy shapes the

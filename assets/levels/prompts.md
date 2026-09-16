@@ -129,13 +129,25 @@ finishing is risky.
 | Banana | `sp-banana` | peel `#f7d84a`, crease `#e0b92c`, stem `#7c6420` |
 | Dog | `sp-dog` | body `#c08f6a`, head `#d6a479`, ears and tail `#a2724f`, muzzle `#f4e0c8`, nose `#3a2f28`, features `#33291f`, tongue `#e8748a` |
 | Bone | `sp-bone` | body `#f2ead6`, shading `#d8cdb2` |
-| Rabbit | `sp-rabbit` | body `#f3f0ea`, head `#fbf9f4`, ear outer `#e6e1d8`, ear lining `#f2b8c0`, nose `#e88a9a`, whiskers `#b7ae9e` |
+| Rabbit | `sp-rabbit` | body `#f3f0ea`, head `#fbf9f4`, ear outer `#e6e1d8`, ear lining `#f2b8c0`, nose `#e88a9a`, whiskers `#b7ae9e`, features `#33291f` |
 | Carrot | `sp-carrot` | root `#f0862f`, shadow side `#e0741f`, ridges `#c9611a`, leaves `#54a84b` / `#63bd57` / `#4a9a42` |
 | Bird | `sp-bird` | head `#7cc0ef`, body `#5ba8e0`, wing and tail `#4a8fc9`, beak and legs `#f5a24a`, eye `#28323c` |
 | Seed | `sp-seed` | husk `#f0cf90`, shading `#d9a94f` |
+| Lamp | `sp-lamp` | shade `#e0574f` / `#c8443d`, bulb `#ffe9a8`, lit `#fff6d0`, unlit `#9a9083`, rays `#ffd469`, stem `#8a6a5a`, base `#7a5b4c` |
+| Star | `sp-star` | point `#ffd44d`, inner `#ffe796` |
+| Pig | `sp-pig` | body `#f0a3ad`, head `#f4b3bc`, ear `#e894a0` with `#f6c2c9` lining, snout `#e88a9a` with `#b85f70` nostrils, trotters and tail `#e08b98`, features `#3a2830` |
+| Apple | `sp-apple` | skin `#d6453f`, shaded side `#b8332e`, highlight `#f08a84`, stem `#7a4a2a`, leaf `#58a84b` |
+| Mouse | `sp-mouse` | body `#a8adb5`, head `#b6bcc4`, muzzle `#c4c9d0`, ear lining and tail `#f0b8c0`, whiskers `#8f949b`, features `#2e2a2c` |
+| Cheese | `sp-cheese` | face `#f2c94c`, rind `#e0ac30`, cut top `#f7dd8c`, holes `#dba82c` |
+| Hen | `sp-hen` | body `#cf7a4a`, head `#dc8b58`, wing and tail `#b8613a`, wing bar `#f0d8b8`, comb and wattle `#d8443c`, beak and legs `#f2b03c`, eye `#2c2620` |
+| Egg | `sp-egg` | shell `#d9b48c`, shaded side `#c39a70`, highlight `#f0dcc0` |
 
-Containers, if a brief needs one: bowl `#7fc8e8` with `#bfe6f5` water, basket
-`#a5702f` / `#c98d4e`, garden bed `#8b5e3c` soil with `#54a84b` growth.
+Containers, if a brief needs one: bowl `#7fc8e8` / `#a8ddf2` with `#bfe6f5`
+water, dog bowl `#c07f4c` / `#d99a63` / `#f0c9a0`, basket `#a5702f` / `#c98d4e`,
+garden bed `#8b5e3c` / `#6f4a2e` soil with `#54a84b` growth, nest `#7d5528` /
+`#8c6231` / `#a9773f`, glow `#ffd44d` / `#ffe796`. Pairings from
+`pig-apple` on carry no container at all — the board delivers to the figures
+themselves, so there is nothing for a brief to place.
 
 Every figure is drawn **facing the viewer or three-quarter**, upright, with a large
 head relative to the body — the sprite proportions. Not naturalistic animals.

@@ -1,5 +1,7 @@
 /**
- * pairings.js — the six phase-one object pairings.
+ * pairings.js — the object pairings.
+ *
+ * `assets/sprites/expansion-plan.md` is the item list this grows along.
  *
  * `source` is the actor group (cats, monkeys...), `target` is the counted
  * group (fish, bananas...). `container` is the pairing's environment element —
@@ -7,6 +9,7 @@
  * the source figures themselves, and a container in the middle would name a
  * destination they never travel to. Kept because it belongs to the pairing.
  * `familiarity` orders introduction: lower numbers are shown first.
+ * `container` is null from row six on — see the note on the first such row.
  */
 
 export const PAIRINGS = [
@@ -57,6 +60,33 @@ export const PAIRINGS = [
 		container: 'sp-glow',
 		familiarity: 5,
 		tint: '#ffd44d',
+	},
+	{
+		// Rows 6 onward carry no container: the field has no consumer, and the
+		// board delivers targets to the figures themselves, so inventing a bowl
+		// for each new pair would be drawing nobody looks at.
+		id: 'pig-apple',
+		source: 'sp-pig',
+		target: 'sp-apple',
+		container: null,
+		familiarity: 6,
+		tint: '#d6453f',
+	},
+	{
+		id: 'mouse-cheese',
+		source: 'sp-mouse',
+		target: 'sp-cheese',
+		container: null,
+		familiarity: 7,
+		tint: '#f2c94c',
+	},
+	{
+		id: 'hen-egg',
+		source: 'sp-hen',
+		target: 'sp-egg',
+		container: null,
+		familiarity: 8,
+		tint: '#d9b48c',
 	},
 ];
 

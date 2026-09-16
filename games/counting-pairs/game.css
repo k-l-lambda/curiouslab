@@ -508,6 +508,40 @@ body {
 	100% { --glow: 1; --tilt: 0deg; }
 }
 
+/* A pig's tail is a corkscrew, so --tail tightens the curl here instead of
+   swinging a line — the same property, absorbed by this drawing's own geometry
+   the way the convention above asks. */
+.s-pig.rejoice { animation-name: pigJoy; }
+@keyframes pigJoy {
+	0% { --tail: 0deg; --ear: 0deg; --joy: 0; --mouth: 1; }
+	28% { --tail: 60deg; --ear: 14deg; --joy: 1; --mouth: 2.2; }
+	56% { --tail: 30deg; --ear: 6deg; --joy: 1; --mouth: 2.2; }
+	82% { --tail: 58deg; --ear: 14deg; --joy: 1; --mouth: 2.2; }
+	100% { --tail: 46deg; --ear: 10deg; --joy: 1; --mouth: 1.9; }
+}
+
+/* The ears are most of the mouse, so the gesture is theirs: they swing wide and
+   the bare tail lifts behind. */
+.s-mouse.rejoice { animation-name: mouseJoy; }
+@keyframes mouseJoy {
+	0% { --ear: 0deg; --tail: 0deg; --joy: 0; }
+	26% { --ear: 26deg; --tail: 30deg; --joy: 1; }
+	54% { --ear: 10deg; --tail: 10deg; --joy: 1; }
+	80% { --ear: 24deg; --tail: 28deg; --joy: 1; }
+	100% { --ear: 18deg; --tail: 22deg; --joy: 1; }
+}
+
+/* A hen bustles rather than flies: a fast short wing, the beak open, tail up. */
+.s-hen.rejoice { animation-name: henJoy; }
+@keyframes henJoy {
+	0% { --wing: 0deg; --tail: 0deg; --joy: 0; --beak: 0; }
+	18% { --wing: 34deg; --tail: 20deg; --joy: 1; --beak: .7; }
+	36% { --wing: -6deg; --tail: 12deg; --joy: 1; --beak: .25; }
+	54% { --wing: 34deg; --tail: 20deg; --joy: 1; --beak: .7; }
+	72% { --wing: -4deg; --tail: 14deg; --joy: 1; --beak: .25; }
+	100% { --wing: 20deg; --tail: 16deg; --joy: 1; --beak: .45; }
+}
+
 /* Disappointment, per figure. The shared turn-away above carries the body and
    the grey; these carry the parts, so a row still reads as one group reacting
    the same way while each figure does it in its own manner. Both animations
@@ -519,6 +553,9 @@ body {
 .obj.let-down.s-rabbit { animation: letDown .72s ease both, rabbitDown .72s ease both; }
 .obj.let-down.s-bird { animation: letDown .72s ease both, birdDown .72s ease both; }
 .obj.let-down.s-lamp { animation: letDown .72s ease both, lampDown .72s ease both; }
+.obj.let-down.s-pig { animation: letDown .72s ease both, pigDown .72s ease both; }
+.obj.let-down.s-mouse { animation: letDown .72s ease both, mouseDown .72s ease both; }
+.obj.let-down.s-hen { animation: letDown .72s ease both, henDown .72s ease both; }
 
 /* Ears flat, tail down: the pose a cat takes when it has had enough. */
 @keyframes catDown {
@@ -557,6 +594,26 @@ body {
 	30% { --dim: .85; --tilt: 12deg; --glow: 0; }
 	78% { --dim: .85; --tilt: 12deg; --glow: 0; }
 	100% { --dim: 0; --tilt: 0deg; }
+}
+/* The curl goes slack. It stops at -40deg rather than further: the pig's tail
+   scales by 1 + --tail/90deg, so -90deg would collapse it to nothing and the
+   tail would vanish instead of drooping. */
+@keyframes pigDown {
+	30% { --ear: -26deg; --tail: -40deg; --mouth: -1.1; }
+	78% { --ear: -26deg; --tail: -40deg; --mouth: -1.1; }
+	100% { --ear: 0deg; --tail: 0deg; --mouth: 1; }
+}
+/* Ears pinned back flat, which on a mouse is the whole of it. */
+@keyframes mouseDown {
+	30% { --ear: -34deg; --tail: -18deg; }
+	78% { --ear: -34deg; --tail: -18deg; }
+	100% { --ear: 0deg; --tail: 0deg; }
+}
+/* Wing tucked, tail down, beak shut. */
+@keyframes henDown {
+	30% { --wing: -14deg; --tail: -16deg; --beak: 0; }
+	78% { --wing: -14deg; --tail: -16deg; --beak: 0; }
+	100% { --wing: 0deg; --tail: 0deg; }
 }
 
 /* Equation, numbers and symbols only, shown after a correct answer. */

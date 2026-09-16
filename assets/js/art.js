@@ -230,6 +230,142 @@ const SPRITES = `
   <polygon points="50,22 57,40 74,41 60,52 65,70 50,59 35,70 40,52 26,41 43,40" fill="#ffe796"/>
 </symbol>
 
+<symbol id="sp-pig" viewBox="0 0 100 100">
+  <!-- The tail is the pig's own version of the shared --tail: a corkscrew, so
+       raising it tightens the curl rather than swinging a line. It scales about
+       the rump, which keeps the root attached while the tip travels. -->
+  <path d="M74 74 q12 -2 8 -10 q-4 -7 -10 -2" fill="none" stroke="#e08b98" stroke-width="5"
+    stroke-linecap="round"
+    style="scale: calc(1 + var(--tail, 0deg) / 90deg); transform-origin: 74px 74px"/>
+  <g style="rotate: var(--ear, 0deg); transform-origin: 34px 34px">
+    <path d="M30 34 L22 12 L44 24 Z" fill="#e894a0"/>
+    <path d="M31 31 L27 19 L38 25 Z" fill="#f6c2c9"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 62px 34px">
+    <path d="M66 34 L74 12 L52 24 Z" fill="#e894a0"/>
+    <path d="M65 31 L69 19 L58 25 Z" fill="#f6c2c9"/>
+  </g>
+  <ellipse cx="48" cy="72" rx="25" ry="21" fill="#f0a3ad"/>
+  <circle cx="48" cy="40" r="22" fill="#f4b3bc"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="39" cy="35" r="3.4" fill="#3a2830"/>
+    <circle cx="57" cy="35" r="3.4" fill="#3a2830"/>
+  </g>
+  <g fill="none" stroke="#3a2830" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M35 36 q4 -5 8 0"/>
+    <path d="M53 36 q4 -5 8 0"/>
+  </g>
+  <!-- The snout is the pig's whole face: a flat disc with two nostrils, set low
+       so the eyes above it still have room. -->
+  <ellipse cx="48" cy="50" rx="13" ry="10" fill="#e88a9a"/>
+  <ellipse cx="43" cy="50" rx="2.6" ry="3.4" fill="#b85f70"/>
+  <ellipse cx="53" cy="50" rx="2.6" ry="3.4" fill="#b85f70"/>
+  <path d="M40 60 q8 6 16 0" fill="none" stroke="#3a2830" stroke-width="2.4" stroke-linecap="round"
+    style="scale: 1 var(--mouth, 1); transform-origin: 48px 60px"/>
+  <g fill="#e08b98">
+    <rect x="34" y="86" width="9" height="10" rx="4"/>
+    <rect x="53" y="86" width="9" height="10" rx="4"/>
+  </g>
+</symbol>
+
+<symbol id="sp-apple" viewBox="0 0 100 100">
+  <!-- A sphere with a dip at the top, not a circle: the dip and the stem are
+       what keep ten of these countable where ten plain circles would smear. -->
+  <path d="M50 26 q26 -4 30 26 q4 30 -30 40 q-34 -10 -30 -40 q4 -30 30 -26 Z" fill="#d6453f"/>
+  <path d="M50 26 q26 -4 30 26 q3 22 -16 34 q10 -30 -14 -60 Z" fill="#b8332e"/>
+  <path d="M38 40 q6 -8 14 -7" fill="none" stroke="#f08a84" stroke-width="4" stroke-linecap="round"/>
+  <path d="M50 28 q-2 -12 4 -18" fill="none" stroke="#7a4a2a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M54 16 q16 -6 20 6 q-16 8 -20 -6 Z" fill="#58a84b"/>
+</symbol>
+
+<symbol id="sp-mouse" viewBox="0 0 100 100">
+  <!-- A long bare tail: it lifts as one curve about the rump. -->
+  <path d="M70 78 q22 4 18 -16" fill="none" stroke="#f0b8c0" stroke-width="4.4"
+    stroke-linecap="round"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 70px 78px"/>
+  <!-- Ears far larger than the head is wide, which is the mouse's silhouette.
+       They swivel about the head's edge so a small angle carries them out. -->
+  <g style="rotate: var(--ear, 0deg); transform-origin: 40px 40px">
+    <circle cx="28" cy="30" r="15" fill="#a8adb5"/>
+    <circle cx="28" cy="30" r="9" fill="#f0b8c0"/>
+  </g>
+  <g style="rotate: calc(-1 * var(--ear, 0deg)); transform-origin: 60px 40px">
+    <circle cx="72" cy="30" r="15" fill="#a8adb5"/>
+    <circle cx="72" cy="30" r="9" fill="#f0b8c0"/>
+  </g>
+  <ellipse cx="50" cy="72" rx="23" ry="20" fill="#a8adb5"/>
+  <!-- The head tapers to the nose, so the muzzle is a separate wedge rather
+       than a circle: a round-headed mouse reads as a bear cub. -->
+  <circle cx="50" cy="48" r="19" fill="#b6bcc4"/>
+  <path d="M50 40 q16 6 14 16 q-8 6 -14 -2 Z" fill="#c4c9d0"/>
+  <circle cx="65" cy="55" r="3.2" fill="#f0b8c0"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="45" cy="44" r="3.4" fill="#2e2a2c"/>
+    <circle cx="58" cy="42" r="3.4" fill="#2e2a2c"/>
+  </g>
+  <g fill="none" stroke="#2e2a2c" stroke-width="2.6" stroke-linecap="round"
+    style="opacity: var(--joy, 0)">
+    <path d="M41 45 q4 -5 8 0"/>
+    <path d="M54 43 q4 -5 8 0"/>
+  </g>
+  <g stroke="#8f949b" stroke-width="1.6" stroke-linecap="round" opacity=".85">
+    <path d="M62 58 L78 56"/><path d="M62 61 L77 64"/>
+    <path d="M60 55 L74 49"/>
+  </g>
+</symbol>
+
+<symbol id="sp-cheese" viewBox="0 0 100 100">
+  <!-- A wedge, and the holes are the point: they make it unmistakably cheese at
+       card size, where a plain yellow triangle would read as a tent. -->
+  <path d="M14 74 L14 40 L86 62 L86 78 q0 6 -6 6 L20 84 q-6 0 -6 -6 Z" fill="#e0ac30"/>
+  <path d="M14 40 L86 62 L86 66 L14 52 Z" fill="#f7dd8c"/>
+  <path d="M18 72 L18 46 L82 66 L82 76 q0 4 -4 4 L22 79 q-4 0 -4 -4 Z" fill="#f2c94c"/>
+  <g fill="#dba82c">
+    <circle cx="34" cy="66" r="5.2"/>
+    <circle cx="52" cy="72" r="4"/>
+    <circle cx="68" cy="72" r="3"/>
+    <circle cx="44" cy="57" r="2.6"/>
+  </g>
+</symbol>
+
+<symbol id="sp-hen" viewBox="0 0 100 100">
+  <!-- The comb and wattle are what say hen rather than bird, and they are the
+       one place a red this saturated appears on the figure — so they stay put
+       while the shared parts (--wing, --beak, --tail) do the moving. -->
+  <path d="M70 62 L92 46 q0 18 -4 26 Z" fill="#b8613a"
+    style="rotate: calc(-1 * var(--tail, 0deg)); transform-origin: 70px 62px"/>
+  <ellipse cx="46" cy="62" rx="27" ry="24" fill="#cf7a4a"/>
+  <path d="M40 56 q20 -6 26 16 q-18 8 -26 -16 Z" fill="#b8613a"
+    style="rotate: calc(-1 * var(--wing, 0deg)); transform-origin: 40px 56px"/>
+  <path d="M42 58 q14 -3 18 11" fill="none" stroke="#f0d8b8" stroke-width="3" stroke-linecap="round"
+    style="rotate: calc(-1 * var(--wing, 0deg)); transform-origin: 40px 56px"/>
+  <circle cx="34" cy="34" r="16" fill="#dc8b58"/>
+  <!-- Three lobes, drawn as one path so the whole comb sits as a unit. -->
+  <path d="M24 20 q2 -12 10 -6 q4 -10 12 -2 q6 -6 8 4 q-14 6 -30 4 Z" fill="#d8443c"/>
+  <path d="M22 44 q-4 8 2 10 q6 -2 4 -10 Z" fill="#d8443c"/>
+  <path d="M18 34 L4 39 L18 44 Z" fill="#f2b03c"
+    style="scale: 1 calc(1 + var(--beak, 0)); transform-origin: 4px 39px"/>
+  <g style="opacity: calc(1 - var(--joy, 0))">
+    <circle cx="31" cy="31" r="3.6" fill="#2c2620"/>
+    <circle cx="32.3" cy="30" r="1.2" fill="#fff"/>
+  </g>
+  <path d="M27 32 q4 -5 8 0" fill="none" stroke="#2c2620" stroke-width="2.8" stroke-linecap="round"
+    style="opacity: var(--joy, 0)"/>
+  <g stroke="#f2b03c" stroke-width="3.4" stroke-linecap="round">
+    <path d="M40 85 L38 95"/><path d="M54 85 L56 95"/>
+  </g>
+</symbol>
+
+<symbol id="sp-egg" viewBox="0 0 100 100">
+  <!-- Brown, not cream: a pale egg on --panel or --slot loses its own outline,
+       and this one has to be countable on both. Rounder and fatter than
+       sp-seed, whose teardrop is the shape it must not be confused with. -->
+  <path d="M50 12 q20 18 20 40 a20 24 0 0 1 -40 0 q0 -22 20 -40 Z" fill="#d9b48c"/>
+  <path d="M50 12 q20 18 20 40 a20 24 0 0 1 -8 18 q8 -34 -12 -58 Z" fill="#c39a70"/>
+  <ellipse cx="42" cy="40" rx="5" ry="8" fill="#f0dcc0" opacity=".8" transform="rotate(-16 42 40)"/>
+</symbol>
+
 <symbol id="sp-bowl" viewBox="0 0 100 100">
   <ellipse cx="50" cy="40" rx="44" ry="11" fill="#bfe6f5"/>
   <path d="M6 40 q6 46 44 46 q38 0 44 -46 Z" fill="#7fc8e8"/>
