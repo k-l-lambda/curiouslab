@@ -90,8 +90,8 @@ const PATHS = {
  *
  * Spread with a margin at each end so the first and last node are not half off
  * the edge, and so the path visibly continues past the last one — the ladder
- * stops at three levels for now, and the path saying "there is more this way" is
- * the cheapest possible promise.
+ * ends where it ends, and the path saying "there is more this way" is the
+ * cheapest possible promise.
  */
 function stopsFor (count) {
 	if (count === 1)

@@ -98,16 +98,35 @@ The game opens on a map: a winding path with a level at each stop. Levels past
 the child's progress are locked. Picking one starts a **run** — a fixed number of
 questions drawn from that level's own item set — which ends in a result screen.
 
-| Level | Band | Content | Item set | Per run | Forms |
+| Level | Band | Content | Item set | Per run | Where each mode starts |
 |---|---|---|---|---|---|
-| 1 | 👌 up to 3 | counting | 3 | 3 | cartoon |
-| 2 | 👌 up to 3 | counting, addition | 6 | 5 | cartoon |
-| 3 | 🖐 up to 5 | counting, addition | 15 | 6 | cartoon, numeral cards |
+| 1 | 👌 up to 3 | counting | 3 | 3 | counting: cartoon |
+| 2 | 👌 up to 3 | counting, addition | 6 | 5 | both: cartoon |
+| 3 | 👌 up to 3 | addition, subtraction | 6 | 8 | addition: numeral cards · subtraction: cartoon |
+| 4 | 🖐 up to 5 | counting, addition | 15 | 10 | counting: cartoon · addition: numeral cards |
+| 5 | 🖐 up to 5 | counting, addition, subtraction | 25 | 10 | counting and subtraction: cartoon · addition: numeral cards |
 
 The hand sign marks the number range a stretch of the path covers. An item set is
-enumerated, not a random range: level 3's fifteen are `count 1..5` plus every
-`a + b ≤ 5`. Because a run asks fewer questions than the set holds, coming back
-is how a level is finished.
+enumerated, not a random range: level 5's twenty-five are `count 1..5`, every
+`a + b ≤ 5`, and every take-away under five. Because a run usually asks fewer
+questions than the set holds, coming back is how a level is finished.
+
+Level 3 is the exception and asks *more* questions than it has items — eight over
+six — because there is no way to ask eight distinct sums and take-aways under
+three. It repeats two, deliberately: a small set is what makes repetition useful.
+
+**Presentation is declared per mode, not per level**, which is the level table's
+difficulty knob. A mode's forms are a ladder — cartoon objects with previews,
+then numeral-only answer cards, then bare numerals — and a level says where each
+of its modes joins that ladder. Level 3 starts addition at numeral cards because
+level 2 already had the child answering those same sums with the objects in view,
+while starting its brand-new subtraction at the bottom. A rung above the entry
+opens only once the one below it has been answered correctly.
+
+**Arithmetic is drawn more often than counting** where a level has both, by a
+per-mode weight rather than by whatever proportion the enumeration happens to
+produce. Counting is the ground the levels stand on and is mostly known by the
+time a level pairs the two.
 
 - **Which question comes next** is weighted by how well the child knows each one,
   weakest first, within what the level allows.
@@ -120,7 +139,7 @@ is how a level is finished.
   wearing a star earned by the counting it shares with level 1, and tapping into a
   level and leaving again would light it up just the same.
 - **A question can be lost two ways**: the clock runs out, or the level's error
-  budget does — `maxErrors`, three for all three levels, counted per question
+  budget does — `maxErrors`, three on every level so far, counted per question
   rather than per run. Both mean the same thing, that the child never reached the
   answer, and both raise the same encouragement screen before the run carries on.
   A wrong answer the child then corrects is not a miss; that is what the whole

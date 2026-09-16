@@ -1,9 +1,8 @@
 # Level art briefs
 
 Copy for the generated art behind each level: **one cover still** and **one 5-second
-clear video** per level. The files are not in the repository yet; these briefs are
-what to send to the generators, and they live here so the brief and its output end
-up in the same directory.
+clear video** per level. These briefs are what to send to the generators, and they
+live here so the brief and its output end up in the same directory.
 
 `assets/js/levels.js` stores only the file names. Everything below is for the
 generator and for whoever reviews what comes back — nothing here is read at
@@ -18,13 +17,24 @@ story possible — a turn, a surprise, a resolution. Covers stay stills.
 
 What that changes:
 
-- Each level names two assets: `lN-cover.png` and `lN-clear.mp4`.
+- Each level names two assets: `lN-cover.webp` and `lN-clear.mp4`.
 - The transparent per-part layers the old briefs asked for (a gate to swing, two
   banana piles to slide) are **no longer needed**. The video does that motion.
-- A video generator takes a *prompt plus a start frame*. Every clear video below
-  is written to **start from that level's own cover image**, so the celebration
-  grows out of the picture the child has been looking at on the map instead of
-  cutting to a new scene. Generate the cover first; feed it in as frame one.
+- A video generator takes a *prompt plus a start frame*. **Every clear video starts
+  from its own level's cover image, without exception.** This is the standing rule
+  for all future levels too, not a per-brief choice: the celebration grows out of
+  the picture the child has been looking at on the map, so the cover stops being a
+  thumbnail and becomes the first frame of the story. Generate the cover first,
+  then feed it in as frame one.
+
+  In practice that means sending the cover PNG as a second `content` entry
+  alongside the prompt text, and **dropping `--ratio` from the prompt**: the
+  service takes the output ratio from the first frame and rejects a request that
+  also states one. `--resolution` is still needed.
+
+  The one exception on disk is `l1-clear.mp4`, generated before this was known to
+  be possible. It is left as it is rather than reshot for consistency's sake, but
+  anything regenerated from here on follows the rule.
 
 ## Story rules for a 5-second clip
 
@@ -33,14 +43,42 @@ below is written as three beats with a second-count, because a story prompt
 without timing comes back as one continuous drift.
 
 The surprise has to be legible to a 3–6 year old with **no words and no sound**,
-which rules out most twists. Three that work at this age, one per level:
+which rules out most twists. Five that work at this age, one per level, and they
+escalate:
 
 1. **The thing you gave them does something back** — the objects the child just
    delivered act on their own. Funny because it breaks the rule that food sits
    still, and it needs no setup.
 2. **The objects do the work themselves** — the same trick raised: they rearrange
    without being carried.
-3. **What looked like the end was a door** — the goal opens onto more.
+3. **The objects build something** — they do not just move, they become a
+   structure that was not there before, and the characters use it.
+4. **What looked like the end was a door** — the goal opens onto more.
+5. **The thing they never did, they finally do** — a capability held back across
+   the whole ladder, spent here.
+
+### Drama: resistance before release
+
+The first drafts of these clips were flat, and the reason was structural rather
+than a matter of degree: the surprise arrived immediately and then simply
+continued. A thing that starts happening at 1.5s and keeps happening until 5.0s
+has no shape, however charming the thing is.
+
+So every clip below is built on **resistance, then release**:
+
+- **Beat one is a try that does not work.** The characters reach and the objects
+  do not move; the gate is pushed and it sticks. About a second, and it is what
+  makes the rest legible as a reversal instead of an event.
+- **Beat two overshoots.** When the release comes it is bigger than the setup
+  asked for — a fountain rather than a slide, a burst rather than a swing.
+- **Beat three lands, with a wobble.** Something teeters and settles. This is
+  where a young child's held breath is let out, and a clip without it reads as
+  merely pleasant.
+
+The wobble must never resolve into loss. Nothing that teeters actually falls,
+nothing breaks, and nobody's things are taken — see the hard rule below. The
+tension is *will it work*, always answered yes, and never *is something bad about
+to happen*.
 
 **One constraint that cuts across all three: the clip may not change how many of
 anything there are.** The child has just built a one-to-one correspondence — three
@@ -69,10 +107,16 @@ finishing is risky.
   it. This applies to every frame of video, including any signage or decoration.
 - Subject centred, generous margins. A cover is cropped to a circle on the map,
   so nothing that matters may sit near a corner.
-- The three covers must read as one set: same light direction (upper left), same
-  outline weight, same background sky.
+- All covers must read as one set: same light direction (upper left), same outline
+  weight, same background sky.
 - Cover: square, at least 1024×1024. Video: square, 5s, loop not required, hold
   the final pose for the last ~0.5s so the ending does not feel cut off.
+- **Covers ship as WebP.** The image endpoint returns PNG, so converting is a step
+  after generation: `Image.open(src).save(dst, 'WEBP', quality=95, method=6)`.
+  It costs about 83% of the file size, and on flat vector fills q95 moves the
+  closest pixel to a named hex by under 4/255 while leaving each colour family's
+  area unchanged — invisible, and worth it for a page a phone has to load. The
+  PNGs are not kept; regenerate from the prompt if an original is ever needed.
 - **Character designs must match the in-game sprites** — the child has just spent
   a whole level with these figures and a different-looking cat is a different cat.
   Exact colours are given per level below, taken from `assets/js/art.js`.
@@ -87,8 +131,12 @@ finishing is risky.
 | Fish | `sp-fish` | body `#5cc3e8`, fins and tail `#2f96c4`, eye `#22333f` on white |
 | Monkey | `sp-monkey` | limbs and ears `#a9723f`, body `#c98a58`, muzzle and belly `#efd0a9`, features `#33291f`, mouth `#8a5c33` |
 | Banana | `sp-banana` | peel `#f7d84a`, crease `#e0b92c`, stem `#7c6420` |
+| Dog | `sp-dog` | body `#c08f6a`, head `#d6a479`, ears and tail `#a2724f`, muzzle `#f4e0c8`, nose `#3a2f28`, features `#33291f`, tongue `#e8748a` |
+| Bone | `sp-bone` | body `#f2ead6`, shading `#d8cdb2` |
 | Rabbit | `sp-rabbit` | body `#f3f0ea`, head `#fbf9f4`, ear outer `#e6e1d8`, ear lining `#f2b8c0`, nose `#e88a9a`, whiskers `#b7ae9e` |
 | Carrot | `sp-carrot` | root `#f0862f`, shadow side `#e0741f`, ridges `#c9611a`, leaves `#54a84b` / `#63bd57` / `#4a9a42` |
+| Bird | `sp-bird` | head `#7cc0ef`, body `#5ba8e0`, wing and tail `#4a8fc9`, beak and legs `#f5a24a`, eye `#28323c` |
+| Seed | `sp-seed` | husk `#f0cf90`, shading `#d9a94f` |
 
 Containers, if a brief needs one: bowl `#7fc8e8` with `#bfe6f5` water, basket
 `#a5702f` / `#c98d4e`, garden bed `#8b5e3c` soil with `#54a84b` growth.
@@ -96,9 +144,14 @@ Containers, if a brief needs one: bowl `#7fc8e8` with `#bfe6f5` water, basket
 Every figure is drawn **facing the viewer or three-quarter**, upright, with a large
 head relative to the body — the sprite proportions. Not naturalistic animals.
 
+Two sprites have a silhouette worth stating outright, because a generator will
+default away from it: the dog's **ears hang long and low** beside its face rather
+than standing up, and the bird is drawn **side-on**, one visible wing, beak in
+profile — it is the only figure in the set that is not front-facing.
+
 ## Level 1 — counting within 3 · cat and fish · accent `#5cc3e8`
 
-**Cover** — `l1-cover.png`
+**Cover** — `l1-cover.webp`
 
 > Flat vector children's picture-book illustration, square. An orange tabby cat
 > sitting upright at the start of a winding cream-coloured path, seen three-quarter
@@ -111,7 +164,7 @@ head relative to the body — the sprite proportions. Not naturalistic animals.
 > path edge. Light from the upper left. Calm and quiet — a beginning, not a party.
 > No text, no numbers, no letters.
 
-**Clear video** — `l1-clear.mp4`, 5s, starts from `l1-cover.png`
+**Clear video** — `l1-clear.mp4`, 5s, starts from `l1-cover.webp`
 
 Twist: *the fish splash the cat.* The cat leans out over the water to say hello, and
 all three fish flip their tails at once and splash it in the face. The cat sits there
@@ -147,7 +200,7 @@ scene is a cat at a pond, not a cat being fed.
 
 ## Level 2 — counting and addition within 3 · monkey and banana · accent `#f7d84a`
 
-**Cover** — `l2-cover.png`
+**Cover** — `l2-cover.webp` *(already generated; unchanged)*
 
 > Flat vector children's picture-book illustration, square. Two small monkeys
 > sitting on either side of a low round-canopied tree, seen three-quarter from the
@@ -162,13 +215,13 @@ scene is a cat at a pond, not a cat being fed.
 The gap between the piles is the whole idea — it is where "put them together"
 happens. Do not draw an operator; the gap says it.
 
-**Clear video** — `l2-clear.mp4`, 5s, starts from `l2-cover.png`
+**Clear video** — `l2-clear.mp4`, 5s, **first frame is `l2-cover.webp`**
 
-Twist: *the bananas do it themselves.* The monkeys reach for the piles, and the
-bananas hop into the middle on their own and stack themselves before either monkey
-gets there. Both monkeys sit back, look at each other, then laugh. The joke is that
-the food did the addition — funny at this age precisely because it breaks the rule
-that food sits still, and it mirrors what the child just did without lecturing.
+Twist: *the bananas do it themselves.* Revised for drama: the first version had
+the bananas leave the ground almost immediately and then simply arrive, which is
+an event and not a story. Now the monkeys try first and fail — they pull at
+bananas that will not budge — and only then does the fruit go off like a fountain
+and land in a tower that nearly topples.
 
 This clip **moves** bananas but never adds or removes one: every banana in the two
 piles ends up in the merged pile. Both monkeys stay too.
@@ -184,20 +237,86 @@ one*, which is the shape of addition, not any particular sum.
 
 > Start from the provided image and keep the same camera, same style, same colours;
 > the camera does not move.
-> **0.0–1.5s** both monkeys lean toward their own banana pile and reach out an arm.
-> **1.5–3.0s** before either can pick anything up, all the bananas hop up off the
-> ground on their own, arc through the air toward the empty patch between them, and
-> land stacked into one neat pile in the middle. Small dust puffs where they land.
-> Both monkeys freeze mid-reach with their arms still out.
-> **3.0–4.5s** the two monkeys sit back, turn their heads to look at each other,
-> then throw both arms up over their heads and curl their tails up; eyes become two
-> happy closed upward arcs. The merged pile gives one small bounce in place.
-> **4.5–5.0s** hold: both arms raised, one pile between them.
+> **0.0–1.2s** both monkeys lean down and grab at their own banana pile with both
+> hands, and pull — the bananas do not move at all. The monkeys pull harder, feet
+> braced, cheeks puffed, and still nothing shifts. One monkey glances at the other,
+> puzzled, ears twitching.
+> **1.2–1.6s** both monkeys let go and sit back on their heels. Beat of complete
+> stillness. Then every banana in both piles gives one small twitch in place.
+> **1.6–3.2s** all the bananas launch straight up off the ground at once like a
+> fountain, far higher than the tree canopy, spinning end over end against the sky,
+> then rain back down into the empty patch between the monkeys and clatter into one
+> tall stack. Both monkeys' heads snap up to follow them and back down again, arms
+> flung out, mouths open.
+> **3.2–4.3s** the tall stack sways hard to the left, then hard to the right, on the
+> edge of toppling; both monkeys throw their hands out toward it, tails rigid. It
+> swings back upright and settles with a small bounce, perfectly stacked, and
+> nothing falls.
+> **4.3–5.0s** both monkeys collapse backward laughing, arms over their heads, tails
+> curled up, eyes as two happy closed upward arcs. Hold: one neat stack between them.
 > Playful and bouncy. No text, no numbers, no letters.
 
-## Level 3 — counting and addition within 5 · rabbit and carrot · accent `#f0862f`
+## Level 3 — addition and subtraction within 3 · dog and bone · accent `#c08f6a`
 
-**Cover** — `l3-cover.png`
+The first level with no counting to fall back on: everything here is arithmetic,
+and it is where subtraction is introduced. Warmer and more physical than the two
+before it — dogs are the loudest figures in the set and this is the level where
+the child stops being shown quantities and starts being asked to work on them.
+
+**Cover** — `l3-cover.webp` *(to generate)*
+
+> Flat vector children's picture-book illustration, square. Two friendly dogs with
+> large round heads and **long ears hanging down low beside their faces**, sitting
+> upright and seen three-quarter from the front, thick rounded dark outlines,
+> minimal shading. Bodies `#c08f6a`, heads `#d6a479`, ears and tails `#a2724f`, pale
+> `#f4e0c8` muzzles, dark `#3a2f28` noses, `#33291f` dot eyes. In front of each dog
+> sits its own shallow cream-coloured dish, and in the middle between them a loose
+> heap of pale bones `#f2ead6` with `#d8cdb2` shading, overlapping and jumbled. A
+> winding cream-coloured path runs from the lower left past the dogs and off to the
+> upper right. Soft blue sky `#eaf4f7`, a few simple green tufts of grass `#3f9e6b`.
+> Light from the upper left. No text, no numbers, no letters, and no plus, minus or
+> equals sign.
+
+Two dishes and one shared heap is the level's grammar drawn directly: each actor
+has a place for something, and there is a supply that has to be worked out. The
+heap must be **jumbled and uncountable** — this level's item set runs across every
+sum and every take-away under three, so any countable number of bones would
+contradict most of the questions the child may have just answered. The dishes,
+being one per dog, are the only thing on the cover it is safe to be able to count.
+
+**Clear video** — `l3-clear.mp4`, 5s, **first frame is `l3-cover.webp`**
+
+Twist: *the objects build something.* The bones do not merely move — they assemble
+into an arch the dogs then run through. It raises level 2's trick one step, and it
+plants the shape that level 4 opens with: a thing you can go through.
+
+Bone count is never stated and never changes: the same jumbled heap becomes the
+arch, every bone still on screen. Both dogs stay.
+
+> Start from the provided image and keep the same camera, same style, same colours;
+> the camera does not move.
+> **0.0–1.2s** both dogs lean forward and nose their dishes toward the heap of
+> bones in the middle, then push at the bones themselves with a paw. Nothing moves.
+> They sit back, heads tilting, long ears swinging forward, and look at each other.
+> **1.2–1.5s** stillness. One bone at the top of the heap rocks once, by itself.
+> **1.5–3.2s** the whole heap lifts off the ground at once and the bones swing up
+> and around each other, clicking together end to end, rising into a tall rounded
+> archway standing over the path between the two dogs — built entirely of the same
+> pale bones. Both dogs scramble backward onto their haunches, ears flying up off
+> their heads, eyes wide, tails going.
+> **3.2–4.2s** the finished arch sways once to the left and once to the right, bones
+> creaking apart at the joints as if it might come down; both dogs freeze mid-crouch.
+> It rocks back, clicks tight, and stands firm. Nothing falls.
+> **4.2–5.0s** both dogs bolt through the arch together, leap off the ground on the
+> far side and land facing the viewer, front paws up, tongues `#e8748a` out, eyes as
+> two happy closed upward arcs, tails a blur. Hold: the two dogs mid-celebration
+> with the bone arch standing behind them and the path running on through it.
+> Boisterous and warm. No text, no numbers, no letters.
+
+## Level 4 — counting and addition within 5 · rabbit and carrot · accent `#f0862f`
+
+**Cover** — `l4-cover.webp` *(already generated as the old level 3 cover; unchanged
+art, renamed file)*
 
 > Flat vector children's picture-book illustration, square. A white rabbit standing
 > upright in front of a closed wooden gate, seen three-quarter from the front, large
@@ -210,51 +329,126 @@ one*, which is the shape of addition, not any particular sum.
 > `#eaf4f7`. Light from the upper left. No text, no numbers, no letters.
 
 The gate is doing narrative work: this is the first level of the 🖐 within-five
-region, so the cover should read as arriving somewhere new.
+region, so the cover should read as arriving somewhere new. That is why this art
+moved here from level 3 when the ladder was restructured — the "somewhere new"
+it promises is the new number range, and level 3 no longer starts one.
 
-**Clear video** — `l3-clear.mp4`, 5s, starts from `l3-cover.png`
+**Clear video** — `l4-clear.mp4`, 5s, **first frame is `l4-cover.webp`**
 
-Twist: *what looked like the end was a door.* The rabbit gathers its carrots and
-the clip looks finished — then the gate keeps swinging and reveals that the path
-runs on much further, with more gates along it going into the distance. The reward
-is not the carrots; it is finding out there is more ahead. This is the last level
-that exists, so the clip is also the honest promise that the ladder continues.
+Twist: *what looked like the end was a door.* Revised for drama: the gate used to
+simply swing open, which gave the clip no cost to pay before its reward. Now it is
+stuck, and the rabbit has to throw itself at the thing twice before it bursts.
 
 The carrot count here must be **deliberately unreadable**: a bundled armful, roots
 overlapping, no clean silhouette to count. Levels 1 and 2 pin their counts because
-each has one small answer on screen; level 3's item set spans `count 1..5` and every
+each has one small answer on screen; level 4's item set spans `count 1..5` and every
 `a + b ≤ 5`, so *any* countable number of carrots would contradict most of the
-questions the child might have just answered. Ambiguity is the correct choice here,
-and it is the only place in the three clips where that is true.
+questions the child might have just answered. Ambiguity is the correct choice here.
 
 > Start from the provided image and keep the same camera, same style, same colours;
 > the camera does not move.
-> **0.0–1.5s** the wooden gate swings open toward the viewer, pivoting on its left
-> edge; the rabbit's ears go up and it hops through into the carrot patch.
-> **1.5–3.0s** the rabbit pulls up carrots and gathers an armful of them, orange
-> roots `#f0862f` with green tops sticking out, then turns to face the viewer with
-> its ears straight up and eyes as two happy closed upward arcs. It looks like the
-> ending.
-> **3.0–4.5s** the gate keeps swinging further open and reveals that the path does
-> not stop here — it winds far away into the distance past two more small wooden
-> gates, getting smaller toward the horizon. The rabbit turns its head to look down
-> the long path, ears tipping forward with interest.
-> **4.5–5.0s** hold: rabbit holding its carrots, looking down the open path.
-> Warm and expansive at the end rather than triumphant. No text, no numbers, no
+> **0.0–1.3s** the rabbit puts both front paws on the wooden gate and pushes. The
+> gate gives a finger's width and stops, stuck. The rabbit pushes again, shoulder
+> down, back legs digging in, ears flattening back with the effort — the gate creaks
+> but does not open.
+> **1.3–1.6s** the rabbit steps back, drops its ears, and looks at the gate. Beat.
+> **1.6–3.0s** it throws itself forward and the gate bursts wide open, swinging fast
+> on its left edge and rebounding off the fence post; the rabbit tumbles through in a
+> roll, ears flying, and comes up on its feet in the carrot patch. Loose soil and a
+> few green tops fly up around it.
+> **3.0–4.0s** the rabbit pulls up an armful of carrots, orange roots `#f0862f` with
+> green tops sticking out every direction, hugs them to its chest and turns to face
+> the viewer, ears straight up, eyes as two happy closed upward arcs. It looks like
+> the ending.
+> **4.0–4.7s** behind it the gate, still swinging, comes all the way round and
+> reveals that the path does not stop here: it winds far away into the distance past
+> two more small wooden gates, getting smaller toward the horizon, the sky opening
+> up wider and warmer above it. The rabbit's ears tip forward and it turns its head
+> to look down the long path.
+> **4.7–5.0s** hold: rabbit holding its carrots, looking down the open road.
+> Effortful at the start, expansive at the end rather than triumphant. No text, no
+> numbers, no letters.
+
+## Level 5 — counting, addition and subtraction within 5 · bird and seed · accent `#5ba8e0`
+
+The top of the ladder as it stands: every mode, the widest item set, and the level
+that takes the most returning to finish. Its clip has to be the biggest of the
+five, because it is the one a child arrives at last.
+
+**Cover** — `l5-cover.webp` *(to generate)*
+
+> Flat vector children's picture-book illustration, square. Three small round
+> songbirds drawn **side-on in profile, each with one visible wing**, standing on
+> the ground among a wide scatter of pale seeds, large round heads, thick rounded
+> dark outlines, minimal shading. Heads `#7cc0ef`, bodies `#5ba8e0`, wings and tails
+> `#4a8fc9`, orange `#f5a24a` beaks and legs, `#28323c` eyes with a small white
+> highlight. The birds overlap each other so they do not form a countable row. Pale
+> gold seeds `#f0cf90` with `#d9a94f` shading scattered loosely across the ground.
+> A winding cream-coloured path runs from the lower left away to the upper right and
+> off toward a low horizon, under a tall open sky `#eaf4f7` shading to `#d9ecf2` at
+> the top, with room above the birds. A few simple green tufts `#3f9e6b`. Light from
+> the upper left. No text, no numbers, no letters.
+
+Two things this cover has to do that the others do not. The birds must **overlap
+into a clump** rather than line up — this level's item set is every count to five
+and every sum and take-away under five, the widest of the ladder, so a countable
+group would contradict more questions here than anywhere else. And it needs
+**empty sky in the upper two thirds**, because the clip's payoff happens up there
+and the camera cannot move to find room.
+
+**Clear video** — `l5-clear.mp4`, 5s, **first frame is `l5-cover.webp`**
+
+Twist: *the thing they never did, they finally do.* Every figure across the whole
+ladder has stayed on the ground — cats sat, monkeys sat, dogs ran, the rabbit
+hopped. These are birds, and they have wings that have not once been used. Level 5
+spends that: they fly. It is the only twist in the set that pays off something the
+child has been looking at since level 1 without knowing it was loaded.
+
+The birds must stay **in frame** — rising, wheeling, overlapping — and not leave.
+A bird flying out of shot reads as one fewer bird, which is the one thing these
+clips may not say. The seeds stay on the ground, untouched and uncounted.
+
+> Start from the provided image and keep the same camera, same style, same colours;
+> the camera does not move.
+> **0.0–1.3s** the three birds peck at the seeds on the ground, hop a step, and one
+> crouches and gives a small flap — a hop that gets nowhere, feet never leaving the
+> ground. It tries again, wing beating hard, and stays down. It settles and looks at
+> the others.
+> **1.3–1.6s** all three go completely still at once and turn their heads to look
+> straight up at the open sky.
+> **1.6–3.4s** all three launch upward together, wings opening wide for the first
+> time, and climb into the empty sky above the seed patch — bodies overlapping and
+> crossing each other, wings at full stretch, far bigger in the frame than they were
+> on the ground. The scattered seeds and the path stay exactly where they were below.
+> **3.4–4.4s** the three wheel round together in one wide turn high in the frame,
+> one bird dipping and catching itself, and the sky behind them warms from pale blue
+> into a soft amber `#e8a33d` glow along the low horizon, the path below lit up and
+> running away to it.
+> **4.4–5.0s** hold: the three birds hanging in the bright sky, wings spread, eyes
+> as happy closed arcs, the lit path running to the horizon far below them.
+> Soaring and wide open — the biggest moment of the five. No text, no numbers, no
 > letters.
 
-## Continuity across the three clips
+## Continuity across the five clips
 
-The three are not independent. Read in order they should feel like the same world
-opening up: a quiet pool, then a noisy game, then a road out.
+The five are not independent. Read in order they should feel like the same world
+opening up: a quiet pool, then a noisy game, then something built, then a road out,
+then the sky.
 
-- The **path** appears in all three and always runs the same direction, lower left
+- The **path** appears in all five and always runs the same direction, lower left
   to upper right. It is the same path as the map's ribbon.
 - **Light stays upper-left** in every frame of every clip. A generator will drift
   on this; check it on delivery.
-- Each clip ends **wider than it started** — one more fish, one merged pile, one
-  long road — because the reward for finishing a level should feel like more, not
-  like a door closing.
+- Each clip ends **wider than it started** — one more fish, one merged pile, an
+  arch to run through, a long road, open sky — because the reward for finishing a
+  level should feel like more, not like a door closing.
+- The **scale of the reversal grows** with the ladder: food that wiggles, then food
+  that flies, then food that builds, then a wall that turns out to be a door, then
+  the ground itself let go of. A child replaying level 1 after level 5 should feel
+  level 1 as small, and that is correct.
+- **Every clip starts from its own cover.** With the exception of `l1-clear.mp4`,
+  which predates the technique, frame one of each video is the still the child taps
+  on the map.
 
 ## How the code uses these files
 
@@ -284,7 +478,7 @@ could have landed in the repository and still not reached a child.
   often a clip will be seen: early on, nearly every run plays it; on a level being
   mastered it becomes rare; on a mastered one it returns for every clean run.
 
-Worth keeping in mind when writing a fourth level: the board dims all but one
+Worth keeping in mind when writing any further level: the board dims all but one
 distractor after two errors, so with `maxErrors: 3` the last try is a choice
 between two cards. The budget is reachable, but it is not a likely ending — which
 is the right way round for a game a small child is playing.

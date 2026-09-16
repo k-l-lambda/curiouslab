@@ -65,9 +65,43 @@ const FORMS_BY_MODE = {
 	sub: [FORMS.FULL, FORMS.PROMPT, FORMS.BARE],
 };
 
-/** The forms a level may ask for a mode: its own declaration, minus the impossible. */
+/**
+ * The forms a level may ask for a mode, hardest last.
+ *
+ * A level declares `forms` per mode rather than once for the whole level,
+ * because the modes do not arrive at the same time and so are not at the same
+ * stage. Level three asks addition with numeral-only cards from its very first
+ * question — the child already earned that with objects in level two — while
+ * asking its brand-new subtraction with the objects still shown. One flat list
+ * could not say that.
+ *
+ * The declaration is filtered against what the mode can actually be asked in,
+ * so a level cannot accidentally request a bare counting question.
+ */
 export const allowedForms = (level, mode) =>
-	level.forms.filter(form => FORMS_BY_MODE[mode].includes(form));
+	(level.forms[mode] ?? []).filter(form => FORMS_BY_MODE[mode].includes(form));
+
+/**
+ * The modes a level asks, in the order its item set is built.
+ *
+ * Read off the `forms` map rather than declared twice, so a mode cannot exist
+ * with no form to ask it in, or a form ladder with no mode to use it.
+ */
+export const modesOf = level => Object.keys(level.forms)
+	.filter(mode => allowedForms(level, mode).length > 0);
+
+/**
+ * How much more often a mode is drawn than plain counting.
+ *
+ * Arithmetic is the thing being taught; counting is the ground it stands on and
+ * is mostly already known by the time a level pairs the two. Without this, a
+ * level's mix is decided purely by how many items each mode contributes, which
+ * is an accident of the arithmetic — level four holds five counting questions
+ * against ten additions for no reason anyone chose.
+ */
+export const MODE_WEIGHT = {count: 1, add: 2, sub: 2};
+
+export const modeWeightOf = mode => MODE_WEIGHT[mode] ?? 1;
 
 /** Does this form show countable objects? Drives the board's layout choice. */
 export const showsObjects = form => form !== FORMS.BARE;
@@ -98,52 +132,106 @@ export const showsPreviews = form => form === FORMS.FULL;
  * the cover art is drawn around these two figures, so the map needs to know
  * which they are. Inside a run the figures still vary question to question —
  * `nextInRun` picks those, and variety there is the point.
+ *
+ * `forms` is keyed by mode, and the modes it names are the modes the level asks:
+ * the list is not declared separately. Each mode's array is a ladder, easiest
+ * first, and where a mode starts on it is the level's difficulty knob — see
+ * `allowedForms` and `formAvailable`.
+ *
+ * `questions` may exceed the item set, and does on level three: eight questions
+ * over six items. `chooseTarget` sets aside what a run has already asked, so
+ * repeats only begin once the set is exhausted.
  */
 export const LEVELS = [
 	{
 		id: 'l1',
 		band: 'b3',
-		modes: ['count'],
 		min: 1,
 		max: 3,
 		questions: 3,
 		maxErrors: 3,
-		forms: [FORMS.FULL],
+		forms: {count: [FORMS.FULL]},
 		sprite: 'sp-cat',
 		pairing: 'cat-fish',
-		cover: 'l1-cover.png',
+		cover: 'l1-cover.webp',
 		clear: 'l1-clear.mp4',
 	},
 	{
 		id: 'l2',
 		band: 'b3',
-		modes: ['count', 'add'],
 		min: 1,
 		max: 3,
 		questions: 5,
 		maxErrors: 3,
-		forms: [FORMS.FULL],
+		forms: {count: [FORMS.FULL], add: [FORMS.FULL, FORMS.PROMPT]},
 		sprite: 'sp-monkey',
 		pairing: 'monkey-banana',
-		cover: 'l2-cover.png',
+		cover: 'l2-cover.webp',
 		clear: 'l2-clear.mp4',
 	},
 	{
-		// Six questions against fifteen items: coverage needs three clean runs.
-		// That is the intended shape — the gate is cumulative, so coming back is
-		// how it opens.
+		// Arithmetic only, and the first level with no counting to fall back on.
+		// Six items against eight questions, so a run repeats two of them —
+		// intended, because there is no way to ask eight distinct sums under
+		// three and the repetition is what makes a small set stick.
+		//
+		// Addition starts at `prompt`: the objects come off the answer cards on
+		// the child's first question here, because level two already had them
+		// answering these very sums with the objects shown. Subtraction is new,
+		// so it starts where addition did, with everything visible.
 		id: 'l3',
+		band: 'b3',
+		min: 1,
+		max: 3,
+		questions: 8,
+		maxErrors: 3,
+		forms: {
+			add: [FORMS.PROMPT, FORMS.BARE],
+			sub: [FORMS.FULL, FORMS.PROMPT],
+		},
+		sprite: 'sp-dog',
+		pairing: 'dog-bone',
+		cover: 'l3-cover.webp',
+		clear: 'l3-clear.mp4',
+	},
+	{
+		// The first level of the five band, and counting returns — not as
+		// revision but because four and five are new quantities, and the child
+		// has never counted them here.
+		id: 'l4',
 		band: 'b5',
-		modes: ['count', 'add'],
 		min: 1,
 		max: 5,
-		questions: 6,
+		questions: 10,
 		maxErrors: 3,
-		forms: [FORMS.FULL, FORMS.PROMPT],
+		forms: {
+			count: [FORMS.FULL, FORMS.PROMPT],
+			add: [FORMS.PROMPT, FORMS.BARE],
+		},
 		sprite: 'sp-rabbit',
 		pairing: 'rabbit-carrot',
-		cover: 'l3-cover.png',
-		clear: 'l3-clear.mp4',
+		cover: 'l4-cover.webp',
+		clear: 'l4-clear.mp4',
+	},
+	{
+		// Twenty-five items against ten questions: the widest level yet, and the
+		// one that takes the most returning to finish. Everything the ladder has
+		// taught is in play at once.
+		id: 'l5',
+		band: 'b5',
+		min: 1,
+		max: 5,
+		questions: 10,
+		maxErrors: 3,
+		forms: {
+			count: [FORMS.FULL, FORMS.PROMPT],
+			add: [FORMS.PROMPT, FORMS.BARE],
+			sub: [FORMS.FULL, FORMS.PROMPT],
+		},
+		sprite: 'sp-bird',
+		pairing: 'bird-seed',
+		cover: 'l5-cover.webp',
+		clear: 'l5-clear.mp4',
 	},
 ];
 
@@ -183,7 +271,7 @@ export function tierIdFor (mode, max) {
 export function itemsOf (level) {
 	const items = [];
 
-	for (const mode of level.modes) {
+	for (const mode of modesOf(level)) {
 		if (mode === 'count')
 			for (let n = level.min; n <= level.max; ++n)
 				items.push({id: itemId(mode, [n]), mode, operands: [n], answer: n, quantity: n});
@@ -470,17 +558,27 @@ export const isClear = (run, stars = 0) => run.misses === 0
  * The gate exists because weakest-first weighting alone gets this exactly
  * backwards: a form never attempted has no record, so it looks maximally weak
  * and would be picked first — handing a child their very first sight of a
- * question in its hardest presentation. So a harder form has to be earned: the
- * child must have got this question right with the objects in front of them
- * before it is asked of them without.
+ * question in its hardest presentation. So each rung has to be earned: a form
+ * opens once the one below it on this level's ladder has been answered right.
+ *
+ * The bottom rung is whatever the level starts this mode at, which is not
+ * always `full`. Level three opens addition at `prompt` deliberately, and the
+ * gate has to let that through rather than looking for a `full` record that
+ * level was designed never to ask for.
  */
-export function formAvailable (item, form, records) {
-	if (form === FORMS.FULL)
+export function formAvailable (level, item, form, records) {
+	const ladder = allowedForms(level, item.mode);
+	const rung = ladder.indexOf(form);
+
+	if (rung < 0)
+		return false;
+
+	if (rung === 0)
 		return true;
 
-	const full = formRecord(records[item.id], FORMS.FULL);
+	const below = formRecord(records[item.id], ladder[rung - 1]);
 
-	return Boolean(full && full.correct > 0);
+	return Boolean(below && below.correct > 0);
 }
 
 /**
@@ -526,10 +624,16 @@ export function chooseTarget (level, records, run, rng = Math.random) {
 	const fresh = items.filter(i => !run.asked.includes(i.id));
 	const pool = fresh.length ? fresh : items;
 
-	const byItem = pool.map(item => ({item, weight: weightFor(item, FORMS.FULL, records)
-		+ allowedForms(level, item.mode)
-			.filter(f => f !== FORMS.FULL && formAvailable(item, f, records))
-			.reduce((sum, f) => sum + weightFor(item, f, records), 0)}));
+	// An item's pull is how much practice its open forms want, scaled by how
+	// much the level wants that mode asked at all. The sum rather than the max,
+	// because an item with two rungs still to climb does need more visits than
+	// one with a single rung left.
+	const byItem = pool.map(item => ({
+		item,
+		weight: modeWeightOf(item.mode) * allowedForms(level, item.mode)
+			.filter(form => formAvailable(level, item, form, records))
+			.reduce((sum, form) => sum + weightFor(item, form, records), 0),
+	}));
 
 	const chosen = weightedPick(byItem, rng);
 	if (!chosen)
@@ -537,12 +641,14 @@ export function chooseTarget (level, records, run, rng = Math.random) {
 
 	const item = chosen.item;
 	const forms = allowedForms(level, item.mode)
-		.filter(form => formAvailable(item, form, records))
+		.filter(form => formAvailable(level, item, form, records))
 		.map(form => ({form, weight: weightFor(item, form, records)}));
 
 	const form = weightedPick(forms, rng);
 
-	return {item, form: form ? form.form : FORMS.FULL};
+	// The fallback is the level's own entry rung, not `full`: a level that never
+	// asks `full` must not be handed it because a pick came back empty.
+	return {item, form: form ? form.form : allowedForms(level, item.mode)[0]};
 }
 
 /**

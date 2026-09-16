@@ -10,11 +10,14 @@ options.
 
 Usage:
     tools/genvideo.py PROMPT_FILE OUT.mp4 [--duration 5] [--ratio 1:1] [--resolution 720p]
+    tools/genvideo.py PROMPT_FILE OUT.mp4 --first-frame COVER.png
     tools/genvideo.py --task cgt-...        # poll or fetch an existing task
 """
 
 import argparse
+import base64
 import json
+import mimetypes
 import os
 import sys
 import time
@@ -54,17 +57,42 @@ def call (url, key, payload=None):
 		raise SystemExit('genvideo: HTTP %d\n%s' % (err.code, detail[:2000]))
 
 
-def create (prompt, key, duration, ratio, resolution, audio):
+def data_url (path):
+	"""A local image as a data URL.
+
+	The service will fetch an `http(s)` URL, but a file on this disk has no URL,
+	and uploading it somewhere first would publish artwork to a third party to
+	no purpose. Base64 in the request body keeps it between here and the API.
+	"""
+	kind = mimetypes.guess_type(path)[0] or 'image/png'
+	with open(path, 'rb') as fh:
+		return 'data:%s;base64,%s' % (kind, base64.b64encode(fh.read()).decode('ascii'))
+
+
+def create (prompt, key, duration, ratio, resolution, audio, first_frame=None):
 	"""Create one generation task and return its id.
 
 	Parameters travel two different ways in this API, which is easy to get
 	wrong: ratio and resolution are `--flag value` pairs appended to the prompt
 	text, while duration and generate_audio are real JSON fields.
+
+	A first frame is a second `content` part. It also silently changes what the
+	other parameters may say: with a first frame the output ratio is taken from
+	the image, and stating `--ratio` as well is rejected outright with
+	`InvalidParameter.TaskTypeConstraint`. So the flag is dropped from the
+	prompt text in that case rather than passed and hoped for.
 	"""
-	text = '%s --ratio %s --resolution %s' % (prompt, ratio, resolution)
+	text = '%s --resolution %s' % (prompt, resolution)
+	if not first_frame:
+		text = '%s --ratio %s --resolution %s' % (prompt, ratio, resolution)
+
+	content = [{'type': 'text', 'text': text}]
+	if first_frame:
+		content.append({'type': 'image_url', 'image_url': {'url': data_url(first_frame)}})
+
 	payload = {
 		'model': MODEL,
-		'content': [{'type': 'text', 'text': text}],
+		'content': content,
 		'duration': duration,
 		'generate_audio': audio,
 	}
@@ -162,6 +190,9 @@ def main ():
 	ap.add_argument('--resolution', default='720p', choices=RESOLUTIONS)
 	ap.add_argument('--audio', action='store_true',
 		help='generate an audio track; off by default, since the API defaults it on')
+	ap.add_argument('--first-frame', metavar='IMAGE',
+		help='local image to start the video from; the output ratio follows it, '
+			'so --ratio is ignored when this is given')
 	args = ap.parse_args()
 
 	if not BASE_URL:
@@ -197,10 +228,15 @@ def main ():
 	if not prompt:
 		raise SystemExit('genvideo: prompt is empty')
 
-	print('creating a %ds %s %s task, %d chars of prompt (this bills and cannot be cancelled)'
-		% (args.duration, args.ratio, args.resolution, len(prompt)), file=sys.stderr)
+	if args.first_frame and not os.path.isfile(args.first_frame):
+		raise SystemExit('genvideo: no such first frame: %s' % args.first_frame)
 
-	task = create(prompt, key, args.duration, args.ratio, args.resolution, args.audio)
+	shape = 'from %s' % args.first_frame if args.first_frame else args.ratio
+	print('creating a %ds %s %s task, %d chars of prompt (this bills and cannot be cancelled)'
+		% (args.duration, shape, args.resolution, len(prompt)), file=sys.stderr)
+
+	task = create(prompt, key, args.duration, args.ratio, args.resolution, args.audio,
+		args.first_frame)
 	print('  task %s' % task, file=sys.stderr)
 
 	body = wait(task, key)

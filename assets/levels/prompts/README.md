@@ -8,7 +8,7 @@ regenerated or adjusted without reconstructing its prompt from prose.
 Regenerate with the tools in `tools/`:
 
 ```bash
-tools/genimage.py assets/levels/prompts/l1-cover.txt assets/levels/l1-cover.png --quality high
+tools/genimage.py assets/levels/prompts/l1-cover.txt assets/levels/l1-cover.webp --quality high
 tools/genvideo.py assets/levels/prompts/l2-clear.txt assets/levels/l2-clear.mp4 --ratio 1:1 --resolution 720p
 ```
 
