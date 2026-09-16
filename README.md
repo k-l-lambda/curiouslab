@@ -19,6 +19,7 @@ Live site: <https://k-l-lambda.github.io/curiouslab/>
 | `assets/js/scheduler.js` | Adaptive selection, difficulty and timeout bands |
 | `assets/js/storage.js` | Local progress in IndexedDB, skill mastery, item history |
 | `assets/levels/prompts.md` | Art briefs for the level covers and clear frames |
+| `tools/genimage.py` | Generates images through the gpt-image-2 endpoint |
 
 ## Running locally
 
