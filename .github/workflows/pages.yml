@@ -21,7 +21,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      # LFS content must be fetched explicitly. Without this the artifact would
+      # carry LFS pointer files -- a few lines of text -- in place of the level
+      # covers and clear videos, and the deployed game would load those instead
+      # of the images. It works locally either way, so the breakage would only
+      # show up on the live site.
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       # Static site: no build step, the repository root is published as-is.
       - uses: actions/configure-pages@v5
