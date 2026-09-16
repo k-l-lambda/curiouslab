@@ -640,39 +640,54 @@ answer cards.
 
 **Clear video** — `l10-clear.mp4`, 6s, **first frame is `l10-cover.webp`**
 
-Twist: *the world answers.* Nothing is transformed. The sheep chase the last patch
-of evening sun across the grass, it slips away between them, dusk falls — and then
-the entire meadow lights up with fireflies, from the grass to the top of the sky,
-far more light than the patch of sun ever was.
+Twist: *they solve it by standing on each other.* One violet butterfly drifts in
+over the clover, all three sheep want it and all three miss it, it settles out of
+reach — and they climb into a wobbling three-sheep tower to reach it, whereupon it
+lands on the top sheep's nose and the tower folds laughing into the grass.
 
-It closes the loop with level six: one lamp asking the sky for light, and here a
-whole field of it. The fireflies are safe under the counting rule for the reason a
-passing butterfly is — they belong to neither set and were never what the child was
-asked to supply, so there may be hundreds.
+This replaced a first version, kept in git history, that had the sheep chase a patch
+of evening sunlight until it slipped away, dusk fall, and then hundreds of fireflies
+light the whole meadow. It generated badly, and the reason is worth recording
+because it applies to any clip written from here on: it asked for too many things at
+once. Fourteen named colours, three separate lighting changes in six seconds — dusk
+descending, sparks igniting, a horizon warming — a want whose object was a moving
+patch of light that cannot be nosed or carried, and a payoff of hundreds of
+identical small glowing dots. A generator given that many simultaneous instructions
+satisfies some and drops others, and there is no way to tell it which ones matter.
 
-Two things this clip must not do. The dusk may not read as dark or frightening: the
-sheep stay pressed calmly together and the sky never goes past `#9fc4d4`. And the
-clover may not bloom, spread or multiply, however tempting a flowering meadow is at
-the top of a ladder — the leaves are the counted set and the same ones must be in
-the grass at 6.0s as at 0.0s. The extra light is the reward; the count is not
-touched.
+What the rebuild does instead: one new figure on stage instead of hundreds, and it
+is an ordinary solid object a sheep can chase. One lighting change instead of three,
+at the very end, the same amber horizon every other clip closes on. The sky never
+changes at all. Twelve named colours. The want is physical from the first frame —
+three animals lunging at something and missing — and the payoff is a pose rather
+than a light show, which is the one kind of thing these models render reliably.
+
+Two things this clip must not do. The clover may not move, bloom, spread or
+multiply, however tempting a flowering meadow is at the top of a ladder — the leaves
+are the counted set and the same ones must be in the grass at 6.0s as at 0.0s, in
+the same places. The sheep act above and around them, never on them. And there is
+exactly one butterfly, never a second: one is unmistakably not a quantity, and a
+pair invites the child to count the wrong thing at the top of a counting ladder.
 
 ## Continuity across the clips
 
 They are not independent. Read in order they should feel like the same world
 opening up: a quiet pool, then a noisy game, then something built, then a road out,
 then the sky — and past that, dusk and a light answering, a fairground, a house
-with its windows lit, a nest that turns out to be full of life, and a whole meadow
-alight to the horizon.
+with its windows lit, a nest that turns out to be full of life, and three animals
+standing on each other to reach one butterfly.
 
 - The **path** appears in all five and always runs the same direction, lower left
   to upper right. It is the same path as the map's ribbon.
 - **Light stays upper-left** in every frame of every clip. A generator will drift
   on this; check it on delivery.
-- Two clips leave daylight: level six opens at dusk and level ten falls to dusk
-  partway through. Both keep the sky pale `#eaf4f7` at the horizon and only deepen
-  to `#9fc4d4` at the top, so they read as the same sky late rather than a
-  different palette, and both end warmer than they began.
+- One clip leaves daylight: level six opens at dusk, keeping the sky pale `#eaf4f7`
+  at the horizon and only deepening to `#9fc4d4` at the top, so it reads as the same
+  sky late rather than a different palette, and ends warmer than it began. Level ten
+  used to fall to dusk as well and no longer does — its sky holds flat daylight for
+  all six seconds. That cost the closing rhyme with level six, deliberately: a sky
+  that changes colour is among the hardest things to ask a generator for, and level
+  ten was already the most crowded brief in the set.
 - Each clip ends **wider than it started** — one more fish, one merged pile, an
   arch to run through, a long road, open sky — because the reward for finishing a
   level should feel like more, not like a door closing.
