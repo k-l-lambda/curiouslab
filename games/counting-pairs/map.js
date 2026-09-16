@@ -494,10 +494,21 @@ function starBurst (host) {
  * A video that neither plays nor errors is a real state — a codec the browser
  * lists but will not decode, a file still arriving over a slow link — and without
  * a ceiling the result screen would sit behind it forever. Comfortably longer
- * than the five-second clips, so a clip that is merely slow to start still gets
- * to finish.
+ * than the longest clip — six seconds from level six on — so a clip that is
+ * merely slow to start still gets to finish. It stands well clear of the held
+ * frame too, which begins only once the clip is genuinely over.
  */
 const CLIP_LIMIT_MS = 9000;
+
+/**
+ * How long the last frame is held after the clip ends.
+ *
+ * The clip's final pose is the reward and it needs a beat to be looked at — a
+ * video that cuts to a result sheet on its own last frame reads as the celebration
+ * being taken away. Two seconds, and a tap inside them means the child is done
+ * looking and goes straight back to the map.
+ */
+const CLEAR_HOLD_MS = 2000;
 
 /**
  * The clear celebration: the level's own video, or stars if it cannot play.
@@ -513,6 +524,9 @@ const CLIP_LIMIT_MS = 9000;
  *
  * @param {HTMLElement} host the overlay to play over
  * @param {object} [level] the level just cleared; without it, stars
+ * @returns {Promise<boolean>} true if the child tapped during the held last
+ *   frame, meaning they want to be back on the map rather than on the result
+ *   sheet. False on every path with no held frame to tap.
  */
 export async function playClear (host, level) {
 	// Reduced motion covers CSS animation, not a <video>, so the clip has to be
@@ -521,14 +535,17 @@ export async function playClear (host, level) {
 	// was, and `starBurst` is left unreachable on this path deliberately.
 	if (REDUCED) {
 		if (!level?.cover)
-			return;
+			return false;
 
 		const hold = el('div', 'clear-still', host);
 		hold.append(coverImage(level, 'clear-frame'));
-		await wait(1200);
+		// One window rather than a show and then a hold: there is no motion here to
+		// wait out, so the whole of it is the beat, and a tap ends it early the same
+		// way it ends the held frame after a clip.
+		const tapped = await holdForTap(hold, 1200 + CLEAR_HOLD_MS);
 		hold.remove();
 
-		return;
+		return tapped;
 	}
 
 	if (!level?.clear) {
@@ -536,7 +553,7 @@ export async function playClear (host, level) {
 		await wait(900);
 		burst.remove();
 
-		return;
+		return false;
 	}
 
 	const stage = el('div', 'clear-stage', host);
@@ -555,19 +572,25 @@ export async function playClear (host, level) {
 	video.src = ART + level.clear;
 	stage.append(video);
 
+	// `held` distinguishes the two ways the clip can be over. Only a clip that ran
+	// to its own end has a final pose worth holding: a skipped one was skipped
+	// because the child had seen enough, and a broken one has already been replaced
+	// by the star burst and has nothing left on screen to hold.
+	let held = false;
 	await new Promise(resolve => {
 		let done = false;
-		const finish = () => {
+		const finish = end => {
 			if (done)
 				return;
 
 			done = true;
+			held = end === 'ended';
 			clearTimeout(timer);
 			resolve();
 		};
-		const timer = setTimeout(finish, CLIP_LIMIT_MS);
+		const timer = setTimeout(() => finish('ended'), CLIP_LIMIT_MS);
 
-		video.addEventListener('ended', finish);
+		video.addEventListener('ended', () => finish('ended'));
 		// An LFS pointer file, a missing asset and an undecodable clip all arrive
 		// here. Stars instead, so the run that earned a celebration still gets one.
 		video.addEventListener('error', () => {
@@ -578,17 +601,48 @@ export async function playClear (host, level) {
 			const burst = starBurst(stage);
 			setTimeout(() => {
 				burst.remove();
-				finish();
+				finish('error');
 			}, 900);
 		});
-		stage.addEventListener('click', finish);
+		stage.addEventListener('click', () => finish('skip'));
 		// `autoplay` is refused often enough to be worth asking twice; muted
 		// playback is allowed everywhere, so a rejection here means something else
 		// went wrong and the timeout will collect it.
 		video.play?.().catch(() => {});
 	});
 
+	// The clip is paused rather than left to loop or blank: the element stays in
+	// place for the hold, so what is on screen through it is the frame the clip
+	// actually ended on.
+	video.pause?.();
+	const tapped = held ? await holdForTap(stage, CLEAR_HOLD_MS) : false;
 	stage.remove();
+
+	return tapped;
+}
+
+/**
+ * Hold a screen for `ms`, or until it is tapped.
+ *
+ * @returns {Promise<boolean>} true if a tap ended it, false if the time did.
+ */
+function holdForTap (host, ms) {
+	return new Promise(resolve => {
+		let done = false;
+		const end = tapped => {
+			if (done)
+				return;
+
+			done = true;
+			clearTimeout(timer);
+			host.removeEventListener('click', onClick);
+			resolve(tapped);
+		};
+		const onClick = () => end(true);
+		const timer = setTimeout(() => end(false), ms);
+
+		host.addEventListener('click', onClick);
+	});
 }
 
 /* ------------------------------------------------------- keeping going */
@@ -636,9 +690,6 @@ export function renderMiss (host, level, cause) {
 	return sheet;
 }
 
-/** How long the encouragement screen holds before the run moves on. */
-export const MISS_MS = 1500;
-
 /**
  * Show it, and resolve when it is done.
  *
@@ -649,21 +700,22 @@ export async function playMiss (host, level, cause) {
 	renderMiss(host, level, cause);
 	host.hidden = false;
 
+	// No timer. This screen leaves the level, and a screen that leaves on its own
+	// takes the decision away from the child at the one moment they most need to
+	// have been told what happened: a run ends here. So it waits, and the tap is
+	// how they say they have seen it.
+	//
+	// That is also why `.miss-figure` and the trail loop rather than settle — a
+	// still frame with no motion on it reads as finished rather than as waiting,
+	// and there is no text here to say otherwise.
 	await new Promise(resolve => {
-		let done = false;
 		const finish = () => {
-			if (done)
-				return;
-
-			done = true;
-			clearTimeout(timer);
 			// Removed rather than left to be garbage: the overlay element outlives
 			// every screen shown in it, so a listener added and forgotten here would
 			// still be attached on the next miss, and the one after that.
 			host.removeEventListener('click', finish);
 			resolve();
 		};
-		const timer = setTimeout(finish, REDUCED ? 700 : MISS_MS);
 		host.addEventListener('click', finish);
 	});
 
