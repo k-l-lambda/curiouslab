@@ -66,6 +66,39 @@ const FORMS_BY_MODE = {
 };
 
 /**
+ * How long a question may sit unanswered before its presentation is softened.
+ *
+ * Measured on the answer stopwatch, not the countdown: the countdown is a band
+ * that varies with the child's recent pace and restarts at half length on a
+ * retry, so the same eight seconds of being stuck would arrive at a different
+ * moment on every question. What this counts is time with the cards live and the
+ * child looking at them, which is the thing being reacted to.
+ */
+export const SOFTEN_MS = 8000;
+
+/**
+ * One step down the presentation ladder: what to show when a child is stuck.
+ *
+ * `bare` gains the objects in the question, becoming `prompt`. `prompt` gains the
+ * object previews on the answer cards, becoming `full`. `full` has nothing left to
+ * reveal and is left alone — there is no state below it, and a child stuck on a
+ * fully illustrated question needs the counting hint, which they already get.
+ *
+ * A question softens at most once. `bare` does not walk on to `full` after another
+ * eight seconds: the reveal it got is the one it asked for, and stepping twice
+ * would mean a child who waits long enough is never actually asked the question.
+ */
+export const SOFTER_FORM = {
+	[FORMS.BARE]: FORMS.PROMPT,
+	[FORMS.PROMPT]: FORMS.FULL,
+};
+
+export const softerForm = form => SOFTER_FORM[form] ?? null;
+
+/** Whether this form has anything left to reveal. */
+export const canSoften = form => Boolean(SOFTER_FORM[form]);
+
+/**
  * The forms a level may ask for a mode, hardest last.
  *
  * A level declares `forms` per mode rather than once for the whole level,
@@ -126,7 +159,12 @@ export const showsPreviews = form => form === FORMS.FULL;
  * `maxErrors` is how many wrong taps one question may take before it is given
  * up as a miss. Per question, not per run, because that is what makes it the
  * companion of the timeout: both end the question the child is on, and both are
- * a way of running out on it rather than getting it wrong.
+ * a way of running out on it rather than getting it wrong. A miss ends the
+ * attempt — see `isFailure` — so this number is the whole safety margin a level
+ * gives, and it tightens from three to two in the five band: the questions there
+ * are ones the child has met before in the three band, and two tries on a
+ * familiar sum still leaves room for a slip without leaving room for guessing
+ * through a four-card question.
  *
  * `pairing` is the level's face on the map, not a constraint on its questions:
  * the cover art is drawn around these two figures, so the map needs to know
@@ -203,7 +241,7 @@ export const LEVELS = [
 		min: 1,
 		max: 5,
 		questions: 10,
-		maxErrors: 3,
+		maxErrors: 2,
 		forms: {
 			count: [FORMS.FULL, FORMS.PROMPT],
 			add: [FORMS.PROMPT, FORMS.BARE],
@@ -222,7 +260,7 @@ export const LEVELS = [
 		min: 1,
 		max: 5,
 		questions: 10,
-		maxErrors: 3,
+		maxErrors: 2,
 		forms: {
 			count: [FORMS.FULL, FORMS.PROMPT],
 			add: [FORMS.PROMPT, FORMS.BARE],
@@ -550,6 +588,33 @@ export const STARS_MAX = STAR_THRESHOLDS.length;
 export const isClear = (run, stars = 0) => run.misses === 0
 	&& (run.improvements.length > 0 || stars >= STARS_MAX);
 
+/**
+ * Did this run end in failure?
+ *
+ * One lost question is enough. A miss used to cost only the clear, and the run
+ * carried on through its remaining questions; now it ends the attempt, so the
+ * two ways of losing a question are the two ways of losing a run.
+ *
+ * The reason for tying it to the attempt rather than the question: the run is
+ * the unit a child can see the shape of. A level that asks ten questions and
+ * quietly writes off the third teaches that the miss did not matter much, which
+ * is the opposite of true — it has already cost the clear, and there is no way
+ * to earn it back inside the same run. Ending there makes the cost legible and
+ * makes starting again the thing to do about it.
+ *
+ * What failure does *not* do is take back what was learned. Every answer is
+ * already written to the store as it happens, so a failed attempt keeps its
+ * correct answers: item grades, best times and coverage all stand. Coverage is
+ * what opens the next level, so a run can fail and still unlock — see
+ * `finishRun`, which reports both. That is deliberate. Coverage asks whether the
+ * child has ever answered each question correctly, which a lost run does not
+ * make untrue, and taking it back would mean a child could lose ground by
+ * playing.
+ *
+ * @param {object} run
+ */
+export const isFailure = run => run.misses > 0;
+
 /* ---------------------------------------------------------------- picking */
 
 /**
@@ -763,6 +828,7 @@ export function finishRun (run, records, {starsSeen = 0} = {}) {
 		covered: score.covered,
 		total: score.total,
 		cleared: isClear(run, score.stars),
+		failed: isFailure(run),
 		misses: run.misses,
 		timeouts: run.timeouts,
 		exhausted: run.exhausted,

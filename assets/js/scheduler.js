@@ -388,19 +388,46 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 
 	/* ---- this exact question, in this exact presentation ---- */
 
-	fRec.seen += 1;
-	fRec.lastSeen = now;
+	// A question that softened part-way through is not this presentation's
+	// question any more: the objects the form withholds were put back on screen
+	// after eight seconds of nobody answering. So the form's record is left
+	// untouched — not written and then discounted, but never written.
+	//
+	// That is what makes the rule hold everywhere at once instead of in the one
+	// place it was noticed. The grade is computed from this record, so an
+	// untouched record cannot raise a grade, cannot beat a best time, cannot
+	// report an improvement to the run, cannot lift the level's star fluency, and
+	// cannot open the next rung of the form ladder. None of those needed a special
+	// case; they all read the same fields, and the fields did not move.
+	//
+	// The item-level record above is still updated, and `everCorrect` below with
+	// it. Coverage asks whether the child has ever produced the right answer for
+	// this question, and a softened question they got right does not make that
+	// untrue — so a lesson taken with the objects shown still counts toward
+	// opening the next level, while counting for nothing toward mastery of the
+	// form that was withheld.
+	const softened = Boolean(q.softened);
+
+	if (!softened) {
+		fRec.seen += 1;
+		fRec.lastSeen = now;
+	}
+	else
+		fRec.softened = (fRec.softened ?? 0) + 1;
 
 	if (correct) {
 		// What opens the next level, and it is set here for any correct answer:
-		// with help or without, the child produced the right number.
+		// with help or without, softened or not, the child produced the right
+		// number.
 		iRec.everCorrect = true;
-		fRec.correct += 1;
-		if (answerMs != null)
-			fRec.lastMs = Math.round(answerMs);
+		if (!softened) {
+			fRec.correct += 1;
+			if (answerMs != null)
+				fRec.lastMs = Math.round(answerMs);
+		}
 	}
 
-	if (outcome === OUTCOME.FIRST_TRY && answerMs != null) {
+	if (outcome === OUTCOME.FIRST_TRY && answerMs != null && !softened) {
 		fRec.firstTry += 1;
 		// Only an unaided answer sets the best time. One that followed a counting
 		// hint would be measuring the hint.
@@ -411,7 +438,7 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 	// Both ways of never reaching the answer. `OUTCOME.ERROR` is what a level run
 	// records when the question's error budget runs out, and for this record it
 	// means the same thing a timeout does: the child left without it.
-	if (outcome === OUTCOME.TIMEOUT || outcome === OUTCOME.ERROR)
+	if ((outcome === OUTCOME.TIMEOUT || outcome === OUTCOME.ERROR) && !softened)
 		fRec.misses += 1;
 
 	// A question solved only after help counts against the recent window, so it
@@ -496,6 +523,10 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 		elapsedMs: answerMs == null ? null : Math.round(answerMs),
 		roundMs: Math.round(timing.roundMs ?? 0),
 		form,
+		// What the child was actually looking at when they answered, when that is
+		// not what was asked. Null on an ordinary question, so the log stays
+		// readable and the field means something wherever it is set.
+		shownForm: q.softened ? (q.shownForm ?? null) : null,
 		levelId: q.levelId ?? null,
 		band: q.band,
 	});
@@ -514,6 +545,7 @@ export function recordAnswer (q, outcome, timing, errorCount = 0) {
 		bestMsBefore: before.bestMs ?? 0,
 		bestMsAfter: fRec.bestMs,
 		firstEverCorrect: correct && !before.correct,
+		softened,
 		// Either the child reached a rung they had not reached before, or they beat
 		// their own best time on this question. Both count as getting better, and
 		// either one is enough to clear a level.

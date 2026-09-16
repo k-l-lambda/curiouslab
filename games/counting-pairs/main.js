@@ -119,6 +119,52 @@ const clockReset = () => {
 	clock.since = 0;
 };
 
+/**
+ * Reveal one step of the presentation when a question has gone unanswered.
+ *
+ * Fired off the answer stopwatch at `levels.SOFTEN_MS`. `bare` gains the objects
+ * in the question; `prompt` gains the previews on the answer cards. Nothing else
+ * about the round changes: the clock keeps running, the options stay as they were,
+ * and the child's selection if they have one is left alone.
+ *
+ * The cost is on the record, not on the child. A softened question cannot improve
+ * its grade or its best time no matter how it ends — see `recordAnswer` — because
+ * what was answered is not the question that was asked. Coverage still counts: the
+ * child did produce the right number, and coverage asks only that.
+ *
+ * @returns {boolean} whether anything was revealed
+ */
+function soften () {
+	const q = ui.question;
+	if (!q || q.softened || !levels.canSoften(q.form))
+		return false;
+
+	const shown = q.form === levels.FORMS.BARE
+		? board.revealObjects(ui.handles, q)
+		: board.revealChoiceObjects(ui.handles, q);
+	if (!shown)
+		return false;
+
+	// Marked on the question rather than on `ui`, so it travels with it into
+	// `recordAnswer` and cannot be lost by a repaint or a pause.
+	q.softened = true;
+	q.shownForm = levels.softerForm(q.form);
+
+	return true;
+}
+
+/**
+ * Has this question been sat on long enough to deserve a reveal?
+ *
+ * Not once a card is chosen. A choice waits `AUTO_SUBMIT_MS` for its confirmation,
+ * so a child who picks at 7.9s has their answer land at 8.8s — and without this
+ * the reveal would fire into that gap and strip the credit off a question they
+ * answered in time. The stopwatch already stopped at the moment they chose; this
+ * is the same rule applied to the reveal.
+ */
+const softenDue = () => ui.question && !ui.question.softened && !ui.selected
+	&& levels.canSoften(ui.question.form) && clockRead() >= levels.SOFTEN_MS;
+
 function iconButton (iconId, label, onClick) {
 	const btn = document.createElement('button');
 	btn.type = 'button';
@@ -248,8 +294,9 @@ function paintStreak () {
 
 /**
  * Repaint the run strip: one pip per question the level asks, filled for each
- * one answered. A pip for a missed question is marked, so the child can see the
- * run is no longer a clean one before the result says so.
+ * one answered. The strip takes a `missed` class the moment a question is lost,
+ * which is visible for the length of the walkthrough that follows — the last
+ * thing the strip does before the attempt ends, since a miss now ends it.
  */
 function paintRun () {
 	if (!dom.runStrip)
@@ -306,6 +353,13 @@ function startTimer (ms) {
 	const tick = () => {
 		if (ui.paused || ui.resolving)
 			return;
+
+		// Checked here rather than on a timer of its own: this loop already starts
+		// when the cards go live, stops for a pause and for the feedback sequence,
+		// and dies with the round. A separate setTimeout would have to be taught
+		// each of those, and would fire over a question that had already moved on.
+		if (softenDue() && !ui.feedback)
+			soften();
 
 		const left = ms - (performance.now() - ui.startedAt);
 		ui.remainingMs = left;
@@ -530,26 +584,81 @@ async function resolveCorrect (btn) {
 /**
  * The encouragement screen, then whatever comes next.
  *
- * Both misses end here, and both end the question rather than the run: a level
- * asks a fixed number of questions, and losing one does not change how many are
- * left. What it costs is the clear — `isClear` wants a run with nothing lost —
- * and the screen exists so that cost is not the only thing the child notices.
+ * In a level run, both kinds of miss end the attempt: the encouragement screen
+ * plays and the child goes back to the map with the run recorded as failed. It
+ * used to end only the question and carry on through the rest of them, which
+ * made a lost question a bookkeeping detail — the clear was already gone by
+ * then, and nothing about the remaining questions could bring it back.
+ *
+ * Free practice has no run to fail, so there a miss still just ends the question
+ * and the next one follows.
  *
  * @param {string} cause `'timeout'` or `'error'`
  */
 async function afterMiss (gen, cause) {
-	if (ui.run)
-		await map.playMiss(dom.miss, ui.run.level, cause);
+	if (!ui.run) {
+		nextRound();
+
+		return;
+	}
+
+	await map.playMiss(dom.miss, ui.run.level, cause);
 
 	// The check is after the screen, not before: it holds for over a second, and
-	// the child can leave for the map inside that time.
+	// the child can leave for the map inside that time — in which case the run is
+	// already over and `failRun` would be undoing a state it does not own.
 	if (gen !== ui.generation)
 		return;
 
-	if (ui.run && levels.runComplete(ui.run))
-		endRun();
-	else
-		nextRound();
+	await failRun();
+}
+
+/**
+ * The attempt is lost. Record it, then hand the child back the map.
+ *
+ * No result sheet. The sheet is for an attempt that produced something to read —
+ * stars gained, questions improved, a level opened — and a failed run has none of
+ * that to show; putting one up would make the child dismiss a panel to be told
+ * they got nothing. The encouragement screen has already said the one thing there
+ * is to say, and it says it in pictures.
+ *
+ * What still gets written:
+ *
+ * - `runs`, because this was an attempt the child saw through to an outcome, and
+ *   `runs > 0` is what lets the map show stars at all. A level played and lost
+ *   that still read as untouched would be a lie about what happened.
+ * - Nothing else. `starsSeen` stays where it was so any stars earned here are
+ *   still new the next time a result sheet can show them properly; `cleared` and
+ *   `bestRun` describe attempts that went well, and this one did not.
+ *
+ * Per-item progress needs no help from here — `recordAnswer` writes every answer
+ * as it lands. So the questions answered correctly before the miss still count,
+ * including toward the coverage that opens the next level. A run can therefore
+ * fail and unlock in the same breath, and when it does the unlock still plays:
+ * the child is being sent to the map anyway, the lock is genuinely off, and
+ * holding that back until some later successful run would be hiding a thing they
+ * earned.
+ */
+async function failRun () {
+	const run = ui.run;
+	if (!run)
+		return showMap();
+
+	clearTimers();
+	clockStop();
+	const records = store.itemRecords();
+	const result = levels.finishRun(run, records, {starsSeen: ui.starsSeen});
+	const rec = store.level(run.level.id);
+	rec.runs += 1;
+	store.save();
+
+	ui.run = null;
+	ui.question = null;
+	const gen = ui.generation;
+	showMap();
+
+	if (result.unlocked && gen === ui.generation)
+		await map.playUnlock(dom.mapHost, result.unlocked);
 }
 
 /**
@@ -558,7 +667,9 @@ async function afterMiss (gen, cause) {
  * The correct card is shown before moving on. That is the whole reason this is a
  * separate path from a wrong answer that still has tries left — the child has
  * stopped being asked, so leaving the question unanswered on screen would teach
- * nothing and end on a blank.
+ * nothing and end on a blank. It matters more now than it did: in a level run
+ * this is the last question of the attempt, so this walkthrough is the last thing
+ * the child is shown before the encouragement screen and the map.
  */
 async function giveUp (q, gen) {
 	ui.resolving = true;
@@ -604,7 +715,18 @@ async function resolveWrong (btn) {
 
 	// A number-only question has nothing on screen to count, so the hints that
 	// follow would all run against an empty panel. Bring the objects out first.
-	board.revealObjects(ui.handles, q);
+	//
+	// And count that as a softening, exactly as the eight-second timer would. The
+	// reveal is the same reveal: from here on the child is answering with the
+	// objects in front of them, so the record must not credit them with the form
+	// that was withholding them. Without this, tapping any wrong card would be a
+	// quicker way to get the objects than waiting for them, and would still earn
+	// full credit for the harder form — which would leave the timer rule meaning
+	// almost nothing on the form it matters most for.
+	if (board.revealObjects(ui.handles, q)) {
+		q.softened = true;
+		q.shownForm = levels.softerForm(q.form);
+	}
 
 	// Carry the chosen number out before anything else: the child sees what
 	// that many objects actually does to the figures, which is the reason it is
@@ -683,7 +805,11 @@ async function onTimeout () {
 	paintRun();
 
 	// Same reason as a wrong answer: a number-only question needs its objects
-	// before a counting walkthrough can walk over anything.
+	// before a counting walkthrough can walk over anything. Not marked as a
+	// softening, unlike the wrong-answer reveal: the answer has already been
+	// recorded a few lines above and the attempt is over, so there is nothing left
+	// for it to be credited against. The objects here are for the walkthrough
+	// alone.
 	board.revealObjects(ui.handles, q);
 
 	// A gentle counting walkthrough, then the encouragement screen, then a fresh

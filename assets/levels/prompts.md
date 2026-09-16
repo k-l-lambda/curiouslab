@@ -32,10 +32,6 @@ What that changes:
   service takes the output ratio from the first frame and rejects a request that
   also states one. `--resolution` is still needed.
 
-  The one exception on disk is `l1-clear.mp4`, generated before this was known to
-  be possible. It is left as it is rather than reshot for consistency's sake, but
-  anything regenerated from here on follows the rule.
-
 ## Story rules for a 5-second clip
 
 Five seconds is roughly **beat / turn / landing** and nothing more. Each brief
@@ -446,9 +442,9 @@ then the sky.
   that flies, then food that builds, then a wall that turns out to be a door, then
   the ground itself let go of. A child replaying level 1 after level 5 should feel
   level 1 as small, and that is correct.
-- **Every clip starts from its own cover.** With the exception of `l1-clear.mp4`,
-  which predates the technique, frame one of each video is the still the child taps
-  on the map.
+- **Every clip starts from its own cover.** Frame one of each video is the still
+  the child taps on the map, all five of them, measured at 3.0 to 3.9 mean abs
+  diff from the cover file.
 
 ## How the code uses these files
 

@@ -16,23 +16,25 @@ Both are non-deterministic, so a regeneration will not reproduce the current fil
 byte for byte, and colour accuracy varies between runs. Verify what comes back
 rather than assuming; see the `create-image` and `create-video` skills.
 
-## `l1-clear.mp4` is trimmed, not raw
+## `l1-clear.mp4` was regenerated, not trimmed
 
-This one asset is not a straight generation output. The clip came back with the
-three fish **swimming into** an empty pool over the first 0.75 seconds, which
-breaks the rule in `../prompts.md` that exactly three fish are visible from the
-first frame — a child who has just answered "three" should not watch the count
-assemble itself. Every frame after 0.75s was correct, so the opening was cut:
+Worth keeping because the first attempt looked like an art problem and was not.
 
-```bash
-ffmpeg -ss 0.75 -i raw.mp4 -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -an l1-clear.mp4
-```
+The original clip came back with the three fish **swimming into** an empty pool
+over the first 0.75 seconds, breaking the rule in `../prompts.md` that exactly
+three fish are visible from the first frame — a child who has just answered
+"three" should not then watch the count assemble itself. That was patched by
+cutting the opening with `ffmpeg -ss 0.75`, which cost 0.71s of a 5s clip.
 
-Result: 4.29s instead of 5s, holding exactly three fish in every sampled frame.
-The beat structure survives the cut — motion still peaks in the middle third
-where the splash is, and the final frames still settle into a hold.
+Once first frames turned out to be supported, the clip was regenerated from
+`l1-cover.webp` instead, and the prompt's first beat rewritten to assert the
+opening state ("the three fish are already in the pool from the very first frame")
+rather than leaving it to be inferred. The trim is gone; the clip is a full 5.04s
+and frame zero measures 3.6 mean abs diff from the cover.
 
-A regeneration attempt with the opening state stated as an existing condition was
-**worse**, not better: it put four fish on screen for the whole clip, which is the
-one failure the brief singles out as damaging. Trimming a good clip beat
-re-rolling the prompt here.
+The regeneration also fixed a fault nobody had noticed. Measuring the trimmed
+clip for the fish blue `#5cc3e8` found **zero** matching pixels, which reads as
+"no fish at all" — the fish were there, rendered pale, closest pixel 33.7 away.
+Segmented by saturation instead they measured about 4600px total; the clip
+generated from the cover measures 12822px for the same three fish. Starting from
+the cover pins the palette, which a text prompt on its own does not.

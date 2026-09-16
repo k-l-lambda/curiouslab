@@ -848,6 +848,61 @@ export function revealObjects (handles, q) {
 }
 
 /**
+ * Put the object previews onto the answer cards mid-question.
+ *
+ * The softening step for a `prompt` question: the objects were in the question
+ * but not on the cards, and now they are on the cards too, which is what `full`
+ * looks like.
+ *
+ * The existing cards are added to rather than rebuilt. Rebuilding would be less
+ * code, and wrong: the buttons carry the click listeners the round is driven by,
+ * and one may already be selected and waiting on its confirmation. Replacing them
+ * would drop a child's answer at the moment they were being helped.
+ *
+ * @returns {boolean} whether anything was revealed
+ */
+export function revealChoiceObjects (handles, q) {
+	const choices = handles.right.querySelector('.choices');
+	if (!choices || choices.dataset.revealed === '1')
+		return false;
+
+	const pairing = handles.pairing;
+	let added = 0;
+	for (const btn of handles.buttons) {
+		const value = Number(btn.dataset.value);
+		// Zero gets no preview, the same as on a first render: an empty grid reads
+		// as a card that failed to load rather than as none of anything.
+		if (value <= 0 || btn.querySelector('.mini'))
+			continue;
+
+		const mini = document.createElement('div');
+		mini.className = 'mini';
+		setColumns(mini, columnsFor(value), 'minmax(0, 1fr)');
+		for (let i = 0; i < value; ++i)
+			mini.append(sprite(pairing.target));
+		btn.append(mini);
+		++added;
+	}
+
+	if (!added)
+		return false;
+
+	choices.dataset.revealed = '1';
+	// Same correction the first render makes, for the same reason: the stylesheet
+	// guesses the preview size from the column count, and only the real card can
+	// settle it.
+	fitMinis(handles.right);
+	// A fade rather than an appearance. The cards do not move — the numeral keeps
+	// its place — so the only change is that the objects are now there.
+	for (const mini of choices.querySelectorAll('.mini')) {
+		mini.style.setProperty('--enter', '0.35s');
+		mini.classList.add('enter-fade');
+	}
+
+	return true;
+}
+
+/**
  * Leave the board.
  *
  * Delivery parks flyers on <body> and the correspondence hint parks an <svg>

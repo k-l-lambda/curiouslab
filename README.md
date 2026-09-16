@@ -79,9 +79,9 @@ no voice and no sound effects in this phase.
   the source objects otherwise), and after a second miss two distractors dim and
   a correspondence hint is drawn — the child still completes the last step.
   In free practice a miss queues one gentler question in the same family rather
-  than a replay; inside a level run it does not, because an injected extra would
-  either eat one of the level's own questions or make the run's length
-  unpredictable. A missed question simply carries more weight into the next run.
+  than a replay, and the next question follows. Inside a level run there is no next
+  question: the miss ends the attempt. A missed question carries more weight into
+  the next run.
 - **Icons only.** Pause, hint, undo, confirm, grown-up panel and home are
   icons; the accessible names are numerals or single words for screen readers.
   Home means the map while a level is being played, and the site hub from the map
@@ -138,12 +138,48 @@ time a level pairs the two.
   through to a result: sets overlap, so level 2 would otherwise open already
   wearing a star earned by the counting it shares with level 1, and tapping into a
   level and leaving again would light it up just the same.
+- **A question stuck for eight seconds gives back its pictures.** The presentation
+  forms withhold things — `prompt` keeps the objects off the answer cards, `bare`
+  keeps them off the question too — and after eight seconds with nothing answered
+  the withheld half is put back: `bare` gains the objects in the question, `prompt`
+  gains the previews on the cards. One step only, and `full` has nothing left to
+  give. The clock keeps running and the cards do not move, so a child mid-thought
+  loses nothing.
+
+  **A softened question earns no grade.** Its form's record is not written at all —
+  not written and then discounted — so it cannot raise a grade, beat a best time,
+  count as the improvement a clear needs, lift the level's star fluency, or open the
+  next rung of the form ladder. The one thing it does record is that it happened, so
+  "never answered this form" can be told from "kept needing it made easier". What
+  still counts is coverage: the child did produce the right number, and coverage asks
+  only that, so a question answered with help still counts toward opening the next
+  level. Eight seconds is measured on the answer stopwatch rather than the countdown,
+  because the countdown varies with the child's recent pace and restarts at half
+  length on a retry.
+
+  The same applies to a wrong tap on a `bare` question, which already revealed the
+  objects so the counting walkthrough had something to walk over. Otherwise tapping
+  any card would be a faster way to get the objects than waiting for them, and would
+  still earn the harder form's grade.
 - **A question can be lost two ways**: the clock runs out, or the level's error
-  budget does — `maxErrors`, three on every level so far, counted per question
-  rather than per run. Both mean the same thing, that the child never reached the
-  answer, and both raise the same encouragement screen before the run carries on.
-  A wrong answer the child then corrects is not a miss; that is what the whole
-  feedback sequence is for.
+  budget does — `maxErrors`, counted per question rather than per run. Both mean
+  the same thing, that the child never reached the answer, and both raise the same
+  encouragement screen. A wrong answer the child then corrects is not a miss; that
+  is what the whole feedback sequence is for.
+- **A lost question ends the attempt.** The encouragement screen plays and the
+  child is returned to the map, with the attempt recorded as a failure — no result
+  sheet, because a failed run has no stars gained or questions improved to read,
+  and putting a panel up to say so would only be something to dismiss. It used to
+  carry on through the remaining questions, which taught the wrong thing: the
+  clear was already gone by then and nothing later in the run could earn it back.
+  What failure does **not** do is take back what was learned — every answer is
+  written as it lands, so correct answers still count, including toward the
+  coverage that opens the next level. A run can therefore fail and unlock in the
+  same breath, and the unlock still plays on the map.
+- **The error budget tightens with the bands**: three tries a question in the
+  3-band, two in the 5-band. The 5-band asks about sums the child has already met
+  below it, so two tries still leaves room for a slip without leaving room for
+  working through the four cards one at a time.
 - **Clearing** — which plays the celebration — needs a run with nothing lost *and*
   at least one question ending up better known than it had ever been. **At three
   stars the second half is dropped**: most of the set is already fluent, so the only

@@ -49,13 +49,34 @@ Parameters arrive **two different ways**, which is the easiest thing to get wron
 | Parameter | Where it goes | Values |
 |---|---|---|
 | prompt | `content: [{type: 'text', text: ...}]` | required; a bare `prompt` field is rejected |
+| first frame | a second `content` part, `{type: 'image_url', image_url: {url}}` | a data URL or an http(s) URL |
 | `--ratio` | appended to the prompt text | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `21:9`, `adaptive` |
 | `--resolution` | appended to the prompt text | `480p`, `720p`, `1080p` (`2k` and `4k` rejected) |
 | `duration` | top-level JSON field | `-1`, or `4`–`30` seconds |
 | `generate_audio` | top-level JSON field | **defaults to `true`** |
 
 `content` must be a list of typed parts. Sending `{"prompt": "..."}` fails with
-`expr_path=content, cause=missing required parameter`.
+`expr_path=content, cause=missing required parameter`. The accepted part types are
+`text`, `image_url`, `audio_url`, `video_url` and `draft_task` — the service lists
+them when given an invalid one, which is a free way to read that enum.
+
+**A first frame is supported**, despite the model resolving to a name ending
+`t2v`. Pass the image as a second `content` part; `tools/genvideo.py --first-frame`
+does it, reading a local file and inlining it as a base64 data URL so nothing is
+uploaded anywhere. Two things change when you do:
+
+- **`--ratio` must be dropped.** The output ratio follows the first frame, and
+  sending a ratio as well is rejected with `InvalidParameter.TaskTypeConstraint`.
+  `--resolution` is still required.
+- The first frame is reproduced closely but not exactly: re-encoding puts it about
+  3-4 per channel from the source image. A clip generated *without* a first frame
+  measures 54-63 against its intended opening still, so the two cases are far
+  apart and easy to tell apart in a check.
+
+**`duration: -1` is not a free probe.** It is documented as valid and behaves as
+valid: it starts a real billed generation. An out-of-range value cannot be used to
+test the rest of a body — use a deliberately corrupt `image_url` instead, which is
+refused at decode for nothing.
 
 **`generate_audio` defaults on.** For a silent project this is wrong by default
 and has to be turned off explicitly; `tools/genvideo.py` defaults it off and
@@ -135,6 +156,26 @@ invariant, use a size floor to exclude effects like droplets, and treat a
 count anomaly as **a frame range to look at**, never as a verdict. Occlusion and
 absence are not distinguishable by these means, and claiming otherwise is how a
 good clip gets thrown away.
+
+**A zero reading is usually a wrong mask, not a missing subject.** Two ways this
+happened on the same project, and both looked like a defect in the clip:
+
+- **The family colour drifted.** Measuring `l1-clear.mp4` for the fish blue
+  `#5cc3e8` returned *zero pixels over the size floor in every frame*, which reads
+  as "the fish are gone". The fish were there the whole time; the generator had
+  rendered them paler than the brief, closest actual pixel 33.7 away, while the
+  pool water matched its own hex to 5.7. Segmenting by hue band plus a saturation
+  floor instead found them immediately: 2-3 blobs of about 1500px, present from
+  frame zero. So before believing a zero, check that the target colour is present
+  in the frame at all — and if the subject and its background share a hue,
+  saturation is what separates them, not distance to a hex.
+- **The tolerance reached the background.** A mask needs a tolerance below half the
+  distance to the nearest colour it could be confused with. The rabbit's `#f3f0ea`
+  is 16.3 from the sky's `#eaf4f7`, so at a tolerance of 44 the "rabbit white"
+  mask was a sky mask, and the sky warming to amber at the end of the clip read as
+  the rabbit vanishing. Compute the tolerance from the palette rather than picking
+  one, and report a family too close to its background as unmeasurable instead of
+  asserting it.
 
 **Build a control before trusting a clean result.** A synthetic clip holding
 three figures for half its length and four for the rest confirmed the per-frame

@@ -124,6 +124,13 @@ const emptyForm = () => ({
 	bestMs: 0,
 	lastMs: 0,
 	lastSeen: 0,
+	// Times this question was asked in this form and then softened part-way
+	// through, having gone unanswered for `SOFTEN_MS`. Deliberately the only field
+	// such an attempt writes: every other one feeds the grade, and a softened
+	// question is not evidence about the form that was withheld. Kept so that
+	// "never answered this form" can be told from "kept needing it made easier",
+	// which is the difference a grown-up would want to see.
+	softened: 0,
 });
 
 /**
