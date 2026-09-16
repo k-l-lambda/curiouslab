@@ -491,10 +491,10 @@ function starBurst (host) {
 /**
  * The clip already on its way, if any: `{id, video}` for one level at a time.
  *
- * One entry rather than a map of all five. A child is inside one level when the
- * clip is wanted, and each of these files is three to four megabytes — holding
- * every level's would spend fifteen megabytes of a phone's memory to save a
- * download the child may never reach.
+ * One entry rather than one per level. A child is inside one level when the clip
+ * is wanted, and these files run from three to seven megabytes — holding every
+ * level's would spend tens of megabytes of a phone's memory to save a download the
+ * child may never reach.
  */
 let buffered = null;
 
@@ -504,8 +504,8 @@ let buffered = null;
  * Called when the cover opens, which is the earliest moment the level is known
  * and the longest possible head start: the whole run happens between here and
  * the clip being wanted. Without it the download begins at the celebration
- * itself, and a three-megabyte file over a slow link either stutters through its
- * five seconds or is still arriving when `CLIP_LIMIT_MS` gives up on it — the
+ * itself, and a file of several megabytes over a slow link either stutters through
+ * its six seconds or is still arriving when `CLIP_LIMIT_MS` gives up on it — the
  * child answers everything right and the reward is a star burst.
  *
  * The element is kept, not just the bytes. A detached <video> is a plausible
@@ -595,7 +595,8 @@ function takeBuffer (level) {
  * A video that neither plays nor errors is a real state — a codec the browser
  * lists but will not decode, a file still arriving over a slow link — and without
  * a ceiling the result screen would sit behind it forever. Comfortably longer
- * than the five-second clips, so a clip that is merely slow to start still gets
+ * than the longest clips, which run to just over six seconds, so a clip that is
+ * merely slow to start still gets
  * to finish.
  */
 const CLIP_LIMIT_MS = 9000;

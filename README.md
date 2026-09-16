@@ -19,7 +19,7 @@ Live site: <https://k-l-lambda.github.io/curiouslab/>
 | `assets/js/scheduler.js` | Adaptive selection, difficulty and timeout bands |
 | `assets/js/storage.js` | Local progress in IndexedDB, skill mastery, item history |
 | `assets/levels/prompts.md` | Art briefs for the level covers and clear videos |
-| `assets/levels/*.png`, `*.mp4` | Generated level covers and five-second clear videos (Git LFS) |
+| `assets/levels/*.png`, `*.mp4` | Generated level covers and five- to six-second clear videos (Git LFS) |
 | `assets/levels/prompts/` | The exact prompts each asset was generated from |
 | `tools/genimage.py` | Generates images through the gpt-image-2 endpoint |
 | `tools/genvideo.py` | Generates video clips through the Dreamina Seedance endpoint |
@@ -190,7 +190,7 @@ time a level pairs the two.
 - **The next level opens** once every question in the current one has been
   answered correctly at least once, accumulated across runs.
 - **Cover and celebration art** is briefed in `assets/levels/prompts.md` and
-  generated into `assets/levels/`: one still cover per level, and one five-second
+  generated into `assets/levels/`: one still cover per level, and one five- to six-second
   clear video with a small story in it — a surprise the child can read without
   words or sound. No clip may change how many of anything is on screen, because the
   count the child just made is still fresh.
@@ -202,9 +202,9 @@ time a level pairs the two.
   `prefers-reduced-motion` the cover is held as a still instead of the clip
   playing, since that query does not reach a `<video>` on its own.
 - **The clip is fetched while the level is being played**, starting the moment its
-  cover opens rather than when the celebration begins. These files are three to
-  four megabytes, so on a slow connection a download that starts at the
-  celebration either stutters through the five seconds or is still arriving when
+  cover opens rather than when the celebration begins. These files run from three
+  to seven megabytes, so on a slow connection a download that starts at the
+  celebration either stutters through the clip or is still arriving when
   the nine-second ceiling gives up on it — a child who answered everything right
   would get the fallback star burst. One level's clip is held at a time, and it is
   released when the level is left without earning it: backing out of the cover,

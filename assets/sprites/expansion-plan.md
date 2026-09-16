@@ -123,6 +123,20 @@ An actor is not one asset. Each needs, beyond the two `<symbol>`s:
 No new `@property` registration was needed for three figures, which suggests the
 existing vocabulary covers most animals. A comb or a shell may need one.
 
+**Draw to the brief, not from taste.** Rows 6-8 were drawn before the level six to
+ten art was generated, and the two disagreed: the same figure had a pink tail in
+the sprite and a grey one in the video, a pale wing bar against a peach breast.
+The covers and clips are generated files carrying exact hex values, so the sprite
+is the side that moves — `../levels/prompts.md` says as much, and its table is the
+contract. Read the row before drawing, and if no row exists yet, write it first.
+
+One measured cost of following the brief: `sp-hen`'s breast `#e8a882` sits 21.7
+from `sp-egg` `#d9b48c`, inside the 40 the contrast rule asks for. It is tolerable
+only because the breast is a small patch away from where objects land, and the
+eggs arrive against the body `#c9563f`, which is 122.6 away. A future row should
+not repeat it: check the actor's *secondary* colours against the target, not just
+its body.
+
 ## Draw order
 
 0. **No new art.** `lamp-star` is drawn and unused — a cover brief turns it into
