@@ -109,6 +109,7 @@ questions drawn from that level's own item set — which ends in a result screen
 | 4 | 🖐 up to 5 | counting, addition | 15 | 10 | counting: cartoon · addition: numeral cards |
 | 5 | 🖐 up to 5 | counting, addition, subtraction | 25 | 10 | counting and subtraction: cartoon · addition: numeral cards |
 | 6 | ☝️✊ up to 10 | counting | 6 | 12 | counting: cartoon |
+| 7 | ☝️✊ up to 10 | counting to 10, addition to 8 | 38 | 12 | counting: numeral cards · addition: numeral cards |
 
 The hand sign marks the number range a stretch of the path covers. Ten is spelled
 with two signs because no single hand shape says it: a raised finger and a fist read
@@ -119,6 +120,22 @@ An item set is enumerated, not a random range: level 5's twenty-five are
 `count 1..5`, every `a + b ≤ 5`, and every take-away under five. Because a run
 usually asks fewer questions than the set holds, coming back is how a level is
 finished.
+
+**A level may work in two ranges at once.** Level 7 counts to ten and adds to eight,
+because they are different skills at different stages: the counting is what level 6
+just drilled, and the arithmetic is the new thing, so capping the sums keeps the
+addends inside numbers the child has only just learned to count. One range for the
+whole level would have had to be wrong in one direction or the other — sums to ten
+over quantities met a level ago, or counting held back to eight for no reason visible
+on screen. A level names only the ceilings that differ from its own; everything
+unnamed reads the level's own bounds, and the mode's ceiling — not the level's — is
+also what decides which skill an answer is filed under.
+
+By the time a child reaches level 7 the counting is largely mastered, so the
+weighting draws it rarely: counting is about a twentieth of the pull there, and many
+runs ask none of it at all. That is the intended behaviour of "weakest first" and not
+a level failing to ask what it declares — the questions are in the set, and a child
+who is still shaky on counting to ten will meet them.
 
 Levels 3 and 6 go the other way and ask *more* questions than they have items.
 Level 3 asks eight of six, because there is no way to ask eight distinct sums and

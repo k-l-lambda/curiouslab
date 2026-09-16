@@ -321,6 +321,35 @@ export const LEVELS = [
 		cover: 'l6-cover.webp',
 		clear: 'l6-clear.mp4',
 	},
+	{
+		// Addition returns, and this is the first level whose two modes work in
+		// different ranges: counting to ten, adding to eight. The counting is the
+		// part the child just spent a whole level on, so it is the wider of the two;
+		// the arithmetic is the new thing here and starts below its own ceiling. A
+		// single range would have forced one of the two to be wrong — sums to ten over
+		// a set the child met one level ago, or counting capped at eight for no reason
+		// the child could see.
+		id: 'l7',
+		cast: 8,
+		band: 'b10',
+		min: 1,
+		max: 10,
+		// Eight, not ten. `1 + 7` is the widest sum here, and the addends stay inside
+		// what level 6 taught the child to count.
+		ranges: {add: {max: 8}},
+		questions: 12,
+		// Two tries a question, as everywhere above the three band.
+		maxErrors: 2,
+		// Counting starts at `prompt` — one rung up from level 6, and the top of the
+		// counting ladder, since a counting question written as a numeral would print
+		// its own answer. Addition starts where levels 4 and 5 left it and keeps `bare`
+		// above, which opens per question once the rung below it has been answered.
+		forms: {count: [FORMS.PROMPT], add: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-pig',
+		pairing: 'pig-apple',
+		cover: 'l7-cover.webp',
+		clear: 'l7-clear.mp4',
+	},
 ];
 
 export const levelById = id => LEVELS.find(l => l.id === id);
@@ -334,13 +363,40 @@ export const levelIndex = id => LEVELS.findIndex(l => l.id === id);
  * so borrowing the matching tier id keeps all three working untouched rather
  * than growing a parallel set of records beside them.
  */
-const TIER_BY_MAX = {3: 0, 5: 1, 7: 2, 10: 3};
+// A level's `max` names a tier, and the tiers are the bands: 3, 5, 7, 10. An 8 is
+// not a band of its own — it is a ceiling inside the ten band, which is what level 7
+// asks for — so it maps to the ten tier deliberately. The fallback below would have
+// landed there anyway; naming it means the next reader does not have to work out
+// whether that was intended.
+const TIER_BY_MAX = {3: 0, 5: 1, 7: 2, 8: 3, 10: 3};
 
 export function tierIdFor (mode, max) {
 	const tiers = TIERS[mode];
 	const index = TIER_BY_MAX[max];
 
 	return (tiers[index] ?? tiers[tiers.length - 1]).id;
+}
+
+/**
+ * The number range one mode of a level works in.
+ *
+ * A level's `min`/`max` cover all its modes, which held while every level asked its
+ * modes over one range. Level 7 does not: it counts to ten and adds to eight, because
+ * the two are different skills and the wider one is the one already practised. So a
+ * level may name `ranges` per mode, and anything it does not name falls back to the
+ * level's own bounds — every level written before this reads exactly as it did.
+ *
+ * @param {object} level
+ * @param {string} mode
+ * @returns {{min: number, max: number}}
+ */
+export function rangeFor (level, mode) {
+	const own = level.ranges?.[mode];
+
+	return {
+		min: own?.min ?? level.min,
+		max: own?.max ?? level.max,
+	};
 }
 
 /* -------------------------------------------------------------- item sets */
@@ -360,13 +416,17 @@ export function itemsOf (level) {
 	const items = [];
 
 	for (const mode of modesOf(level)) {
+		// Per mode, because a level may cap its arithmetic below its counting — see
+		// `rangeFor`.
+		const {min, max} = rangeFor(level, mode);
+
 		if (mode === 'count')
-			for (let n = level.min; n <= level.max; ++n)
+			for (let n = min; n <= max; ++n)
 				items.push({id: itemId(mode, [n]), mode, operands: [n], answer: n, quantity: n});
 
 		if (mode === 'add')
-			for (let a = 1; a < level.max; ++a)
-				for (let b = 1; a + b <= level.max; ++b)
+			for (let a = 1; a < max; ++a)
+				for (let b = 1; a + b <= max; ++b)
 					items.push({
 						id: itemId(mode, [a, b]),
 						mode,
@@ -376,7 +436,7 @@ export function itemsOf (level) {
 					});
 
 		if (mode === 'sub')
-			for (let total = 2; total <= level.max; ++total)
+			for (let total = 2; total <= max; ++total)
 				for (let present = 1; present < total; ++present)
 					items.push({
 						id: itemId(mode, [total, present]),
@@ -812,7 +872,11 @@ export function chooseTarget (level, records, run, rng = Math.random) {
  */
 export function buildQuestion (level, target, pairing, knobs) {
 	const {item, form} = target;
-	const tierId = tierIdFor(item.mode, level.max);
+	// The mode's own ceiling, not the level's, so a mode that caps itself is filed
+	// under the skill it is actually asking. Level 7's eight and ten both land on the
+	// top tier, so nothing moves today; read this as the rule the next per-mode range
+	// will need rather than as a fix for anything currently visible.
+	const tierId = tierIdFor(item.mode, rangeFor(level, item.mode).max);
 
 	return {
 		mode: item.mode,
@@ -853,7 +917,10 @@ export function nextInRun (run, deps) {
 		return null;
 
 	const pairing = pickPairing();
-	const knobs = knobsFor(target.item.mode, tierIdFor(target.item.mode, level.max));
+	// The mode's own ceiling here too, so density and distractor pressure come from
+	// the same tier the record is filed under -- whichever tier that turns out to be.
+	const knobs = knobsFor(target.item.mode,
+		tierIdFor(target.item.mode, rangeFor(level, target.item.mode).max));
 
 	return buildQuestion(level, target, pairing, knobs);
 }

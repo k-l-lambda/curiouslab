@@ -537,6 +537,14 @@ set — they brighten and throw beams, and that is all.
 
 ## Level 7 — counting and addition within 7 · pig and apple · accent `#d6453f`
 
+> **As built: counting to 10, addition to 8, twelve questions, two tries each, the
+> ten band.** There is no seven band — level six widened to ten, and this level
+> follows it — so the two skills work in different ranges: the counting is what level
+> six drilled, and the sums stop at eight to keep both addends inside numbers the
+> child has only just learned to count. The art and the story below are unchanged;
+> the cover's apples were briefed as an uncountable scatter, so they carry either
+> range as they were.
+
 Addition arrives in the seven band. Sums to seven over a set the child has just
 learned to count, which is the same step level two made inside the three band.
 
