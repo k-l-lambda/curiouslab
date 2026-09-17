@@ -112,7 +112,7 @@ questions drawn from that level's own item set — which ends in a result screen
 | 7 | ☝️✊ up to 10 | counting to 10, addition to 8 | 38 | 12 | counting: numeral cards · addition: numeral cards |
 | 8 | ☝️✊ up to 10 | addition, subtraction within 8 | 56 | 12 | both: numeral cards |
 | 9 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | both: numeral cards |
-| 10 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | addition: numbers only · subtraction: numeral cards |
+| 11 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | addition: numbers only · subtraction: numeral cards |
 
 The hand sign marks the number range a stretch of the path covers. Ten is spelled
 with two signs because no single hand shape says it: a raised finger and a fist read
@@ -120,12 +120,17 @@ as the digits 1 and 0, which keeps the whole set hands rather than mixing in a
 numeral the child may not read yet.
 
 The last two levels share one item set of ninety and differ only in how addition is
-posed: level 9 opens a sum with the objects, level 10 with the numbers alone. Twelve
+posed: level 9 opens a sum with the objects, level 11 with the numbers alone.
+
+The table skips 10. Positions 10, 15 and 20 are **gates** — review levels with a group
+scene for a cover, briefed in `assets/levels/prompts.md` — and the art for the first one
+exists while its rules do not, so nothing is claimed here yet. Level ids follow their art
+rather than their position; `levelIndex` is what reads position. Twelve
 questions against ninety items means neither is finishable in a sitting, which is the
 shape of the top of the ladder rather than an oversight — a run is as long as a child's
 attention, and that does not grow because the item set did.
 
-Level 10's addition has no cartoon rung to start from, but a sum left eight seconds
+Level 11's addition has no cartoon rung to start from, but a sum left eight seconds
 unanswered still softens to one. The softening is keyed to the form, not to the level's
 ladder, and it earns no credit; with one try a question it is the only thing between a
 stuck child and a dead end. What the level withholds is the objects in the question as

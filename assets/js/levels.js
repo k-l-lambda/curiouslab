@@ -420,7 +420,13 @@ export const LEVELS = [
 	{
 		// The top of the ladder. Same width and the same item set as level nine; what
 		// changes is that addition no longer opens with the objects.
-		id: 'l10',
+		// Numbered eleven, and it is the tenth entry in the array. The three gate levels
+		// were inserted at 10, 15 and 20 and everything from the old ten up shifted, so
+		// this level's art is `l11-*`; the id follows the art rather than the position,
+		// because the art is what a brief and a filename can be traced to. Position 10 is
+		// the first gate and has no entry yet -- its brief exists, what it asks the child
+		// does not. `levelIndex` is the thing to read for position; the id is a label.
+		id: 'l11',
 		// Raised to nine, which is what introduces the sheep -- and this is the level
 		// it debuts in, the two coinciding here where at level nine they did not.
 		cast: 9,
@@ -445,8 +451,8 @@ export const LEVELS = [
 		forms: {add: [FORMS.BARE], sub: [FORMS.PROMPT, FORMS.BARE]},
 		sprite: 'sp-sheep',
 		pairing: 'sheep-clover',
-		cover: 'l10-cover.webp',
-		clear: 'l10-clear.mp4',
+		cover: 'l11-cover.webp',
+		clear: 'l11-clear.mp4',
 	},
 ];
 

@@ -15,8 +15,14 @@ tools/genvideo.py assets/levels/prompts/l2-clear.txt assets/levels/l2-clear.mp4 
 
 **`--ratio` must be left out when `--first-frame` is given** — the service takes the
 output ratio from the image and rejects a request that also states one. `--duration`
-has to match what the prompt's own beats add up to: 5s for levels one to five, 6s for
-six to ten, 7s for eleven to fifteen, 8s for sixteen to twenty.
+has to match what the prompt's own beats add up to: 5s for levels one to five, 6s for six
+to eleven, 7s for twelve to seventeen, 8s for eighteen to twenty-three — and **10s for
+the three gates at 10, 15 and 20**, which are the longest clips in the game and are
+written to their own rules (see `../prompts.md`).
+
+The file numbering shifted when the gates were inserted. Levels 10 to 20 became 11 to 14,
+16 to 19 and 21 to 23, and the three freed numbers are the gates; `git log --follow` on any
+of these files crosses the rename.
 
 Generation bills per call and cannot be cancelled. If the poller dies but the task
 was created, resume it with `--task <id>` — the id is printed when the job starts —
