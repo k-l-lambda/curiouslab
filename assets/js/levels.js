@@ -350,6 +350,104 @@ export const LEVELS = [
 		cover: 'l7-cover.webp',
 		clear: 'l7-clear.mp4',
 	},
+	{
+		// Arithmetic only, and subtraction returns at a width it has not been asked
+		// at before -- level 5 stopped it at five. No counting mode at all: there is
+		// nothing here to fall back on, which is what makes this the step up rather
+		// than the range alone.
+		//
+		// Fifty-six items (twenty-eight sums, twenty-eight differences) against
+		// twelve questions, so coverage takes several runs. That is the same shape as
+		// level 5 and level 7 and is deliberate; the difference here is that one
+		// wrong tap ends the attempt, so the runs are shorter as well as more of them.
+		id: 'l8',
+		cast: 8,
+		// Eight sits in the ten band. There is no eight band and no seven band -- see
+		// the note on level 6 -- so the marker the child reads above this level is the
+		// same one they have been under since level 6.
+		band: 'b10',
+		min: 1,
+		max: 8,
+		questions: 12,
+		// One try. A wrong tap is a miss, which no level below this does.
+		//
+		// This needs no new mechanism: `resolveWrong` spends a try, plays the whole
+		// feedback sequence -- why that number was wrong, then the counting
+		// walkthrough -- and only then asks whether the budget is gone. At one, that
+		// check fires the first time, so the child still gets the explanation for the
+		// answer they gave before the question is taken away. Getting it wrong and
+		// being shown why is not the same as being given another go.
+		maxErrors: 1,
+		// Both modes start at `prompt` and keep `bare` above. Subtraction was last
+		// asked at `full` on level 5; a level with no counting in it has no business
+		// showing full object groups for arithmetic the child has already done at a
+		// narrower width, and `formAvailable` still holds `bare` shut per question
+		// until that question has been answered right at `prompt`.
+		forms: {add: [FORMS.PROMPT, FORMS.BARE], sub: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-mouse',
+		pairing: 'mouse-cheese',
+		cover: 'l8-cover.webp',
+		clear: 'l8-clear.mp4',
+	},
+	{
+		// Ten, and arithmetic only -- the widest both operations have been asked at.
+		// Ninety items (forty-five sums, forty-five differences) against twelve
+		// questions: the largest set on the ladder by some way, and the first that
+		// cannot be covered in a handful of runs. That is the level's shape rather
+		// than an oversight. Twelve stays because a run is as long as a child's
+		// attention, which does not grow because the item set did; what grows is the
+		// number of times they come back.
+		id: 'l9',
+		// No new figures: the cast opened to eight at level six, and everything this
+		// level can draw has been in play since. The hen is this level's face without
+		// being its debut -- the two have never had to coincide.
+		cast: 8,
+		band: 'b10',
+		min: 1,
+		max: 10,
+		questions: 12,
+		// One try, as from level eight.
+		maxErrors: 1,
+		// Both modes as level eight left them. The step here is the width, so nothing
+		// else moves: changing the range and the presentation together would leave no
+		// way to tell which of the two a child was struggling with.
+		forms: {add: [FORMS.PROMPT, FORMS.BARE], sub: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-hen',
+		pairing: 'hen-egg',
+		cover: 'l9-cover.webp',
+		clear: 'l9-clear.mp4',
+	},
+	{
+		// The top of the ladder. Same width and the same item set as level nine; what
+		// changes is that addition no longer opens with the objects.
+		id: 'l10',
+		// Raised to nine, which is what introduces the sheep -- and this is the level
+		// it debuts in, the two coinciding here where at level nine they did not.
+		cast: 9,
+		band: 'b10',
+		min: 1,
+		max: 10,
+		questions: 12,
+		maxErrors: 1,
+		// Addition asks the numerals and nothing else: one rung, so `formAvailable`
+		// opens it immediately (rung zero is always available) and there is no cartoon
+		// stage for a sum to start from. Subtraction keeps both rungs -- it is
+		// addition that loses the objects here, and taking them from both at once
+		// would make this two steps up rather than one.
+		//
+		// A sum can still end up showing its objects: `SOFTER_FORM` is keyed by form
+		// rather than by the level's ladder, so a `bare` question left eight seconds
+		// unanswered softens to `prompt` here as it does anywhere. That is deliberate
+		// and it is the rule as agreed -- being stuck is what it reacts to, it earns
+		// the child no credit, and with one try a question it is the only thing
+		// standing between a stuck child and a dead end. What this level withholds is
+		// the objects in the question as posed, not the hand held out afterwards.
+		forms: {add: [FORMS.BARE], sub: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-sheep',
+		pairing: 'sheep-clover',
+		cover: 'l10-cover.webp',
+		clear: 'l10-clear.mp4',
+	},
 ];
 
 export const levelById = id => LEVELS.find(l => l.id === id);

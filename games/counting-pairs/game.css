@@ -1023,11 +1023,29 @@ body {
 }
 
 /* Level nodes: centred on their point of the path. */
+/* Sized against both axes, and both terms are measured.
+
+   The width term: the node is centred on its stop, so half of it hangs to each
+   side, and the portrait curve's rightmost stop sits at 0.841 of the map box —
+   measured over every level count from 5 to 20, so it is a property of the curve
+   rather than of today's table. Half a node has to fit in the 0.159 left, putting
+   the ceiling at 31.8% of the box; the box is about 91.5vw on a phone, so 29vw is
+   the limit and 26vw carries a margin. Height alone was not enough: 13vh on a tall
+   narrow screen (320x900) handed the node its full size while the box was at its
+   narrowest, and a level landed on the part of the curve that swings furthest
+   right — 3px outside the map. Nothing in the old clamp mentioned the axis the
+   overflow happened on.
+
+   The ceiling: 6rem rather than 6.4rem, which is what leaves the closest pair of
+   nodes 12px apart at ten levels instead of 6. It works with `PER_LEVEL_REM` in
+   map.js — that comment has the derivation — and both are asserted on five
+   viewports rather than eyeballed. Still 96px on a phone, well over the 44px a
+   small finger needs. */
 .level-node {
 	position: absolute;
 	transform: translate(-50%, -50%);
-	width: clamp(4.2rem, 13vh, 6.4rem);
-	height: clamp(4.2rem, 13vh, 6.4rem);
+	width: clamp(4.2rem, min(13vh, 26vw), 6rem);
+	height: clamp(4.2rem, min(13vh, 26vw), 6rem);
 	border: 4px solid var(--panel);
 	border-radius: 50%;
 	background: var(--sky-2);

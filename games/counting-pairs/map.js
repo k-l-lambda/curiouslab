@@ -88,13 +88,23 @@ const PATHS = {
 /**
  * Vertical room per level, in rem.
  *
- * A node is at most 6.4rem across (`.level-node`), and the path weaves side to
- * side between them, so a little over one node of height each is enough to keep
- * consecutive nodes from touching at the tightest turn. Small enough that the
- * first five levels still fit an ordinary screen without scrolling — the map only
- * grows past the window once there are more levels than it can hold.
+ * This is what keeps consecutive nodes from touching. The stops are spread over a
+ * fixed stretch of the curve whatever the level count, so each level added brings
+ * them closer along the arc; the box growing taller is what buys the distance back,
+ * because stretching it vertically grows the gap between stops without moving them
+ * sideways.
+ *
+ * It was 7.5rem, which held to seven levels and failed at ten by a pixel: the
+ * tightest pair is where the curve runs sideways, and there the whole gap is what
+ * the box height provides. At 9.5rem, with the node ceiling at 6rem, the closest
+ * pair clears by 12px on a 390-wide phone and on a 320-wide one — measured, not
+ * chosen, and asserted by `l7ck` and `mapck` on five viewports.
+ *
+ * The cost is scrolling: ten levels make a map about twice a phone's height. That is
+ * the right trade for a map, which is a thing to travel down rather than to read at
+ * a glance, and it was already scrolling at seven.
  */
-const PER_LEVEL_REM = 7.5;
+const PER_LEVEL_REM = 9.5;
 
 /**
  * Where along the path each stop sits, as a fraction of its length.

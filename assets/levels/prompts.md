@@ -506,9 +506,10 @@ clips may not say. The seeds stay on the ground, untouched and uncounted.
 
 The art here was made before the rules that use it, on purpose: a cover is the
 slowest thing in a level's chain and the only one that cannot be written in an
-afternoon, so it is the thing worth having ready first. Levels 6 and 7 now have their
-entries in `assets/js/levels.js`; levels 8 to 10 still do not, though every sprite all
-four of them name is now drawn.
+afternoon, so it is the thing worth having ready first. All five now have their entries
+in `assets/js/levels.js`, so the ladder in code and the briefs here cover the same ten
+levels — read the table in that file wherever the two disagree, and the As built notes
+under each heading say where they do.
 
 The band plan below — six to eight in a seven band, nine and ten in a ten band — is
 **not** what the code does. There is no seven band: level 6 counts 5 to 10 in the ten
@@ -602,6 +603,20 @@ forbidden, because an eaten apple is a smaller count.
 
 ## Level 8 — addition and subtraction within 7 · mouse and cheese · accent `#f2c94c`
 
+> **As built: addition and subtraction within 8, twelve questions, one try each, the
+> ten band.** The width went to eight rather than seven for the same reason level 6's
+> did — there is no seven band — and eight is where level 7's addition already stops,
+> so this level widens subtraction to meet it rather than moving both. The art and the
+> story below are unchanged: the mice overlap into no countable row and the wedges lie
+> in a loose scatter, so the cover carries either width as it was drawn.
+>
+> **One try a question starts here.** Every level below allows at least two. This is
+> the step up, more than the range is: with no counting mode in the level there is
+> nothing to fall back on, and a wrong tap now ends the question instead of costing one
+> of two. The child still sees the full explanation of the answer they gave before the
+> question goes — spending the last try plays the reveal and the counting walkthrough,
+> and only then is the budget checked.
+
 Arithmetic only, no counting to fall back on: the seven band's answer to level
 three. Subtraction is new at this width.
 
@@ -631,6 +646,17 @@ wedges are the counted set and a wall of undifferentiated cheese would erase the
 answer the child just gave.
 
 ## Level 9 — counting, addition and subtraction within 10 · hen and egg · accent `#d9b48c`
+
+> **As built: addition and subtraction within 10, twelve questions, one try each.**
+> No counting: it was drilled on level 6 and carried through level 7, and by here the
+> weighting drew it so rarely that keeping it would have meant ninety-nine items to
+> cover for the sake of a skill already mastered. The art is unaffected — the hens
+> overlap into no countable row and the eggs lie in a loose scatter, so the cover
+> carries the narrower set as drawn.
+>
+> Ninety items against twelve questions is the largest gap on the ladder. That is the
+> level's shape: coverage takes many returns, which is what the brief below means by
+> the set getting large enough that a run stops being finishable in one sitting.
 
 The first level of the ten band, and everything is in play at once. Ten is where
 the item set gets large enough that a run stops being finishable in one sitting.
@@ -662,6 +688,20 @@ never changes — only what it is made of. Written any looser (a nest that "fill
 chicks") it would break the rule outright.
 
 ## Level 10 — counting, addition and subtraction within 10 · sheep and clover · accent `#4f9a34`
+
+> **As built: addition and subtraction within 10, addition posed as numerals only,
+> twelve questions, one try each.** Same item set as level 9 — the ninety are identical
+> — so the whole step here is the presentation: a sum arrives as numbers with no
+> objects behind it. Subtraction keeps its cartoon opening, because taking the objects
+> from both operations at once would make this two steps rather than one.
+>
+> A sum can still end up showing its objects, after eight seconds of being stuck. That
+> is the mercy rule as agreed and it earns no credit; with one try a question it is the
+> only thing standing between a stuck child and a dead end. What this level withholds
+> is the objects in the question as posed.
+>
+> This is also where the sheep debuts — the level raises the cast, which is what puts a
+> new figure into play, and here the debut and the cover face coincide.
 
 The top of the ladder. Widest item set, every mode, and the level a child arrives at
 last after the most returning.
