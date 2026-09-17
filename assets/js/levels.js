@@ -630,6 +630,14 @@ export const UNLOCK_STARS = 1;
  * finished run, and that is what stops the cascade. A level must be played to
  * open the next one.
  *
+ * `finished` is the second half of the gate and defaults to *nothing finished*
+ * rather than to `played`. Falling back to `played` would read better at the call
+ * site and was the first version of this, but it means a caller that forgets the
+ * predicate silently gets the old stars-only rule back — a gate that fails open
+ * when misconfigured. Defaulting to false instead makes a forgotten predicate show
+ * up at once as levels that will not open, which is wrong in the direction someone
+ * notices.
+ *
  * `unlockAll` is the `?unlock` debug override. It is applied here, at the point
  * of asking, and never written back — a debug switch must not hand out progress
  * the child did not earn.
@@ -642,13 +650,15 @@ export const UNLOCK_STARS = 1;
  *   strict answer rather than a cascade.
  * @returns {Set<string>} level ids
  */
-export function unlockedLevels (records, {unlockAll = false, played = () => false} = {}) {
+export function unlockedLevels (records,
+		{unlockAll = false, played = () => false, finished = () => false} = {}) {
 	const open = new Set();
 
 	for (let i = 0; i < LEVELS.length; ++i) {
 		const prev = LEVELS[i - 1];
 		if (unlockAll || i === 0
-				|| starsFor(prev, records, {played: played(prev.id)}) >= UNLOCK_STARS)
+				|| (finished(prev.id)
+					&& starsFor(prev, records, {played: played(prev.id)}) >= UNLOCK_STARS))
 			open.add(LEVELS[i].id);
 		else
 			break;
@@ -752,11 +762,17 @@ export const isClear = (run, stars = 0) => run.misses === 0
  *
  * What failure does *not* do is take back what was learned. Every answer is
  * already written to the store as it happens, so a failed attempt keeps its
- * correct answers: item grades, best times and coverage all stand. Those grades are
- * what the stars are computed from and stars are what open the next level, so a run
- * can fail and still unlock — see `finishRun`, which reports both. That is
- * deliberate: the answers were given, which a lost run does not make untrue, and
- * taking them back would mean a child could lose ground by playing.
+ * correct answers: item grades, best times and coverage all stand. The stars are
+ * computed from those grades, so a lost run can still raise the star count on the
+ * map — the answers were given, which losing does not make untrue, and taking them
+ * back would mean a child could lose ground by playing.
+ *
+ * What it does cost is the next level. Stars alone used to open it, which meant a
+ * failed attempt could unlock on the strength of the questions answered before the
+ * miss; the gate now wants the run finished as well, so losing costs the unlock
+ * until some run gets to the end. Both `finishRun` and `unlockedLevels` read that,
+ * and they have to agree — one without the other either hides an unlock that
+ * happens anyway or animates one that does not.
  *
  * @param {object} run
  */
@@ -998,6 +1014,14 @@ export function finishRun (run, records, {starsSeen = 0, nextWasOpen = false} = 
 		//
 		// No `played` argument needed here: the run being finished is what makes this
 		// level played, so `score.stars` is already the number the map will show.
-		unlocked: score.stars >= UNLOCK_STARS && next && !nextWasOpen ? next.id : null,
+		// `!isFailure(run)` because losing the attempt does not open anything. The
+		// stars are still real and still rise -- the answers given before the miss
+		// stand -- but they are not on their own enough: the level has to be finished
+		// too. Kept in step with `unlockedLevels`, which gates on the same thing
+		// through its `finished` predicate; if only this reported the suppression the
+		// animation would stop while the lock came off anyway on the next map draw.
+		unlocked: !isFailure(run) && score.stars >= UNLOCK_STARS && next && !nextWasOpen
+			? next.id
+			: null,
 	};
 }

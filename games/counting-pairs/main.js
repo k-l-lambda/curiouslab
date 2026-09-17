@@ -647,11 +647,13 @@ async function afterMiss (gen, cause) {
  *
  * Per-item progress needs no help from here — `recordAnswer` writes every answer
  * as it lands. So the questions answered correctly before the miss still count,
- * including toward the stars that open the next level. A run can therefore
- * fail and unlock in the same breath, and when it does the unlock still plays:
- * the child is being sent to the map anyway, the lock is genuinely off, and
- * holding that back until some later successful run would be hiding a thing they
- * earned.
+ * and the stars on the map can rise because of them.
+ *
+ * What a failed run does not do is open the next level. That is why `finished` is
+ * absent from the list above: it is the unlock gate, `endRun` writes it, and this
+ * path deliberately leaves it alone. The stars may well have crossed the
+ * threshold on the answers given before the miss — they are still shown, still
+ * real, and still count the moment a run of this level gets to the end.
  */
 async function failRun () {
 	const run = ui.run;
@@ -890,10 +892,21 @@ function showView (name) {
  */
 const levelPlayed = id => store.level(id).runs > 0;
 
+/**
+ * Has a run of this level been finished rather than lost?
+ *
+ * The unlock gate reads this and not `levelPlayed`. Stars are a property of the
+ * item set and go on rising from the answers given before a miss, so on their own
+ * they would open the next level off a failed attempt — which is what this
+ * separates. A level still *shows* its stars after a lost run, because they were
+ * earned; it just does not hand over the next level until one run gets to the end.
+ */
+const levelFinished = id => store.level(id).finished;
+
 function levelView () {
 	const records = store.itemRecords();
 	const unlocked = levels.unlockedLevels(records,
-		{unlockAll: ui.unlockAll, played: levelPlayed});
+		{unlockAll: ui.unlockAll, played: levelPlayed, finished: levelFinished});
 	const stars = new Map();
 	const cleared = new Set();
 
@@ -969,7 +982,8 @@ function beginRun (level) {
 	const next = levels.LEVELS[levels.LEVELS.findIndex(l => l.id === level.id) + 1];
 	ui.nextWasOpen = !next
 		|| levels.unlockedLevels(store.itemRecords(),
-			{unlockAll: ui.unlockAll, played: levelPlayed}).has(next.id);
+			{unlockAll: ui.unlockAll, played: levelPlayed, finished: levelFinished})
+			.has(next.id);
 	rec.lastPlayed = Date.now();
 	ui.run = levels.startRun(level);
 
@@ -1001,6 +1015,13 @@ async function endRun () {
 	// Persist what the child has now been shown, so the next result only pops the
 	// stars that are genuinely new.
 	rec.starsSeen = Math.max(rec.starsSeen, result.stars);
+	// Reached the last question without losing one. This is the unlock gate, so it
+	// is written on the success path only -- `failRun` is the other way a run ends
+	// and it leaves this alone. Not the same as `cleared`, which also wants an
+	// improvement to celebrate: a run can finish, open the next level, and still
+	// have nothing new to show.
+	if (!result.failed)
+		rec.finished = true;
 	if (result.cleared)
 		rec.cleared = true;
 	if (!rec.bestRun || result.stars > rec.bestRun.stars)

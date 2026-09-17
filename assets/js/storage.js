@@ -144,6 +144,12 @@ const emptyForm = () => ({
  */
 const emptyLevel = () => ({
 	cleared: false,
+	// A run of this level was seen through to the end without losing a question.
+	// Distinct from `runs`, which counts attempts including failed ones, and from
+	// `cleared`, which additionally wants an improvement to celebrate. This is the
+	// one the unlock gate reads: finishing is what opens the next level, and a run
+	// that ended in a miss did not finish.
+	finished: false,
 	starsSeen: 0,
 	runs: 0,
 	bestRun: null,
@@ -182,8 +188,18 @@ function hydrate (parsed) {
 	}
 
 	out.levels = {};
-	for (const [id, rec] of Object.entries(parsed.levels ?? {}))
+	for (const [id, rec] of Object.entries(parsed.levels ?? {})) {
 		out.levels[id] = Object.assign(emptyLevel(), rec);
+		// `finished` postdates these saves, so an older record has no value for it and
+		// would otherwise hydrate to false -- re-locking levels the child is already
+		// playing. Seeded from `runs` instead: under the previous rule any finished
+		// run opened the next level, so a level with runs on it had already earned
+		// whatever it opened. The new, stricter rule applies to runs from here on.
+		// Deliberately lenient: taking back a level a child already reached is a worse
+		// failure than one extra level standing open on a save made before the fix.
+		if (!('finished' in rec))
+			out.levels[id].finished = rec.runs > 0;
+	}
 
 	return out;
 }

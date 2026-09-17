@@ -203,10 +203,14 @@ time a level pairs the two.
   carry on through the remaining questions, which taught the wrong thing: the
   clear was already gone by then and nothing later in the run could earn it back.
   What failure does **not** do is take back what was learned — every answer is
-  written as it lands, so correct answers still count, including toward the stars
-  that open the next level. A run can therefore fail and unlock in the same breath,
-  and the unlock still plays on the map — once, on the run that earns it, and not
-  again on every later run of a level already finished.
+  written as it lands, so correct answers still count and the stars on the map can
+  rise because of them. What it does cost is the next level: stars alone used to
+  open it, so a lost attempt could unlock on the strength of the questions answered
+  before the miss. **The gate now wants the run finished as well**, so a failed
+  attempt opens nothing and the child plays the level again. The stars it earned are
+  still shown, and they count the moment a run gets to the end. An unlock still
+  plays on the map once, on the run that earns it, and not again on every later run
+  of a level already finished.
 - **The error budget tightens with the bands**: three tries a question in the
   3-band, two in the 5-band. The 5-band asks about sums the child has already met
   below it, so two tries still leaves room for a slip without leaving room for
@@ -228,16 +232,21 @@ time a level pairs the two.
   able to explain the difference. Reading the gate off the number the child can see
   is what stops the map contradicting itself.
 
-  A level shows no stars until a run of it has been finished, and the gate reads that
-  same played-gated number — which is also what keeps one level's work from opening
-  two. Item sets overlap, so mastering level 1 alone already scores level 2 a star
-  against its own items; if the gate read the raw score, that star would open level 3
-  as well. So the rule in full is: finish a run of a level, earn a star on it, and the
-  next level opens. Because of that overlap some levels are already at one star from
-  the ladder below before any of their own new questions is answered, which makes the
-  gate on those levels effectively "play a run of it" — a low bar on purpose, since
-  being stuck behind a level is worse for a small child than arriving at the next one
-  early.
+  A level shows no stars until a run of it has been played to an outcome — a lost
+  attempt counts for this, since its correct answers were still given. The gate reads
+  that same played-gated number, which is what keeps one level's work from opening
+  two: item sets overlap, so mastering level 1 alone already scores level 2 a star
+  against its own items, and a gate reading the raw score would open level 3 as well.
+  On top of that the gate wants the run **finished** — reaching the last question
+  without losing one. Playing and losing is therefore enough to show a star and not
+  enough to open anything.
+
+  So the rule in full is: finish a run of a level, earn a star on it, and the next
+  level opens. Because of the overlap some levels are already at one star from the
+  ladder below before any of their own new questions is answered, which makes the gate
+  on those levels effectively "get through a run of it without losing a question" — a
+  low bar on purpose, since being stuck behind a level is worse for a small child than
+  arriving at the next one early.
 - **Cover and celebration art** is briefed in `assets/levels/prompts.md` and
   generated into `assets/levels/`: one still cover per level, and one five- to six-second
   clear video with a small story in it — a surprise the child can read without
