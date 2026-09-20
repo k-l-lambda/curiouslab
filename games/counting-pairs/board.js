@@ -136,26 +136,51 @@ function fitPanel (panel) {
 	if (!grids.length)
 		return;
 
-	// The panel centres its content, so the budget is its content box.
+	// The objects are not always the panel's first child: a `bare` question keeps
+	// its equation above them once a timeout reveals them. So find the wrapper the
+	// grids are really inside rather than trusting position. Measuring the equation
+	// by mistake is not a small error: its box does not change with object size, so
+	// the solve below sees no slope, returns the unconstrained ideal, and lets the
+	// objects run hundreds of pixels past the panel edge.
+	let content = grids[0];
+	while (content.parentElement && content.parentElement !== panel)
+		content = content.parentElement;
+	if (content.parentElement !== panel)
+		return;
+
+	// The panel centres its content, so the budget is its content box — less
+	// whatever else shares the column. The equation is part of the question and
+	// keeps its room; only what is left over is the objects' to fill.
 	const style = getComputedStyle(panel);
+	const gap = parseFloat(style.rowGap) || 0;
+	const taken = [...panel.children]
+		.filter(el => el !== content)
+		.reduce((h, el) => h + el.offsetHeight + gap, 0);
 	const availH = panel.clientHeight
-		- parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+		- parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - taken;
 	const availW = panel.clientWidth
 		- parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
 	if (availH <= 0 || availW <= 0)
 		return;
 
-	const content = panel.firstElementChild;
 	const ideal = idealObjectSize(panel, grids[0]);
 	const counts = grids.map(grid => grid.childElementCount);
 
+	// offsetWidth/offsetHeight rather than getBoundingClientRect: the rect is the
+	// box as drawn, so it comes back through any transform. The `bare` reveal
+	// animates its objects in from `scale(.55)`, which made the content measure 55%
+	// of its real size and the solve answer with an object about 1.8 times too big.
+	// The layout box is what the arithmetic below is about, and it is transform-free
+	// by definition — no ordering rule for callers to get wrong. It is rounded to
+	// whole pixels, which is under a third of a percent here and well inside the
+	// tolerance the relaxation loop settles on.
 	const apply = (cols, size) => {
 		grids.forEach((grid, i) => {
 			setColumns(grid, cols[i], 'auto');
 			grid.style.setProperty('--obj-size', `${size}px`);
 		});
 
-		return content.getBoundingClientRect();
+		return {width: content.offsetWidth, height: content.offsetHeight};
 	};
 
 	/** The size at which this arrangement just fills the tighter axis. */

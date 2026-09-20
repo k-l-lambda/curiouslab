@@ -963,7 +963,11 @@ body {
 
 /* Objects brought out after a miss: they join the prompt rather than replacing
    it, so the panel becomes the cartoon form for the rest of the round. */
-.bare-objects { display: grid; place-items: center; width: 100%; animation: pop .4s ease-out both; }
+/* Deliberately not `width: 100%`. The panel is a centring column flex, so this
+   shrink-wraps its objects and stays centred anyway — and a box that is always
+   the full panel width tells fitPanel() nothing about how wide the objects grew,
+   which let an addition's two groups overflow sideways unnoticed. */
+.bare-objects { display: grid; place-items: center; animation: pop .4s ease-out both; }
 
 /* ---------- The level map ---------- */
 
