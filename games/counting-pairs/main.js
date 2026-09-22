@@ -473,6 +473,18 @@ function nextRound () {
 	const played = store.getState().progress.playedQuestions;
 	const enterScale = played > 24 ? 0.55 : played > 10 ? 0.75 : 1;
 
+	// The HUD is painted before the board, not after, and the order is load-bearing:
+	// `board.render` ends by measuring the panel it just filled so the objects fit
+	// it exactly. The run strip starts hidden and the HUD wraps, so unhiding it adds
+	// a whole row -- 33px on a phone -- and the board loses that height. Painting it
+	// afterwards meant the first round of every run fitted its objects to a panel
+	// 21px taller than the one they ended up in, and since the fit settles at a
+	// ratio of exactly 1.000 it had no slack to absorb the loss: the bottom row sat
+	// 8px past the panel edge until the next question replaced it.
+	paintTimer(1);
+	paintStreak();
+	paintRun();
+
 	ui.handles = board.render(dom.board, ui.question, {enterScale});
 	ui.handles.buttons.forEach(btn => {
 		btn.addEventListener('click', () => onChoice(btn));
@@ -481,9 +493,6 @@ function nextRound () {
 	dom.confirmBtn.disabled = true;
 	dom.undoBtn.disabled = true;
 	dom.hintBtn.disabled = false;
-	paintTimer(1);
-	paintStreak();
-	paintRun();
 
 	// The clock only starts once the scene has settled.
 	const gen = ui.generation;

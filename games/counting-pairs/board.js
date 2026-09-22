@@ -53,6 +53,17 @@ function setColumns (el, n, track) {
 /* An object smaller than this stops being countable, so overflow is preferred. */
 const MIN_OBJ_PX = 22;
 
+/**
+ * The smallest the bare prompt's numerals may be shrunk to.
+ *
+ * The prompt is the question, so it has to stay comfortably readable -- but a
+ * clipped equation is worse than a smaller one, and the stylesheet's own floor
+ * for it is 2rem. Twenty-six pixels sits just under that: reached only by the
+ * widest equation on the narrowest phone, and still larger than any other numeral
+ * on the board.
+ */
+const MIN_EQ_PX = 26;
+
 /* Two measurements are enough to place a straight line, and panel width and
    height are very nearly affine in object size. These are the two probes. */
 const PROBE_A = 40;
@@ -117,6 +128,56 @@ function idealObjectSize (panel, grid) {
 }
 
 /**
+ * Shrink the bare prompt until it fits across the panel.
+ *
+ * The prompt is one unwrappable line -- `white-space: nowrap`, because an
+ * equation broken over two lines stops reading as one statement -- so a line too
+ * wide for the panel is not wrapped but cut off. The stylesheet sizes it from the
+ * viewport (`clamp(2rem, 8vh, 4rem)`), which knows nothing about how many digits
+ * this particular question has, and two-digit operands arrived with the levels
+ * that count past ten: measured on a 390px phone, `1 + 2 =` came to 302px inside
+ * a 344px budget while `12 - 3 =` came to 391px and hung 13px past the panel's
+ * edge, with the panel quietly scrolling.
+ *
+ * Width is very nearly linear in font size here -- tabular numerals, a fixed gap
+ * count, and a blank measured in `em` -- so one scaling step lands close and a
+ * second settles it.
+ * @param {HTMLElement} panel
+ */
+function fitEquation (panel) {
+	const eq = panel.querySelector('.equation.prompt');
+	if (!eq)
+		return;
+
+	const style = getComputedStyle(panel);
+	const availW = panel.clientWidth
+		- parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+	if (availW <= 0)
+		return;
+
+	// Start from whatever the stylesheet asks for, not from a size left over by an
+	// earlier question: this panel is reused, and a narrow equation following a wide
+	// one would otherwise inherit the shrink and stay small for no reason.
+	eq.style.removeProperty('font-size');
+	let px = parseFloat(getComputedStyle(eq).fontSize);
+
+	for (let pass = 0; pass < 4; ++pass) {
+		const width = eq.offsetWidth;
+		if (width <= availW)
+			return;
+
+		const next = Math.max(MIN_EQ_PX, px * (availW / width));
+		eq.style.fontSize = `${next}px`;
+		// At the floor there is nothing further to try, and a floor reached is worth
+		// leaving in place: slightly too wide and fully legible beats shrinking the
+		// question until a child cannot read it.
+		if (next <= MIN_EQ_PX)
+			return;
+		px = next;
+	}
+}
+
+/**
  * Choose how each group is arranged and how big its objects are, so the groups
  * fill the panel they landed in.
  *
@@ -130,6 +191,13 @@ function idealObjectSize (panel, grid) {
  * @param {HTMLElement} panel
  */
 function fitPanel (panel) {
+	// The bare prompt is fitted first and unconditionally: it is the only content a
+	// bare question has before a timeout, so the early return below would skip it,
+	// and once objects do arrive the equation is part of what they have to fit
+	// around -- shrinking it afterwards would hand them room they were never
+	// offered.
+	fitEquation(panel);
+
 	// Addition has two groups, and they have to share one object size or the two
 	// addends stop looking like the same kind of thing.
 	const grids = [...panel.querySelectorAll('.objects, .pair-grid')];
@@ -210,6 +278,9 @@ function fitPanel (panel) {
 	}
 
 	let size = Math.min(ideal, Math.max(MIN_OBJ_PX, best.size));
+	// The previous measurement, so a stalled pass can fall back on the same affine
+	// model `sizeFor` uses instead of the proportional step.
+	let prev = null;
 	for (let pass = 0; pass < 5; ++pass) {
 		const box = apply(best.cols, size);
 		const ratio = Math.min(availH / box.height, availW / box.width);
@@ -217,9 +288,40 @@ function fitPanel (panel) {
 		if (ratio >= 1 && ratio < 1.02)
 			return;
 
-		const next = Math.min(ideal, Math.max(MIN_OBJ_PX, size * Math.min(ratio, 1.5)));
-		if (Math.abs(next - size) < 0.5)
+		let next = Math.min(ideal, Math.max(MIN_OBJ_PX, size * Math.min(ratio, 1.5)));
+		if (Math.abs(next - size) < 0.5) {
+			// The proportional step has run out of road. It assumes the box is
+			// proportional to object size, and a box with a fixed-height row in it --
+			// a subtraction's number label, an equation above the objects -- is not:
+			// `height = constant + slope * size`, so scaling by the ratio corrects
+			// only the part that scales and under-corrects by the rest. Measured: a
+			// thirteen-object subtraction settled 327px into a 325px budget, with the
+			// step down to 0.34px and the loop returning on this guard.
+			//
+			// Two measurements give the slope, so solve for the size that meets the
+			// budget rather than stepping towards it. Only when still overflowing: a
+			// stall with room to spare is simply a fit that cannot be improved.
+			if (ratio >= 1 || !prev || prev.size === size)
+				return;
+
+			const slopeH = (box.height - prev.height) / (size - prev.size);
+			const slopeW = (box.width - prev.width) / (size - prev.size);
+			const solved = Math.min(
+				slopeH > 0 ? size + (availH - box.height) / slopeH : Infinity,
+				slopeW > 0 ? size + (availW - box.width) / slopeW : Infinity,
+			);
+			if (!Number.isFinite(solved))
+				return;
+
+			next = Math.min(ideal, Math.max(MIN_OBJ_PX, solved));
+			// Nothing left to try: already at a bound the solve cannot get under.
+			if (Math.abs(next - size) < 0.01)
+				return;
+			apply(best.cols, next);
+
 			return;
+		}
+		prev = {size, height: box.height, width: box.width};
 		size = next;
 	}
 	apply(best.cols, size);
