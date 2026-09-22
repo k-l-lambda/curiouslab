@@ -88,40 +88,104 @@ const PATHS = {
 /**
  * Vertical room per level, in rem.
  *
- * This is what keeps consecutive nodes from touching. The stops are spread over a
- * fixed stretch of the curve whatever the level count, so each level added brings
- * them closer along the arc; the box growing taller is what buys the distance back,
- * because stretching it vertically grows the gap between stops without moving them
- * sideways.
+ * How much of the map each level gets, which sets how far apart the stops land once
+ * the curve is stretched into that box. It is no longer the thing standing between
+ * two nodes and an overlap — `stopsFor` spaces them along the path's travel axis, so
+ * the sideways wiggle adds to the gap rather than being all of it, and the tightest
+ * pair is no longer wherever the curve happens to turn.
  *
- * It was 7.5rem, which held to seven levels and failed at ten by a pixel: the
- * tightest pair is where the curve runs sideways, and there the whole gap is what
- * the box height provides. At 9.5rem, with the node ceiling at 6rem, the closest
- * pair clears by 12px on a 390-wide phone and on a 320-wide one — measured, not
- * chosen, and asserted by `l7ck` and `mapck` on five viewports.
+ * That history is worth keeping: this was 7.5rem, which held to seven levels and
+ * failed at ten, and raising it to 9.5 bought 12px of clearance that sixteen levels
+ * spent again and then some — the closest pair overlapped by 20px, and no plausible
+ * height fixed it. So the spacing was fixed instead. At 9.5rem with sixteen levels
+ * the closest pair now clears by 13px on a 390-wide phone, 26px on a 320-wide one,
+ * and more on every larger box — measured, not chosen, and asserted by `l7ck`,
+ * `l6ck` and `mapck`.
  *
- * The cost is scrolling: ten levels make a map about twice a phone's height. That is
+ * The cost is scrolling: sixteen levels make a map about three phone-heights. That is
  * the right trade for a map, which is a thing to travel down rather than to read at
  * a glance, and it was already scrolling at seven.
  */
 const PER_LEVEL_REM = 9.5;
 
+/* Where the stops are spread from and to, as fractions of the path's travel axis.
+   A margin at each end so the first and last node are not half off the edge, and so
+   the path visibly continues past the last one — the ladder ends where it ends, and
+   the path saying "there is more this way" is the cheapest possible promise. */
+const FIRST_STOP = 0.06;
+const LAST_STOP = 0.82;
+
 /**
- * Where along the path each stop sits, as a fraction of its length.
- *
- * Spread with a margin at each end so the first and last node are not half off
- * the edge, and so the path visibly continues past the last one — the ladder
- * ends where it ends, and the path saying "there is more this way" is the
- * cheapest possible promise.
+ * Evenly spaced fractions of the run between those two margins.
  */
-function stopsFor (count) {
+function fractions (count) {
 	if (count === 1)
 		return [0.5];
 
-	const first = 0.06;
-	const last = 0.82;
+	return Array.from({length: count},
+		(_, i) => FIRST_STOP + (LAST_STOP - FIRST_STOP) * (i / (count - 1)));
+}
 
-	return Array.from({length: count}, (_, i) => first + (last - first) * (i / (count - 1)));
+/**
+ * Where along the path each stop sits, as a fraction of its length.
+ *
+ * Spaced evenly along the direction the path *travels* — down for the portrait
+ * curve, across for the landscape one — rather than evenly along its arc length.
+ * Those are not the same thing and the difference is what used to put nodes on top
+ * of each other: both curves spend arc length on their sideways wiggle, so equal
+ * steps of arc land two stops at nearly the same height where the curve turns, and
+ * there the whole gap between them has to come out of the box height. That is why
+ * this failed at seven levels, then at ten, and was twice paid for by making the map
+ * taller — at sixteen the tightest pair overlapped by 20px and no plausible height
+ * fixed it. Spaced along the travel axis the sideways wiggle *adds* to the gap
+ * instead of being all of it.
+ *
+ * Each curve is strictly monotonic in its own travel axis — measured, 200 samples,
+ * zero reversals — so "the length at which this axis reaches that value" has exactly
+ * one answer and a bisection finds it. The portrait curve is not monotonic across
+ * and the landscape one is not monotonic down, which is why the axis is chosen per
+ * shape rather than fixed.
+ *
+ * @param {number} count
+ * @param {SVGPathElement} trail
+ * @param {{w: number, h: number}} shape
+ * @returns {number[]} fractions of total length, ascending
+ */
+function stopsFor (count, trail, shape) {
+	const wanted = fractions(count);
+	if (!trail)
+		return wanted;
+
+	const total = trail.getTotalLength();
+	// The travel axis is the one the curve covers more of. For the portrait curve
+	// that is y, for the landscape one x.
+	const start = trail.getPointAtLength(0);
+	const end = trail.getPointAtLength(total);
+	const axis = Math.abs(end.y - start.y) >= Math.abs(end.x - start.x) ? 'y' : 'x';
+	const from = start[axis];
+	const span = end[axis] - from;
+	if (!span)
+		return wanted;
+
+	return wanted.map(f => {
+		const target = from + span * f;
+		// Bisection on length. 24 halvings of a path a few hundred units long lands
+		// well inside a thousandth of a unit, which is far finer than a pixel once
+		// the viewBox is stretched to the map.
+		let lo = 0, hi = total;
+		for (let i = 0; i < 24; ++i) {
+			const mid = (lo + hi) / 2;
+			const here = trail.getPointAtLength(mid)[axis];
+			// `span` carries the direction: the portrait curve runs from y 176 up to
+			// y 8, so "past the target" is not simply "greater than".
+			if ((here - target) * Math.sign(span) < 0)
+				lo = mid;
+			else
+				hi = mid;
+		}
+
+		return ((lo + hi) / 2) / total;
+	});
 }
 
 const el = (tag, cls, parent) => {
@@ -281,7 +345,7 @@ export function render (host, view) {
 	// stretched box is still the same point of the curve, so a node cannot drift
 	// off the path and there is nothing to recompute.
 	const total = trail.getTotalLength();
-	const stops = stopsFor(levels.LEVELS.length);
+	const stops = stopsFor(levels.LEVELS.length, trail, shape);
 	const seen = new Set();
 
 	levels.LEVELS.forEach((level, i) => {
@@ -366,7 +430,7 @@ export function placementError (host) {
 
 	const total = trail.getTotalLength();
 	const ctm = trail.getScreenCTM();
-	const stops = stopsFor(levels.LEVELS.length);
+	const stops = stopsFor(levels.LEVELS.length, trail);
 
 	return [...map.querySelectorAll('.level-node')].map((node, i) => {
 		const box = node.getBoundingClientRect();
@@ -570,7 +634,7 @@ let buffered = null;
  * and the longest possible head start: the whole run happens between here and
  * the clip being wanted. Without it the download begins at the celebration
  * itself, and a file of several megabytes over a slow link either stutters through
- * its six seconds or is still arriving when `CLIP_LIMIT_MS` gives up on it — the
+ * its six or ten seconds or is still arriving when `CLIP_LIMIT_MS` gives up on it — the
  * child answers everything right and the reward is a star burst.
  *
  * The element is kept, not just the bytes. A detached <video> is a plausible
@@ -660,11 +724,16 @@ function takeBuffer (level) {
  * A video that neither plays nor errors is a real state — a codec the browser
  * lists but will not decode, a file still arriving over a slow link — and without
  * a ceiling the result screen would sit behind it forever. Comfortably longer
- * than the longest clip — six seconds from level six on — so a clip that is
- * merely slow to start still gets to finish. It stands well clear of the held
- * frame too, which begins only once the clip is genuinely over.
+ * than the longest clip so a clip that is merely slow to start still gets to
+ * finish. It stands well clear of the held frame too, which begins only once the
+ * clip is genuinely over.
+ *
+ * Fourteen seconds, because the landmark levels — ten, fifteen, twenty — run ten
+ * rather than six. At the old nine this cut them off four seconds early and called
+ * it an ended clip, so the child lost the turn the scene was built around and
+ * nothing anywhere reported a fault.
  */
-const CLIP_LIMIT_MS = 9000;
+const CLIP_LIMIT_MS = 14000;
 
 /**
  * How long the last frame is held after the clip ends.

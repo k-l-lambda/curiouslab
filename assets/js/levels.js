@@ -38,6 +38,12 @@ export const BANDS = [
 	// or nothing. Spelling it keeps the whole set hands, which is what makes the
 	// signs legible to a child who cannot read the numerals.
 	{id: 'b10', sign: '\u{261D}\u{FE0F}\u{270A}', max: 10},
+	// Twelve and fifteen are spelled the same way and for the same reason: a raised
+	// finger for the 1, then a hand that says the second digit -- two fingers, then an
+	// open palm. The palm is already the five band's own sign, so a child who has read
+	// it once reads the second half of fifteen for free.
+	{id: 'b12', sign: '\u{261D}\u{FE0F}\u{270C}\u{FE0F}', max: 12},
+	{id: 'b15', sign: '\u{261D}\u{FE0F}\u{1F590}\u{FE0F}', max: 15},
 ];
 
 export const bandById = id => BANDS.find(b => b.id === id);
@@ -418,14 +424,46 @@ export const LEVELS = [
 		clear: 'l9-clear.mp4',
 	},
 	{
-		// The top of the ladder. Same width and the same item set as level nine; what
-		// changes is that addition no longer opens with the objects.
-		// Numbered eleven, and it is the tenth entry in the array. The three gate levels
-		// were inserted at 10, 15 and 20 and everything from the old ten up shifted, so
-		// this level's art is `l11-*`; the id follows the art rather than the position,
-		// because the art is what a brief and a filename can be traced to. Position 10 is
-		// the first gate and has no entry yet -- its brief exists, what it asks the child
-		// does not. `levelIndex` is the thing to read for position; the id is a label.
+		// Every tenth level is a landmark: the art is a scene with three figures the
+		// child has already met and the clear clip runs ten seconds rather than six.
+		// That is the only thing that sets it apart -- it asks questions and is played
+		// like any other level. What it asks is the stretch below it gathered in one
+		// place: counting returns alongside both operations, at the gentlest form each
+		// has been asked at, so the level after nine is a level to be good at rather
+		// than a level to be stretched by.
+		//
+		// The cover is six cheese wedges in two rows of three, one row spread wide and
+		// one pushed together, which is the same six either way. That is what the scene
+		// is about and it is why the pairing is `mouse-cheese` again after level eight:
+		// naming the figures the art actually draws matters more here than a fresh face,
+		// and the pairing is the level's face on the map, not a constraint on its
+		// questions.
+		id: 'l10',
+		// No new figures. A review level introducing someone would be two things at
+		// once, and the cast opens again one level later.
+		cast: 8,
+		band: 'b10',
+		min: 1,
+		max: 10,
+		questions: 12,
+		// One try, as from level eight. A gentler form is not a gentler budget: what
+		// this level relaxes is how a question is posed, not what a wrong tap costs.
+		maxErrors: 1,
+		// Counting is back after two levels without it, so it starts where level six
+		// started it; the operations start where level eight and nine left them.
+		forms: {
+			count: [FORMS.FULL, FORMS.PROMPT],
+			add: [FORMS.PROMPT, FORMS.BARE],
+			sub: [FORMS.PROMPT, FORMS.BARE],
+		},
+		sprite: 'sp-mouse',
+		pairing: 'mouse-cheese',
+		cover: 'l10-cover.webp',
+		clear: 'l10-clear.mp4',
+	},
+	{
+		// Same width and the same item set as level nine; what changes is that addition
+		// no longer opens with the objects.
 		id: 'l11',
 		// Raised to nine, which is what introduces the sheep -- and this is the level
 		// it debuts in, the two coinciding here where at level nine they did not.
@@ -454,6 +492,133 @@ export const LEVELS = [
 		cover: 'l11-cover.webp',
 		clear: 'l11-clear.mp4',
 	},
+	{
+		// Level eleven took the objects off addition; this takes them off subtraction
+		// too, so the whole level is numerals. Same range and the same item set as
+		// eleven -- ninety items, forty-five sums and forty-five differences -- and the
+		// only thing that moved is that neither operation opens with a cartoon.
+		//
+		// `SOFTER_FORM` still applies: eight seconds unanswered and the objects come
+		// out. That is the rule everywhere and it is what keeps one try a question from
+		// being a dead end; what this level withholds is the objects in the question as
+		// posed, not the help offered to a child who is stuck.
+		id: 'l12',
+		// The cow debuts: `cow-haybale` sits at familiarity 10.
+		cast: 10,
+		band: 'b10',
+		min: 1,
+		max: 10,
+		questions: 12,
+		maxErrors: 1,
+		// One rung each, so `formAvailable` opens both immediately -- rung zero is
+		// always available -- and there is no cartoon stage either operation can start
+		// from.
+		forms: {add: [FORMS.BARE], sub: [FORMS.BARE]},
+		sprite: 'sp-cow',
+		pairing: 'cow-haybale',
+		cover: 'l12-cover.webp',
+		clear: 'l12-clear.mp4',
+	},
+	{
+		// Past ten for the first time, and the range is the whole step: counting and
+		// both operations, all to twelve, and all of them back to opening with the
+		// objects. Level twelve asked ten as numerals; asking twelve as numerals as
+		// well would move two things at once and leave no way to tell which of them a
+		// child was struggling with. So the numbers widen and the presentation softens,
+		// which is the same trade level seven made when addition returned.
+		//
+		// Counting returns because twelve objects is a real counting problem -- past
+		// what a child sees at a glance, so it has to be counted rather than
+		// recognised -- and the operations are about to be asked over it.
+		id: 'l13',
+		// The pony debuts: `horse-horseshoe` sits at familiarity 11.
+		cast: 11,
+		band: 'b12',
+		min: 1,
+		max: 12,
+		questions: 12,
+		maxErrors: 1,
+		// Counting at `prompt` only: a counting question written as a numeral would
+		// print its own answer. Both operations keep `bare` above `prompt`, which opens
+		// per question once that question has been answered right at `prompt`.
+		forms: {
+			count: [FORMS.PROMPT],
+			add: [FORMS.PROMPT, FORMS.BARE],
+			sub: [FORMS.PROMPT, FORMS.BARE],
+		},
+		sprite: 'sp-horse',
+		pairing: 'horse-horseshoe',
+		cover: 'l13-cover.webp',
+		clear: 'l13-clear.mp4',
+	},
+	{
+		// Twelve as numerals: what level twelve did to ten, one width up. No counting
+		// mode, so there is nothing here to fall back on -- the same shape the ladder
+		// has used at every width, and the reason the step reads as a step.
+		id: 'l14',
+		// The duck debuts: `duck-snail` sits at familiarity 12.
+		cast: 12,
+		band: 'b12',
+		min: 1,
+		max: 12,
+		questions: 12,
+		maxErrors: 1,
+		forms: {add: [FORMS.BARE], sub: [FORMS.BARE]},
+		sprite: 'sp-duck',
+		pairing: 'duck-snail',
+		cover: 'l14-cover.webp',
+		clear: 'l14-clear.mp4',
+	},
+	{
+		// The second landmark, and it is built the way the first one was: a three-figure
+		// scene, a ten-second clip, and a level that gathers rather than stretches. The
+		// range widens to fifteen while the presentation softens back to the objects,
+		// so what the child meets here is a wider number asked in a way they have been
+		// reading since level six.
+		//
+		// Addition only -- no subtraction at fifteen yet; that is the level after. A
+		// landmark that added a width and an operation at once would be the steepest
+		// step on the ladder, which is the opposite of what these levels are for.
+		//
+		// The cover is five apples in a basket with a pig, a cow and a duck, all three
+		// already on screen by level fourteen, so the pairing is `pig-apple` again --
+		// the art's own figures, as at level ten.
+		id: 'l15',
+		// No new figures, as at level ten: the cast opens again one level later.
+		cast: 12,
+		band: 'b15',
+		min: 1,
+		max: 15,
+		questions: 12,
+		maxErrors: 1,
+		// Counting at `prompt`, the top of its ladder. Addition keeps `bare` above.
+		forms: {count: [FORMS.PROMPT], add: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-pig',
+		pairing: 'pig-apple',
+		cover: 'l15-cover.webp',
+		clear: 'l15-clear.mp4',
+	},
+	{
+		// Subtraction joins addition at fifteen, and no counting: the widest both
+		// operations have been asked at. Two hundred and ten items -- a hundred and five
+		// sums and as many differences -- against twelve questions a run, so
+		// coverage is the work of many visits rather than a few. That is this level's
+		// shape rather than an oversight, the same as it was at level nine.
+		id: 'l16',
+		// The bee debuts: `bee-flower` sits at familiarity 13.
+		cast: 13,
+		band: 'b15',
+		min: 1,
+		max: 15,
+		questions: 12,
+		maxErrors: 1,
+		// Both start at `prompt` with `bare` above, as at level nine one width down.
+		forms: {add: [FORMS.PROMPT, FORMS.BARE], sub: [FORMS.PROMPT, FORMS.BARE]},
+		sprite: 'sp-bee',
+		pairing: 'bee-flower',
+		cover: 'l16-cover.webp',
+		clear: 'l16-clear.mp4',
+	},
 ];
 
 export const levelById = id => LEVELS.find(l => l.id === id);
@@ -472,7 +637,13 @@ export const levelIndex = id => LEVELS.findIndex(l => l.id === id);
 // asks for — so it maps to the ten tier deliberately. The fallback below would have
 // landed there anyway; naming it means the next reader does not have to work out
 // whether that was intended.
-const TIER_BY_MAX = {3: 0, 5: 1, 7: 2, 8: 3, 10: 3};
+// Twelve and fifteen map to the ten tier as well, and that is the whole of what the
+// mapping can say: `TIERS` stops at ten, so there is no wider tier to file them under.
+// What a tier decides here is density and distractor distance -- see `knobsFor` -- not
+// what may be asked, which the level's own range settles. Filing a sum to fifteen
+// under the ten tier therefore costs the child nothing; it only means the mastery
+// record for that skill covers a wider stretch of arithmetic than its name suggests.
+const TIER_BY_MAX = {3: 0, 5: 1, 7: 2, 8: 3, 10: 3, 12: 3, 15: 3};
 
 export function tierIdFor (mode, max) {
 	const tiers = TIERS[mode];

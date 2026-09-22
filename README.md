@@ -19,7 +19,7 @@ Live site: <https://k-l-lambda.github.io/curiouslab/>
 | `assets/js/scheduler.js` | Adaptive selection, difficulty and timeout bands |
 | `assets/js/storage.js` | Local progress in IndexedDB, skill mastery, item history |
 | `assets/levels/prompts.md` | Art briefs for the level covers and clear videos |
-| `assets/levels/*.png`, `*.mp4` | Generated level covers and five- to six-second clear videos (Git LFS) |
+| `assets/levels/*.png`, `*.mp4` | Generated level covers and clear videos — five to six seconds, ten on a landmark level (Git LFS) |
 | `assets/levels/prompts/` | The exact prompts each asset was generated from |
 | `tools/genimage.py` | Generates images through the gpt-image-2 endpoint |
 | `tools/genvideo.py` | Generates video clips through the Dreamina Seedance endpoint |
@@ -112,28 +112,42 @@ questions drawn from that level's own item set — which ends in a result screen
 | 7 | ☝️✊ up to 10 | counting to 10, addition to 8 | 38 | 12 | counting: numeral cards · addition: numeral cards |
 | 8 | ☝️✊ up to 10 | addition, subtraction within 8 | 56 | 12 | both: numeral cards |
 | 9 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | both: numeral cards |
+| 10 | ☝️✊ up to 10 | counting, addition, subtraction within 10 | 100 | 12 | counting: cartoon · both operations: numeral cards |
 | 11 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | addition: numbers only · subtraction: numeral cards |
+| 12 | ☝️✊ up to 10 | addition, subtraction within 10 | 90 | 12 | both: numbers only |
+| 13 | ☝️✌️ up to 12 | counting, addition, subtraction within 12 | 144 | 12 | counting: numeral cards · both operations: numeral cards |
+| 14 | ☝️✌️ up to 12 | addition, subtraction within 12 | 132 | 12 | both: numbers only |
+| 15 | ☝️🖐 up to 15 | counting, addition within 15 | 120 | 12 | counting: numeral cards · addition: numeral cards |
+| 16 | ☝️🖐 up to 15 | addition, subtraction within 15 | 210 | 12 | both: numeral cards |
 
-The hand sign marks the number range a stretch of the path covers. Ten is spelled
-with two signs because no single hand shape says it: a raised finger and a fist read
-as the digits 1 and 0, which keeps the whole set hands rather than mixing in a
-numeral the child may not read yet.
+The hand sign marks the number range a stretch of the path covers. Past five they are
+spelled with two signs because no single hand shape says the number: a raised finger and
+a fist read as 1 and 0, a finger and two fingers as 1 and 2, a finger and an open palm as
+1 and 5. Spelling keeps the whole set hands rather than mixing in a numeral the child may
+not read yet, and the palm in fifteen is the five band's own sign, so the second half of
+it is already readable.
 
-The last two levels share one item set of ninety and differ only in how addition is
-posed: level 9 opens a sum with the objects, level 11 with the numbers alone.
+Levels 9, 11 and 12 share one item set of ninety and differ only in how the two
+operations are posed: 9 opens both with the objects, 11 takes them off addition, 12 takes
+them off subtraction as well.
 
-The table skips 10. Positions 10, 15 and 20 are **gates** — review levels with a group
-scene for a cover, briefed in `assets/levels/prompts.md` — and the art for the first one
-exists while its rules do not, so nothing is claimed here yet. Level ids follow their art
-rather than their position; `levelIndex` is what reads position. Twelve
-questions against ninety items means neither is finishable in a sitting, which is the
-shape of the top of the ladder rather than an oversight — a run is as long as a child's
-attention, and that does not grow because the item set did.
+**Every tenth level is a landmark**: 10, 15 and 20. The cover is a scene with three
+figures the child has already met and the clear clip runs ten seconds rather than six.
+Otherwise they are ordinary levels, played like any other — what makes them landmarks is
+the celebration, not the rules. Each gathers the stretch below it rather than stretching
+the child: the range holds or widens while the presentation softens back toward the
+objects, so a landmark is a level to be good at. Level 20 is not built yet — its brief
+and cover exist, the ladder has not reached it.
 
-Level 11's addition has no cartoon rung to start from, but a sum left eight seconds
+Twelve questions against item sets in the hundreds means neither is finishable in a
+sitting, which is the shape of the top of the ladder rather than an oversight — a run is
+as long as a child's attention, and that does not grow because the item set did.
+
+Where a level poses a question as numbers only — level 11's addition, both operations on
+12 and 14 — there is no cartoon rung to start from, but a question left eight seconds
 unanswered still softens to one. The softening is keyed to the form, not to the level's
 ladder, and it earns no credit; with one try a question it is the only thing between a
-stuck child and a dead end. What the level withholds is the objects in the question as
+stuck child and a dead end. What those levels withhold is the objects in the question as
 posed, not the hand held out afterwards.
 
 An item set is enumerated, not a random range: level 5's twenty-five are
@@ -277,9 +291,9 @@ time a level pairs the two.
   low bar on purpose, since being stuck behind a level is worse for a small child than
   arriving at the next one early.
 - **Cover and celebration art** is briefed in `assets/levels/prompts.md` and
-  generated into `assets/levels/`: one still cover per level, and one five- to six-second
-  clear video with a small story in it — a surprise the child can read without
-  words or sound. No clip may change how many of anything is on screen, because the
+  generated into `assets/levels/`: one still cover per level, and one clear video with a
+  small story in it — five to six seconds, ten on a landmark level — a surprise the child
+  can read without words or sound. No clip may change how many of anything is on screen, because the
   count the child just made is still fresh.
 - **The cover opens the level and the clip closes it.** Tapping a level shows its
   cover full-screen before the first question; clearing it plays that level's clip

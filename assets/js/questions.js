@@ -39,7 +39,17 @@ export const TIERS = {
 };
 
 export const OPTION_COUNT = 4;
-export const MAX_QUANTITY = 10;
+
+/**
+ * The widest quantity anything in the game may be about.
+ *
+ * Not a difficulty setting: it is the ceiling on what `buildOptions` may offer and
+ * what `validate` will pass, so it has to sit at or above the widest range any level
+ * asks for. Fifteen, because the ladder counts and adds to fifteen from level 15 on.
+ * The tiers in `TIERS` stop at ten and are not affected -- free practice draws from
+ * those, and widening the ceiling does not widen them.
+ */
+export const MAX_QUANTITY = 15;
 
 export const skillKey = (mode, tierId) => `${mode}:${tierId}`;
 
@@ -103,9 +113,16 @@ export function buildOptions (answer, distance) {
 		options.add(value);
 	}
 
-	// Range too tight to fill from offsets alone (small answers near the floor).
-	for (let value = 1; options.size < OPTION_COUNT && value <= MAX_QUANTITY; ++value)
-		options.add(value);
+	// Range too tight to fill from the offsets alone, which happens at either end:
+	// the answer is near 1, or near MAX_QUANTITY. Walk outward from the answer so
+	// what gets added is still its neighbourhood. Filling from 1 upward instead put
+	// a lone 1 beside 8, 9, 10 on an answer of ten -- a card a child discounts
+	// without doing any arithmetic, which makes it a three-card question wearing
+	// four cards, and the wider the range the further away that stray card is.
+	for (let step = 1; options.size < OPTION_COUNT && step <= MAX_QUANTITY; ++step)
+		for (const value of [answer - step, answer + step])
+			if (value >= 1 && value <= MAX_QUANTITY && options.size < OPTION_COUNT)
+				options.add(value);
 
 	return [...options].slice(0, OPTION_COUNT).sort((a, b) => a - b);
 }
@@ -115,10 +132,10 @@ export function validate (q) {
 	const problems = [];
 
 	if (!q.operands.every(n => Number.isInteger(n) && n >= 0 && n <= MAX_QUANTITY))
-		problems.push('operand outside 0..10');
+		problems.push(`operand outside 0..${MAX_QUANTITY}`);
 
 	if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > MAX_QUANTITY)
-		problems.push('answer outside 0..10');
+		problems.push(`answer outside 0..${MAX_QUANTITY}`);
 
 	if (!q.options.includes(q.answer))
 		problems.push('answer missing from options');

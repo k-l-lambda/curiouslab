@@ -739,6 +739,16 @@ child associates with that stretch of the path rather than a stranger.
 
 ## Level 10 — the first gate · mouse, cat and hen · counted set: cheese · accent `#2f8f9d`
 
+> **As built: counting, addition and subtraction within 10, twelve questions, one try
+> each, the ten band.** A gate is an ordinary level with a longer celebration — it asks
+> questions and is played like any other, and "gate" describes the art and the ten-second
+> clip, not a separate kind of rule. What it asks is the stretch below it gathered in one
+> place: counting returns after levels 8 and 9 went without it, and each mode starts at
+> the gentlest form it has been asked at, so this is a level to be good at rather than a
+> level to be stretched by. The pairing is `mouse-cheese` again after level 8, following
+> the rule in the gates section: the cover has no single pair, so it takes the animal
+> whose object is counted.
+
 The gate at the end of the first stretch. The mouse hosts it, because the cheese is
 what gets counted and level 8 is where the child met it; the cat and the hen come as
 guests, one from the very first level and one from the level just finished.
@@ -880,11 +890,17 @@ closing pose is looked at rather than glimpsed. Beats become roughly
 1.8 / 0.5 / 2.3 / 1.3 / 1.1 at seven seconds and 2.0 / 0.5 / 2.7 / 1.5 / 1.3 at
 eight.
 
-Band assignment is a plan and not something the code agrees to yet: twelve for twelve
-to fourteen, fifteen for sixteen and seventeen, twenty for eighteen and nineteen, and
-the last three on arithmetic, then doubles, then everything at once. It keeps the
-3/2/3/2 shape the ladder has had, with the gates sitting outside that count — a gate
-reviews the stretch below it rather than opening a band.
+Band assignment, as the code now has it up to sixteen: ten holds through twelve, twelve
+covers thirteen and fourteen, fifteen covers fifteen and sixteen. Past that the plan is
+twenty for the next stretch, then the last levels on arithmetic, doubles, and everything
+at once.
+
+The gates count as levels in this, which is a change from how they were first written.
+They are ordinary levels with a longer celebration, so a gate takes a slot in a band
+rather than sitting beside the count — level fifteen is the first level of the fifteen
+band, not an interlude before it. What stays true is what a gate *asks*: it reviews the
+stretch below it, so it holds or widens the range while softening the presentation back
+toward the objects.
 
 ### Ten twists, and what makes them different from the first ten
 
@@ -919,6 +935,15 @@ Each clip starts from its own cover.
 
 ## Level 12 — counting within 12 · cow and hay bale · accent `#c98a1f`
 
+> **As built: addition and subtraction within 10, both posed as numerals only, twelve
+> questions, one try each, the ten band.** Not counting within 12, and not the twelve
+> band: the gates became levels in their own right, so everything the brief numbered
+> shifted a place, and the ladder needed one more level at ten before widening. This is
+> the level that finishes what level 11 started — 11 took the objects off addition, this
+> takes them off subtraction too, so the whole level is numerals over the same ninety
+> items. The art is unaffected: the cows and the hay bales carry a level about ten as
+> readily as one about twelve, and nothing in the clip counts past ten.
+
 First level of the twelve band, and counting returns the way it did at four and six.
 It opens the third five deliberately slowly: a cow is the most placid figure in the
 set and the clip's joke is about weight, which is a good place to start after level
@@ -949,6 +974,13 @@ uncountable mass where a countable set used to be, which is the same fault a wal
 undifferentiated cheese would have been at level eight.
 
 ## Level 13 — counting and addition within 12 · pony and horseshoe · accent `#8fa3b2`
+
+> **As built: counting, addition and subtraction within 12, twelve questions, one try
+> each, the twelve band.** Subtraction as well as addition, and this is the level that
+> opens the twelve band rather than the one after it. Past ten for the first time, so the
+> range is the whole step and every mode goes back to opening with the objects —
+> widening the numbers and hardening the presentation at once would leave no way to tell
+> which of the two a child was struggling with.
 
 Addition in the twelve band. The first cool-grey object in the set — the warm band
 was full by level nine, and a metal grey-blue is the widest gap left in it.
@@ -1008,6 +1040,14 @@ scenery, and a counted object floating away is a counted object leaving.
 
 ## Level 15 — the second gate · pig, cow and duck · counted set: apples · accent `#2f8f9d`
 
+> **As built: counting and addition within 15, twelve questions, one try each, the
+> fifteen band.** As at level 10, a gate is an ordinary level with a ten-second
+> celebration. This one opens the fifteen band rather than sitting beside it: the range
+> widens while the presentation softens back to the objects, which is the trade that
+> makes a landmark a level to be good at. Addition only — subtraction joins it at fifteen
+> one level later, because a landmark that added a width and an operation at once would
+> be the steepest step on the ladder.
+
 The middle gate. The pig leads it — the apples are its object and level 7 is a long way
 back by now, which is the point of bringing it out again — with the cow from level 12
 and the duck from level 14.
@@ -1062,6 +1102,12 @@ emptied off-frame. And nobody is blamed — the pig's dismay turns to delight, t
 pleased with itself, and the last beat is the three of them around a full basket.
 
 ## Level 16 — counting and addition within 15 · bee and flower · accent `#f27a9b`
+
+> **As built: addition and subtraction within 15, no counting, twelve questions, one try
+> each, the fifteen band.** Level 15 opens the band and does the counting; this is where
+> subtraction joins addition at the widest either has been asked at, which is the same
+> shape level 9 had one width down. Two hundred and ten items against twelve questions a
+> run, the largest gap on the ladder so far.
 
 First level of the fifteen band, and the cheapest in the set to draw: `sp-flower`
 already existed in `art.js` as garden decoration, at exactly these colours, so this
